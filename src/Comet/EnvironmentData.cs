@@ -117,6 +117,7 @@ namespace Comet
 			public const string Keyboard = "EntryKeyboard";
 			public const string ReturnType = "EntryReturnType";
 			public const string IsPassword = "EntryIsPassword";
+			public const string TextChanged = "EntryTextChanged";
 		}
 		public static class Switch
 		{
@@ -136,6 +137,12 @@ namespace Comet
 		{
 			public const string PlaceholderColor = "EditorPlaceholderColor";
 			public const string Placeholder = "EditorPlaceholder";
+		}
+		public static class Button
+		{
+			public const string CornerRadius = "ButtonCornerRadius";
+			public const string BorderWidth = "ButtonBorderWidth";
+			public const string BorderColor = "ButtonBorderColor";
 		}
 	}
 

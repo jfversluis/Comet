@@ -128,5 +128,46 @@ namespace Comet
 			view.RemainingItemsThresholdReached = action;
 			return view;
 		}
+
+		// Grid extensions
+		public static Grid ColumnSpacing(this Grid view, float spacing)
+		{
+			var layout = (Layout.GridLayoutManager)view.LayoutManager;
+			layout.ColumnSpacing = spacing;
+			return view;
+		}
+
+		public static Grid RowSpacing(this Grid view, float spacing)
+		{
+			var layout = (Layout.GridLayoutManager)view.LayoutManager;
+			layout.RowSpacing = spacing;
+			return view;
+		}
+
+		// Button styling extensions
+		public static Button CornerRadius(this Button view, int radius)
+		{
+			view.SetEnvironment(EnvironmentKeys.Button.CornerRadius, radius, false);
+			return view;
+		}
+
+		public static Button BorderWidth(this Button view, double width)
+		{
+			view.SetEnvironment(EnvironmentKeys.Button.BorderWidth, width, false);
+			return view;
+		}
+
+		public static Button BorderColor(this Button view, Color color)
+		{
+			view.SetEnvironment(EnvironmentKeys.Button.BorderColor, color, false);
+			return view;
+		}
+
+		// TextField/TextEditor text change callback
+		public static T OnTextChanged<T>(this T view, Action<string> callback) where T : View
+		{
+			view.SetEnvironment(EnvironmentKeys.Entry.TextChanged, callback, false);
+			return view;
+		}
 	}
 }

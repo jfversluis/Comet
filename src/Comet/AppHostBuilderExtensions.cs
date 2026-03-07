@@ -377,6 +377,87 @@ namespace Comet
 #endif
 			});
 
+			// Apply Button CornerRadius/BorderWidth/BorderColor via handler mapper
+			ButtonHandler.Mapper.AppendToMapping("CometButtonStyling", (handler, view) =>
+			{
+				if (view is not View cometView)
+					return;
+				var platformView = handler.PlatformView;
+				if (platformView == null)
+					return;
+#if __IOS__ || MACCATALYST
+				var cornerRadius = cometView.GetEnvironment<int?>(EnvironmentKeys.Button.CornerRadius);
+				if (cornerRadius != null)
+					platformView.Layer.CornerRadius = cornerRadius.Value;
+				var borderWidth = cometView.GetEnvironment<double?>(EnvironmentKeys.Button.BorderWidth);
+				if (borderWidth != null)
+					platformView.Layer.BorderWidth = (float)borderWidth.Value;
+				var borderColor = cometView.GetEnvironment<Color>(EnvironmentKeys.Button.BorderColor);
+				if (borderColor != null)
+					platformView.Layer.BorderColor = borderColor.ToPlatform().CGColor;
+				if (cornerRadius != null || borderWidth != null)
+					platformView.ClipsToBounds = true;
+#elif ANDROID
+				var cornerRadius = cometView.GetEnvironment<int?>(EnvironmentKeys.Button.CornerRadius);
+				var borderWidth = cometView.GetEnvironment<double?>(EnvironmentKeys.Button.BorderWidth);
+				var borderColor = cometView.GetEnvironment<Color>(EnvironmentKeys.Button.BorderColor);
+				if (cornerRadius != null || borderWidth != null || borderColor != null)
+				{
+					var context = platformView.Context;
+					if (context != null)
+					{
+						var drawable = new global::Android.Graphics.Drawables.GradientDrawable();
+						if (cornerRadius != null)
+							drawable.SetCornerRadius((float)(cornerRadius.Value * context.Resources.DisplayMetrics.Density));
+						if (borderWidth != null && borderColor != null)
+							drawable.SetStroke((int)(borderWidth.Value * context.Resources.DisplayMetrics.Density), borderColor.ToPlatform());
+						else if (borderWidth != null)
+							drawable.SetStroke((int)(borderWidth.Value * context.Resources.DisplayMetrics.Density), global::Android.Graphics.Color.Transparent);
+						var bg = cometView.GetBackground();
+						if (bg is SolidPaint bgPaint && bgPaint.Color != null)
+							drawable.SetColor(bgPaint.Color.ToPlatform());
+						platformView.Background = drawable;
+					}
+				}
+#endif
+			});
+
+			// Apply OnTextChanged callback to Entry via handler mapper
+			EntryHandler.Mapper.AppendToMapping("CometEntryTextChanged", (handler, view) =>
+			{
+				if (view is not View cometView)
+					return;
+				var callback = cometView.GetEnvironment<Action<string>>(EnvironmentKeys.Entry.TextChanged);
+				if (callback == null)
+					return;
+				var entry = handler.PlatformView;
+				if (entry == null)
+					return;
+#if __IOS__ || MACCATALYST
+				entry.EditingChanged += (s, e) => callback(entry.Text);
+#elif ANDROID
+				entry.AfterTextChanged += (s, e) => callback(entry.Text);
+#endif
+			});
+
+			// Apply OnTextChanged callback to Editor via handler mapper
+			EditorHandler.Mapper.AppendToMapping("CometEditorTextChanged", (handler, view) =>
+			{
+				if (view is not View cometView)
+					return;
+				var callback = cometView.GetEnvironment<Action<string>>(EnvironmentKeys.Entry.TextChanged);
+				if (callback == null)
+					return;
+				var editor = handler.PlatformView;
+				if (editor == null)
+					return;
+#if __IOS__ || MACCATALYST
+				editor.Changed += (s, e) => callback(editor.Text);
+#elif ANDROID
+				editor.AfterTextChanged += (s, e) => callback(editor.Text);
+#endif
+			});
+
 			Lerp.Lerps[typeof(FrameConstraints)] = new Lerp
 			{
 				Calculate = (s, e, progress) => {

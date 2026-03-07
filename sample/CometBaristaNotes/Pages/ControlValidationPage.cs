@@ -268,6 +268,58 @@ public class ControlValidationPage : Comet.View
 				new Text(() => $"Editor text: {_editorText.Value}")
 					.Color(Theme.TextSecondary),
 
+				// ---- Round 6: Grid spacing, Button styling, OnTextChanged ----
+				new Text("Round 6: Grid with Spacing")
+					.FontSize(22)
+					.FontWeight(FontWeight.Bold)
+					.Color(Theme.TextPrimary),
+
+				new Grid(
+					rows: new object[] { "Auto", "Auto" },
+					columns: new object[] { "*", "*" })
+				{
+					new Border
+					{
+						new Text("Col 0").Color(Colors.White)
+					}
+					.CornerRadius(8)
+					.Background(Theme.Primary)
+					.Padding(new Thickness(12, 8))
+					.Cell(row: 0, column: 0),
+
+					new Border
+					{
+						new Text("Col 1").Color(Theme.TextPrimary)
+					}
+					.CornerRadius(8)
+					.Background(Theme.SurfaceVariant)
+					.Padding(new Thickness(12, 8))
+					.Cell(row: 0, column: 1),
+
+					new Text("Row 1, full width")
+						.Color(Theme.TextSecondary)
+						.GridRow(1).GridColumnSpan(2),
+				}
+				.ColumnSpacing(12)
+				.RowSpacing(8),
+
+				new Text("Button Styling")
+					.FontSize(22)
+					.FontWeight(FontWeight.Bold)
+					.Color(Theme.TextPrimary),
+
+				new Button("Rounded Button", () => { })
+					.Color(Colors.White)
+					.Background(Theme.Primary)
+					.CornerRadius(20),
+
+				new Button("Outlined Button", () => { })
+					.Color(Theme.Primary)
+					.Background(Colors.Transparent)
+					.CornerRadius(8)
+					.BorderWidth(1.5)
+					.BorderColor(Theme.Primary),
+
 				new Spacer().Frame(height: 40),
 			}
 			.Padding(new Thickness(16))
