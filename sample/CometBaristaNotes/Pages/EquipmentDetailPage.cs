@@ -1,12 +1,8 @@
-using Comet;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
 using CometBaristaNotes.Models;
 using CometBaristaNotes.Services;
 using CometBaristaNotes.Components;
 
-using MauiLabel = Microsoft.Maui.Controls.Label;
-using MauiScrollView = Microsoft.Maui.Controls.ScrollView;
+using ScrollView = Comet.ScrollView;
 
 namespace CometBaristaNotes.Pages;
 
@@ -110,27 +106,29 @@ public class EquipmentDetailPage : Comet.View
 
 		var isEdit = _equipmentId > 0;
 
-		var stack = new VerticalStackLayout { Spacing = Theme.SpacingS, Padding = new Thickness(Theme.SpacingM) };
-
-		stack.Add(FormHelpers.MakeSectionHeader(isEdit ? "EDIT EQUIPMENT" : "NEW EQUIPMENT"));
-		stack.Add(FormHelpers.MakeFormEntry("Name *", _name.Value, "Equipment name", v => _name.Value = v));
-		stack.Add(FormHelpers.MakeFormPicker("Type", _selectedTypeIndex.Value, TypeNames, v => _selectedTypeIndex.Value = v));
-		stack.Add(FormHelpers.MakeFormEntry("Notes", _notes.Value, "Additional details", v => _notes.Value = v));
-
-		if (!string.IsNullOrEmpty(_error.Value))
-			stack.Add(new MauiLabel { Text = _error.Value, TextColor = Theme.Error, FontFamily = Theme.FontRegular, FontSize = 14 });
-
-		stack.Add(FormHelpers.MakePrimaryButton(isEdit ? "Save Changes" : "Add Equipment", Save));
-
-		if (isEdit)
-			stack.Add(FormHelpers.MakeDangerButton("Archive Equipment", Archive));
-
-		var scrollView = new MauiScrollView
+		var items = new List<Comet.View>
 		{
-			Content = stack,
-			BackgroundColor = Theme.Background,
+			FormHelpers.MakeSectionHeader(isEdit ? "EDIT EQUIPMENT" : "NEW EQUIPMENT"),
+			FormHelpers.MakeFormEntry("Name *", _name.Value, "Equipment name", v => _name.Value = v),
+			FormHelpers.MakeFormPicker("Type", _selectedTypeIndex.Value, TypeNames, v => _selectedTypeIndex.Value = v),
+			FormHelpers.MakeFormEntry("Notes", _notes.Value, "Additional details", v => _notes.Value = v),
 		};
 
-		return new MauiViewHost(scrollView);
+		if (!string.IsNullOrEmpty(_error.Value))
+			items.Add(new Text(_error.Value).Color(Theme.Error).FontFamily(Theme.FontRegular).FontSize(14));
+
+		items.Add(FormHelpers.MakePrimaryButton(isEdit ? "Save Changes" : "Add Equipment", Save));
+
+		if (isEdit)
+			items.Add(FormHelpers.MakeDangerButton("Archive Equipment", Archive));
+
+		var stack = new VStack(spacing: Theme.SpacingS);
+		foreach (var item in items)
+			stack.Add(item);
+
+		return new ScrollView {
+			stack.Padding(new Thickness(Theme.SpacingM))
+		}
+		.Background(Theme.Background);
 	}
 }

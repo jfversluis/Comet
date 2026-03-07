@@ -1,18 +1,14 @@
 using System.Collections.ObjectModel;
 using Comet;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui.Controls;
+using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 using CometBaristaNotes.Models;
 using CometBaristaNotes.Services;
 using CometBaristaNotes.Components;
 using UXDivers.Popups.Services;
 
-using MauiLabel = Microsoft.Maui.Controls.Label;
-using MauiBoxView = Microsoft.Maui.Controls.BoxView;
-using MauiButton = Microsoft.Maui.Controls.Button;
-using MauiCollectionView = Microsoft.Maui.Controls.CollectionView;
-using MauiFontAttributes = Microsoft.Maui.Controls.FontAttributes;
+using ScrollView = Comet.ScrollView;
 
 namespace CometBaristaNotes.Pages;
 
@@ -62,7 +58,7 @@ public class ActivityFeedPage : Comet.View
 
 		var shotCount = _displayedShots.Count;
 
-		// Simple view that should always render
+		// Empty state
 		if (shotCount == 0 && !_filters.HasFilters)
 		{
 			return new VStack
@@ -77,33 +73,33 @@ public class ActivityFeedPage : Comet.View
 		}
 
 		// Main content
-		var wrapper = new VerticalStackLayout { Spacing = 0, BackgroundColor = Theme.Background };
-
-		// Header row: shot count
-		wrapper.Add(new MauiBoxView { HeightRequest = 20, BackgroundColor = Colors.Transparent });
-
 		var countText = _filters.HasFilters
 			? $"{_filteredShotCount} of {_totalShotCount} shots"
 			: $"{_totalShotCount} shots logged";
-		wrapper.Add(new MauiLabel
-		{
-			Text = countText,
-			FontFamily = Theme.FontSemibold,
-			FontSize = 14,
-			FontAttributes = MauiFontAttributes.Bold,
-			TextColor = Theme.TextSecondary,
-			Padding = new Thickness(Theme.SpacingM, Theme.SpacingS),
-		});
 
-		// Shot cards
+		var items = new List<Comet.View>
+		{
+			new Spacer().Frame(height: 20),
+			new Text(countText)
+				.FontFamily(Theme.FontSemibold)
+				.FontSize(14)
+				.FontWeight(FontWeight.Bold)
+				.Color(Theme.TextSecondary)
+				.Padding(new Thickness(Theme.SpacingM, Theme.SpacingS)),
+		};
+
 		foreach (var shot in _displayedShots)
 		{
-			wrapper.Add(ShotRecordCardFactory.Create(shot, () => {
+			items.Add(ShotRecordCardFactory.Create(shot, () => {
 				Navigation?.Navigate(new ShotLoggingPage(shot.Id));
 			}));
 		}
 
-		return new MauiViewHost(wrapper);
+		var stack = new VStack(spacing: 0);
+		foreach (var item in items)
+			stack.Add(item);
+
+		return new ScrollView { stack }.Background(Theme.Background);
 	}
 
 	async void OnFilterTapped(object? sender, EventArgs e)

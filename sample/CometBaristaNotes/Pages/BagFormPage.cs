@@ -1,12 +1,11 @@
 using Comet;
-using Microsoft.Maui.Controls;
+using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 using CometBaristaNotes.Models;
 using CometBaristaNotes.Services;
 using CometBaristaNotes.Components;
 
-using MauiLabel = Microsoft.Maui.Controls.Label;
-using MauiScrollView = Microsoft.Maui.Controls.ScrollView;
+using ScrollView = Comet.ScrollView;
 
 namespace CometBaristaNotes.Pages;
 
@@ -68,24 +67,21 @@ public class BagFormPage : Comet.View
 		if (!_isLoaded.Value)
 			LoadBeanName();
 
-		var stack = new VerticalStackLayout { Spacing = Theme.SpacingS, Padding = new Thickness(Theme.SpacingM) };
+		var errorView = !string.IsNullOrEmpty(_error.Value)
+			? new Text(_error.Value).Color(Theme.Error).FontFamily(Theme.FontRegular).FontSize(14)
+			: null;
 
-		stack.Add(FormHelpers.MakeSectionHeader("ADD BAG"));
-		stack.Add(FormHelpers.MakeReadOnlyField("Bean", _beanName.Value));
-		stack.Add(FormHelpers.MakeFormEntry("Roast Date", _roastDate.Value, "yyyy-MM-dd", v => _roastDate.Value = v));
-		stack.Add(FormHelpers.MakeFormEntryWithLimit("Notes (optional)", _notes.Value, "e.g., From Trader Joe's, Gift from friend", 500, v => _notes.Value = v));
-
-		if (!string.IsNullOrEmpty(_error.Value))
-			stack.Add(new MauiLabel { Text = _error.Value, TextColor = Theme.Error, FontFamily = Theme.FontRegular, FontSize = 14 });
-
-		stack.Add(FormHelpers.MakePrimaryButton("Add Bag", Save));
-
-		var scrollView = new MauiScrollView
-		{
-			Content = stack,
-			BackgroundColor = Theme.Background,
-		};
-
-		return new MauiViewHost(scrollView);
+		return new ScrollView {
+			new VStack(spacing: Theme.SpacingS) {
+				FormHelpers.MakeSectionHeader("ADD BAG"),
+				FormHelpers.MakeReadOnlyField("Bean", _beanName.Value),
+				FormHelpers.MakeFormEntry("Roast Date", _roastDate.Value, "yyyy-MM-dd", v => _roastDate.Value = v),
+				FormHelpers.MakeFormEntryWithLimit("Notes (optional)", _notes.Value, "e.g., From Trader Joe's, Gift from friend", 500, v => _notes.Value = v),
+				errorView,
+				FormHelpers.MakePrimaryButton("Add Bag", Save),
+			}
+			.Padding(new Thickness(Theme.SpacingM))
+		}
+		.Background(Theme.Background);
 	}
 }

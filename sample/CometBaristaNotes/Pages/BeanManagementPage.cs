@@ -1,12 +1,11 @@
 using Comet;
-using Microsoft.Maui.Controls;
+using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 using CometBaristaNotes.Models;
 using CometBaristaNotes.Services;
 using CometBaristaNotes.Components;
 
-using MauiLabel = Microsoft.Maui.Controls.Label;
-using MauiScrollView = Microsoft.Maui.Controls.ScrollView;
+using ScrollView = Comet.ScrollView;
 
 namespace CometBaristaNotes.Pages;
 
@@ -33,27 +32,17 @@ public class BeanManagementPage : Comet.View
 
 		if (beans.Count == 0)
 		{
-			var emptyStack = new VerticalStackLayout
-			{
-				Spacing = Theme.SpacingM,
-				Padding = new Thickness(Theme.SpacingL),
-				BackgroundColor = Theme.Background,
-				VerticalOptions = LayoutOptions.Fill,
-			};
-			emptyStack.Add(FormHelpers.MakeEmptyState(Icons.Coffee, "No Beans Yet", "Add your favorite coffee beans to track freshness and tasting notes"));
-			emptyStack.Add(FormHelpers.MakePrimaryButton("+ Add Bean", () =>
-			{
-				Navigation?.Navigate(new BeanDetailPage(0));
-			}));
-			return new MauiViewHost(emptyStack);
+			return new VStack(spacing: Theme.SpacingM) {
+				FormHelpers.MakeEmptyState(Icons.Coffee, "No Beans Yet", "Add your favorite coffee beans to track freshness and tasting notes"),
+				FormHelpers.MakePrimaryButton("+ Add Bean", () => Navigation?.Navigate(new BeanDetailPage(0))),
+			}
+			.Padding(new Thickness(Theme.SpacingL))
+			.Background(Theme.Background);
 		}
 
-		var stack = new VerticalStackLayout { Spacing = Theme.SpacingS, Padding = new Thickness(Theme.SpacingM) };
-
-		stack.Add(FormHelpers.MakePrimaryButton("+ Add Bean", () =>
-		{
-			Navigation?.Navigate(new BeanDetailPage(0));
-		}));
+		var stack = new VStack(spacing: Theme.SpacingS) {
+			FormHelpers.MakePrimaryButton("+ Add Bean", () => Navigation?.Navigate(new BeanDetailPage(0))),
+		};
 
 		foreach (var bean in beans)
 		{
@@ -65,12 +54,7 @@ public class BeanManagementPage : Comet.View
 			));
 		}
 
-		var scrollView = new MauiScrollView
-		{
-			Content = stack,
-			BackgroundColor = Theme.Background,
-		};
-
-		return new MauiViewHost(scrollView);
+		return new ScrollView { stack.Padding(new Thickness(Theme.SpacingM)) }
+			.Background(Theme.Background);
 	}
 }

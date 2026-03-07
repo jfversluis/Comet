@@ -1,16 +1,10 @@
 using Comet;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using CometBaristaNotes.Models;
 using CometBaristaNotes.Services;
 using CometBaristaNotes.Components;
 
-using MauiLabel = Microsoft.Maui.Controls.Label;
-using MauiBorder = Microsoft.Maui.Controls.Border;
-using MauiScrollView = Microsoft.Maui.Controls.ScrollView;
-using SolidColorBrush = Microsoft.Maui.Controls.SolidColorBrush;
-using MauiFontAttributes = Microsoft.Maui.Controls.FontAttributes;
+using ScrollView = Comet.ScrollView;
 
 namespace CometBaristaNotes.Pages;
 
@@ -108,63 +102,63 @@ public class BagDetailPage : Comet.View
 
 		if (_bagId <= 0)
 		{
-			var errorStack = new VerticalStackLayout
-			{
-				Padding = new Thickness(Theme.SpacingM),
-				BackgroundColor = Theme.Background,
-			};
-			errorStack.Add(new MauiLabel { Text = "Bag not found", FontFamily = Theme.FontRegular, TextColor = Theme.TextSecondary });
-			return new MauiViewHost(errorStack);
+			return new VStack {
+				new Text("Bag not found")
+					.FontFamily(Theme.FontRegular)
+					.Color(Theme.TextSecondary),
+			}
+			.Padding(new Thickness(Theme.SpacingM))
+			.Background(Theme.Background);
 		}
 
-		var stack = new VerticalStackLayout { Spacing = Theme.SpacingS, Padding = new Thickness(Theme.SpacingM) };
+		var items = new List<Comet.View>();
 
-		stack.Add(FormHelpers.MakeSectionHeader("BAG DETAILS"));
-		stack.Add(FormHelpers.MakeReadOnlyField("Bean", _beanName.Value));
-		stack.Add(FormHelpers.MakeReadOnlyField("Roast Date", _roastDate.Value));
-		stack.Add(FormHelpers.MakeFormEntryWithLimit("Notes", _notes.Value, "Bag notes", 500, v => _notes.Value = v));
+		items.Add(FormHelpers.MakeSectionHeader("BAG DETAILS"));
+		items.Add(FormHelpers.MakeReadOnlyField("Bean", _beanName.Value));
+		items.Add(FormHelpers.MakeReadOnlyField("Roast Date", _roastDate.Value));
+		items.Add(FormHelpers.MakeFormEntryWithLimit("Notes", _notes.Value, "Bag notes", 500, v => _notes.Value = v));
 
 		// Shot count card
-		var shotCountView = new VStack(spacing: 2)
-		{
-			new Text("Shots Logged")
-				.FontFamily(Theme.FontRegular)
-				.FontSize(14)
-				.Color(Theme.TextSecondary),
-			new Text($"{_shotCount.Value}")
-				.FontFamily(Theme.FontSemibold)
-				.FontSize(24)
-				.FontWeight(FontWeight.Bold)
-				.Color(Theme.TextPrimary),
-		};
-		stack.Add(FormHelpers.MakeCard(shotCountView));
+		items.Add(FormHelpers.MakeCard(
+			new VStack(spacing: 2) {
+				new Text("Shots Logged")
+					.FontFamily(Theme.FontRegular)
+					.FontSize(14)
+					.Color(Theme.TextSecondary),
+				new Text($"{_shotCount.Value}")
+					.FontFamily(Theme.FontSemibold)
+					.FontSize(24)
+					.FontWeight(FontWeight.Bold)
+					.Color(Theme.TextPrimary),
+			}
+		));
 
 		// Status toggle card
-		stack.Add(FormHelpers.MakeToggleRow(
+		items.Add(FormHelpers.MakeToggleRow(
 			_isComplete.Value ? "Status: Complete" : "Status: Active",
 			_isComplete.Value,
 			v => _isComplete.Value = v
 		));
 
 		if (!string.IsNullOrEmpty(_error.Value))
-			stack.Add(new MauiLabel { Text = _error.Value, TextColor = Theme.Error, FontSize = 14 });
+			items.Add(new Text(_error.Value).Color(Theme.Error).FontSize(14));
 
-		stack.Add(FormHelpers.MakePrimaryButton("Save Changes", Save));
+		items.Add(FormHelpers.MakePrimaryButton("Save Changes", Save));
 
 		if (_isComplete.Value)
-			stack.Add(FormHelpers.MakeSecondaryButton("Reactivate Bag", ReactivateBag));
+			items.Add(FormHelpers.MakeSecondaryButton("Reactivate Bag", ReactivateBag));
 
-		stack.Add(FormHelpers.MakeDangerButton("Delete Bag", DeleteBag));
+		items.Add(FormHelpers.MakeDangerButton("Delete Bag", DeleteBag));
 
-		stack.Add(FormHelpers.MakeSectionHeader("RATINGS"));
-		stack.Add(RatingDisplayFactory.Create(_rating.Value));
+		items.Add(FormHelpers.MakeSectionHeader("RATINGS"));
+		items.Add(RatingDisplayFactory.Create(_rating.Value));
 
-		var scrollView = new MauiScrollView
-		{
-			Content = stack,
-			BackgroundColor = Theme.Background,
-		};
+		var stack = new VStack(spacing: Theme.SpacingS);
+		foreach (var item in items) stack.Add(item);
 
-		return new MauiViewHost(scrollView);
+		return new ScrollView {
+			stack.Padding(new Thickness(Theme.SpacingM))
+		}
+		.Background(Theme.Background);
 	}
 }

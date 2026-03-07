@@ -1,13 +1,11 @@
 using Comet;
-using Microsoft.Maui.Controls;
+using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 using CometBaristaNotes.Models;
 using CometBaristaNotes.Services;
 using CometBaristaNotes.Components;
 
-using MauiLabel = Microsoft.Maui.Controls.Label;
-using MauiScrollView = Microsoft.Maui.Controls.ScrollView;
-using Application = Microsoft.Maui.Controls.Application;
+using ScrollView = Comet.ScrollView;
 
 namespace CometBaristaNotes.Pages;
 
@@ -34,46 +32,29 @@ public class EquipmentManagementPage : Comet.View
 
 		if (items.Count == 0)
 		{
-			var emptyStack = new VerticalStackLayout
-			{
-				Spacing = Theme.SpacingM,
-				Padding = new Thickness(Theme.SpacingL),
-				BackgroundColor = Theme.Background,
-				VerticalOptions = LayoutOptions.Fill,
-			};
-			emptyStack.Add(FormHelpers.MakeEmptyState(Icons.Build, "No Equipment Yet", "Add your coffee machines, grinders, and accessories"));
-			emptyStack.Add(FormHelpers.MakePrimaryButton("+ Add Equipment", () =>
-			{
-				Navigation?.Navigate(new EquipmentDetailPage(0));
-			}));
-			return new MauiViewHost(emptyStack);
+			return new VStack(spacing: Theme.SpacingM) {
+				FormHelpers.MakeEmptyState(Icons.Build, "No Equipment Yet", "Add your coffee machines, grinders, and accessories"),
+				FormHelpers.MakePrimaryButton("+ Add Equipment", () => Navigation?.Navigate(new EquipmentDetailPage(0))),
+			}
+			.Padding(new Thickness(Theme.SpacingL))
+			.Background(Theme.Background);
 		}
 
-		var stack = new VerticalStackLayout { Spacing = Theme.SpacingS, Padding = new Thickness(Theme.SpacingM) };
-
-		stack.Add(FormHelpers.MakePrimaryButton("+ Add Equipment", () =>
-		{
-			Navigation?.Navigate(new EquipmentDetailPage(0));
-		}));
+		var stack = new VStack(spacing: Theme.SpacingS) {
+			FormHelpers.MakePrimaryButton("+ Add Equipment", () => Navigation?.Navigate(new EquipmentDetailPage(0))),
+		};
 
 		foreach (var eq in items)
 		{
-			var card = FormHelpers.MakeListCard(
+			stack.Add(FormHelpers.MakeListCard(
 				eq.Name,
 				eq.Type.ToString(),
 				eq.Notes,
 				() => Navigation?.Navigate(new EquipmentDetailPage(eq.Id))
-			);
-
-			stack.Add(card);
+			));
 		}
 
-		var scrollView = new MauiScrollView
-		{
-			Content = stack,
-			BackgroundColor = Theme.Background,
-		};
-
-		return new MauiViewHost(scrollView);
+		return new ScrollView { stack.Padding(new Thickness(Theme.SpacingM)) }
+			.Background(Theme.Background);
 	}
 }
