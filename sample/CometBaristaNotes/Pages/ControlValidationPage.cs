@@ -166,6 +166,35 @@ public class ControlValidationPage : Comet.View
 				new Image("dotnet_bot.png")
 					.Aspect(Microsoft.Maui.Aspect.AspectFit)
 					.Frame(height: 100),
+
+				// ---- Round 4: Keyboard, Shadow ----
+				new Text("Round 4: Keyboard & Shadow")
+					.FontSize(22)
+					.FontWeight(FontWeight.Bold)
+					.Color(Theme.TextPrimary),
+
+				new TextField("", "Numeric keyboard...")
+					.Keyboard(Microsoft.Maui.Keyboard.Numeric)
+					.FontSize(16),
+
+				new TextField("", "Email keyboard...")
+					.Keyboard(Microsoft.Maui.Keyboard.Email)
+					.ReturnType(Microsoft.Maui.ReturnType.Send)
+					.FontSize(16),
+
+				new Border
+				{
+					new Text("Card with Shadow")
+						.Color(Theme.TextPrimary)
+				}
+				.CornerRadius(12)
+				.Background(Theme.Surface)
+				.Padding(new Thickness(16))
+				.Shadow(new Comet.Graphics.Shadow()
+					.WithColor(Colors.Black)
+					.WithOpacity(0.3f)
+					.WithRadius(8)
+					.WithOffset(new Point(0, 4))),
 			}
 			.Padding(new Thickness(16))
 		};

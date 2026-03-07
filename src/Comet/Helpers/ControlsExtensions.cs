@@ -14,6 +14,24 @@ namespace Comet
 			return view;
 		}
 
+		public static T Keyboard<T>(this T view, Microsoft.Maui.Keyboard keyboard) where T : View
+		{
+			view.SetEnvironment(EnvironmentKeys.Entry.Keyboard, keyboard, false);
+			return view;
+		}
+
+		public static T ReturnType<T>(this T view, ReturnType returnType) where T : View
+		{
+			view.SetEnvironment(EnvironmentKeys.Entry.ReturnType, returnType, false);
+			return view;
+		}
+
+		public static T IsPassword<T>(this T view, bool isPassword = true) where T : View
+		{
+			view.SetEnvironment(EnvironmentKeys.Entry.IsPassword, isPassword, false);
+			return view;
+		}
+
 		// Slider extensions
 		public static Slider MinimumTrackColor(this Slider view, Color color)
 		{

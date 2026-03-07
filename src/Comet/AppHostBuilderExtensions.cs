@@ -41,6 +41,36 @@ namespace Comet
 			ViewHandler.ViewCommandMapper.AppendToMapping(Gesture.AddGestureProperty, CometViewHandler.AddGesture);
 			ViewHandler.ViewCommandMapper.AppendToMapping(Gesture.RemoveGestureProperty, CometViewHandler.RemoveGesture);
 
+			// Apply shadow to any view that has it set via environment
+			ViewHandler.ViewMapper.AppendToMapping("CometShadow", (handler, view) =>
+			{
+				if (view is not View cometView)
+					return;
+				var shadow = cometView.GetEnvironment<Comet.Graphics.Shadow>(EnvironmentKeys.View.Shadow);
+				if (shadow == null)
+					return;
+#if __IOS__ || MACCATALYST
+				var platformView = handler.PlatformView as UIKit.UIView;
+				if (platformView == null)
+					return;
+				var layer = platformView.Layer;
+				layer.ShadowOpacity = shadow.Opacity;
+				layer.ShadowRadius = shadow.Radius;
+				layer.ShadowOffset = new CoreGraphics.CGSize(shadow.Offset.X, shadow.Offset.Y);
+				if (shadow.Paint is SolidPaint sp && sp.Color != null)
+					layer.ShadowColor = sp.Color.ToPlatform().CGColor;
+				else
+					layer.ShadowColor = UIKit.UIColor.Black.CGColor;
+				layer.MasksToBounds = false;
+#elif ANDROID
+				var platformView = handler.PlatformView as global::Android.Views.View;
+				if (platformView == null)
+					return;
+				var density = platformView.Context?.Resources?.DisplayMetrics?.Density ?? 1;
+				platformView.Elevation = shadow.Radius * density;
+#endif
+			});
+
 			// Apply border visual styling to Border's platform view via handler mapper
 			LayoutHandler.Mapper.AppendToMapping("CometBorderStyling", (handler, view) =>
 			{
@@ -106,6 +136,50 @@ namespace Comet
 				entry.SetHintTextColor(new global::Android.Content.Res.ColorStateList(
 					new[] { Array.Empty<int>() },
 					new[] { (int)color.ToPlatform() }));
+#endif
+			});
+
+			// Apply Keyboard type to TextField via handler mapper
+			EntryHandler.Mapper.AppendToMapping("CometKeyboard", (handler, view) =>
+			{
+				if (view is not View cometView)
+					return;
+				var keyboard = cometView.GetEnvironment<Microsoft.Maui.Keyboard>(EnvironmentKeys.Entry.Keyboard);
+				if (keyboard == null)
+					return;
+				var entry = handler.PlatformView;
+				if (entry == null)
+					return;
+#if __IOS__ || MACCATALYST
+				entry.ApplyKeyboard(keyboard);
+#elif ANDROID
+				// Android keyboard handled via MAUI's IEntry.Keyboard interface
+				if (view is IEntry entryView)
+					EntryHandler.MapKeyboard(handler, entryView);
+#endif
+			});
+
+			// Apply ReturnType to TextField via handler mapper
+			EntryHandler.Mapper.AppendToMapping("CometReturnType", (handler, view) =>
+			{
+				if (view is not View cometView)
+					return;
+				var returnType = cometView.GetEnvironment<ReturnType?>(EnvironmentKeys.Entry.ReturnType);
+				if (returnType == null)
+					return;
+				var entry = handler.PlatformView;
+				if (entry == null)
+					return;
+#if __IOS__ || MACCATALYST
+				entry.ReturnKeyType = returnType.Value switch
+				{
+					ReturnType.Go => UIKit.UIReturnKeyType.Go,
+					ReturnType.Next => UIKit.UIReturnKeyType.Next,
+					ReturnType.Search => UIKit.UIReturnKeyType.Search,
+					ReturnType.Send => UIKit.UIReturnKeyType.Send,
+					ReturnType.Done => UIKit.UIReturnKeyType.Done,
+					_ => UIKit.UIReturnKeyType.Default,
+				};
 #endif
 			});
 
