@@ -6,6 +6,9 @@ using Button = Comet.Button;
 using Picker = Comet.Picker;
 using ActivityIndicator = Comet.ActivityIndicator;
 using ScrollView = Comet.ScrollView;
+using Toggle = Comet.Toggle;
+using Slider = Comet.Slider;
+using Image = Comet.Image;
 
 namespace CometBaristaNotes.Pages;
 
@@ -17,6 +20,7 @@ public class ControlValidationPage : Comet.View
 {
 	readonly State<int> _pickerIndex = 0;
 	readonly State<bool> _isLoading = false;
+	readonly State<double> _sliderValue = 50.0;
 
 	[Body]
 	Comet.View body() =>
@@ -127,6 +131,41 @@ public class ControlValidationPage : Comet.View
 				.StrokeThickness(1)
 				.Background(Theme.Surface)
 				.Padding(new Thickness(16)),
+
+				// ---- Round 2: TextField PlaceholderColor ----
+				new Text("Round 2: Styling")
+					.FontSize(22)
+					.FontWeight(FontWeight.Bold)
+					.Color(Theme.TextPrimary),
+
+				new TextField("", "Placeholder with custom color...")
+					.PlaceholderColor(Theme.Primary)
+					.FontSize(16),
+
+				// Round 2: Toggle with OnColor/ThumbColor
+				new Text("Toggle (OnColor/ThumbColor)")
+					.Color(Theme.TextPrimary),
+
+				new Toggle(_isLoading)
+					.OnColor(Theme.Primary)
+					.ThumbColor(Colors.White),
+
+				// Round 2: Slider with track/thumb colors
+				new Text(() => $"Slider: {_sliderValue.Value:F1}")
+					.Color(Theme.TextPrimary),
+
+				new Slider(_sliderValue, 0, 100)
+					.MinimumTrackColor(Theme.Primary)
+					.MaximumTrackColor(Theme.Outline)
+					.ThumbColor(Theme.Primary),
+
+				// Round 2: Image with Aspect
+				new Text("Image (AspectFit)")
+					.Color(Theme.TextPrimary),
+
+				new Image("dotnet_bot.png")
+					.Aspect(Microsoft.Maui.Aspect.AspectFit)
+					.Frame(height: 100),
 			}
 			.Padding(new Thickness(16))
 		};

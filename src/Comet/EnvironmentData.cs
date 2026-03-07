@@ -110,6 +110,20 @@ namespace Comet
 			public const string TrackColor = "ProgressBarTrackColor";
 			public const string ProgressColor = "ProgressBarProgressColor";
 		}
+		public static class Entry
+		{
+			public const string PlaceholderColor = "EntryPlaceholderColor";
+			public const string CursorColor = "EntryCursorColor";
+		}
+		public static class Switch
+		{
+			public const string OnColor = "SwitchOnColor";
+			public const string ThumbColor = "SwitchThumbColor";
+		}
+		public static class Image
+		{
+			public const string Aspect = "ImageAspect";
+		}
 	}
 
 	[AttributeUsage(AttributeTargets.Field)]

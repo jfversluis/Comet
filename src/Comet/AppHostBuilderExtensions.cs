@@ -86,6 +86,118 @@ namespace Comet
 				}
 #endif
 			});
+
+			// Apply PlaceholderColor to TextField/SecureField via handler mapper
+			EntryHandler.Mapper.AppendToMapping("CometPlaceholderColor", (handler, view) =>
+			{
+				if (view is not View cometView)
+					return;
+				var color = cometView.GetEnvironment<Color>(EnvironmentKeys.Entry.PlaceholderColor);
+				if (color == null)
+					return;
+				var entry = handler.PlatformView;
+				if (entry == null)
+					return;
+#if __IOS__ || MACCATALYST
+				entry.AttributedPlaceholder = new Foundation.NSAttributedString(
+					entry.Placeholder ?? "",
+					new UIKit.UIStringAttributes { ForegroundColor = color.ToPlatform() });
+#elif ANDROID
+				entry.SetHintTextColor(new global::Android.Content.Res.ColorStateList(
+					new[] { Array.Empty<int>() },
+					new[] { (int)color.ToPlatform() }));
+#endif
+			});
+
+			// Apply OnColor/ThumbColor to Toggle/Switch via handler mapper
+			SwitchHandler.Mapper.AppendToMapping("CometSwitchColors", (handler, view) =>
+			{
+				if (view is not View cometView)
+					return;
+				var platformView = handler.PlatformView;
+				if (platformView == null)
+					return;
+#if __IOS__ || MACCATALYST
+				var onColor = cometView.GetEnvironment<Color>(EnvironmentKeys.Switch.OnColor);
+				if (onColor != null)
+					platformView.OnTintColor = onColor.ToPlatform();
+				var thumbColor = cometView.GetEnvironment<Color>(EnvironmentKeys.Switch.ThumbColor);
+				if (thumbColor != null)
+					platformView.ThumbTintColor = thumbColor.ToPlatform();
+#elif ANDROID
+				var onColor = cometView.GetEnvironment<Color>(EnvironmentKeys.Switch.OnColor);
+				if (onColor != null)
+					platformView.TrackTintList = new global::Android.Content.Res.ColorStateList(
+						new[] { new[] { global::Android.Resource.Attribute.StateChecked } },
+						new[] { (int)onColor.ToPlatform() });
+				var thumbColor = cometView.GetEnvironment<Color>(EnvironmentKeys.Switch.ThumbColor);
+				if (thumbColor != null)
+					platformView.ThumbTintList = new global::Android.Content.Res.ColorStateList(
+						new[] { Array.Empty<int>() },
+						new[] { (int)thumbColor.ToPlatform() });
+#endif
+			});
+
+			// Apply Slider track/thumb colors via handler mapper
+			SliderHandler.Mapper.AppendToMapping("CometSliderColors", (handler, view) =>
+			{
+				if (view is not View cometView)
+					return;
+				var platformView = handler.PlatformView;
+				if (platformView == null)
+					return;
+#if __IOS__ || MACCATALYST
+				var minTrackColor = cometView.GetEnvironment<Color>(EnvironmentKeys.Slider.ProgressColor);
+				if (minTrackColor != null)
+					platformView.MinimumTrackTintColor = minTrackColor.ToPlatform();
+				var maxTrackColor = cometView.GetEnvironment<Color>(EnvironmentKeys.Slider.TrackColor);
+				if (maxTrackColor != null)
+					platformView.MaximumTrackTintColor = maxTrackColor.ToPlatform();
+				var thumbColor = cometView.GetEnvironment<Color>(EnvironmentKeys.Slider.ThumbColor);
+				if (thumbColor != null)
+					platformView.ThumbTintColor = thumbColor.ToPlatform();
+#elif ANDROID
+				var minTrackColor = cometView.GetEnvironment<Color>(EnvironmentKeys.Slider.ProgressColor);
+				if (minTrackColor != null && platformView.ProgressTintList != null)
+					platformView.ProgressTintList = global::Android.Content.Res.ColorStateList.ValueOf(
+						new global::Android.Graphics.Color((int)minTrackColor.ToPlatform()));
+				var thumbColor = cometView.GetEnvironment<Color>(EnvironmentKeys.Slider.ThumbColor);
+				if (thumbColor != null)
+					platformView.ThumbTintList = global::Android.Content.Res.ColorStateList.ValueOf(
+						new global::Android.Graphics.Color((int)thumbColor.ToPlatform()));
+#endif
+			});
+
+			// Apply Aspect to Image via handler mapper
+			ImageHandler.Mapper.AppendToMapping("CometImageAspect", (handler, view) =>
+			{
+				if (view is not View cometView)
+					return;
+				var aspect = cometView.GetEnvironment<Microsoft.Maui.Aspect?>(EnvironmentKeys.Image.Aspect);
+				if (aspect == null)
+					return;
+				var platformView = handler.PlatformView;
+				if (platformView == null)
+					return;
+#if __IOS__ || MACCATALYST
+				platformView.ContentMode = aspect.Value switch
+				{
+					Microsoft.Maui.Aspect.AspectFit => UIKit.UIViewContentMode.ScaleAspectFit,
+					Microsoft.Maui.Aspect.AspectFill => UIKit.UIViewContentMode.ScaleAspectFill,
+					Microsoft.Maui.Aspect.Fill => UIKit.UIViewContentMode.ScaleToFill,
+					_ => UIKit.UIViewContentMode.ScaleAspectFit
+				};
+#elif ANDROID
+				platformView.SetScaleType(aspect.Value switch
+				{
+					Microsoft.Maui.Aspect.AspectFit => global::Android.Widget.ImageView.ScaleType.FitCenter,
+					Microsoft.Maui.Aspect.AspectFill => global::Android.Widget.ImageView.ScaleType.CenterCrop,
+					Microsoft.Maui.Aspect.Fill => global::Android.Widget.ImageView.ScaleType.FitXy,
+					_ => global::Android.Widget.ImageView.ScaleType.FitCenter
+				});
+#endif
+			});
+
 			Lerp.Lerps[typeof(FrameConstraints)] = new Lerp
 			{
 				Calculate = (s, e, progress) => {
