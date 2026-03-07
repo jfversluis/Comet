@@ -71,6 +71,32 @@ namespace Comet
 			return view;
 		}
 
+		// ProgressBar extensions
+		public static ProgressBar ProgressColor(this ProgressBar view, Color color)
+		{
+			view.SetEnvironment(EnvironmentKeys.ProgressBar.ProgressColor, color, false);
+			return view;
+		}
+
+		public static ProgressBar TrackColor(this ProgressBar view, Color color)
+		{
+			view.SetEnvironment(EnvironmentKeys.ProgressBar.TrackColor, color, false);
+			return view;
+		}
+
+		// DatePicker extensions
+		public static DatePicker Format(this DatePicker view, string format)
+		{
+			view.SetEnvironment(EnvironmentKeys.DatePicker.Format, (object)format, false);
+			return view;
+		}
+
+		public static DatePicker TextColor(this DatePicker view, Color color)
+		{
+			view.SetEnvironment(EnvironmentKeys.DatePicker.TextColor, color, false);
+			return view;
+		}
+
 		// CollectionView fluent extensions
 		public static CollectionView<T> Header<T>(this CollectionView<T> view, View header)
 		{

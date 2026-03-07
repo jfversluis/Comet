@@ -127,6 +127,16 @@ namespace Comet
 		{
 			public const string Aspect = "ImageAspect";
 		}
+		public static class DatePicker
+		{
+			public const string Format = "DatePickerFormat";
+			public const string TextColor = "DatePickerTextColor";
+		}
+		public static class Editor
+		{
+			public const string PlaceholderColor = "EditorPlaceholderColor";
+			public const string Placeholder = "EditorPlaceholder";
+		}
 	}
 
 	[AttributeUsage(AttributeTargets.Field)]

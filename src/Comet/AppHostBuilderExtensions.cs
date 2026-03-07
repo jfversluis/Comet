@@ -100,6 +100,11 @@ namespace Comet
 				{
 					layer.BorderWidth = 0;
 				}
+				var bg = border.GetBackground();
+				if (bg is SolidPaint bgPaint && bgPaint.Color != null)
+				{
+					layer.BackgroundColor = bgPaint.Color.ToPlatform().CGColor;
+				}
 #elif ANDROID
 				var context = platformView.Context;
 				if (context != null)
@@ -269,6 +274,106 @@ namespace Comet
 					Microsoft.Maui.Aspect.Fill => global::Android.Widget.ImageView.ScaleType.FitXy,
 					_ => global::Android.Widget.ImageView.ScaleType.FitCenter
 				});
+#endif
+			});
+
+			// Apply PlaceholderColor and Keyboard to TextEditor (Editor) via handler mapper
+			EditorHandler.Mapper.AppendToMapping("CometEditorPlaceholderColor", (handler, view) =>
+			{
+				if (view is not View cometView)
+					return;
+				var color = cometView.GetEnvironment<Color>(EnvironmentKeys.Entry.PlaceholderColor);
+				if (color == null)
+					return;
+				var editor = handler.PlatformView;
+				if (editor == null)
+					return;
+#if __IOS__ || MACCATALYST
+				// iOS UITextView doesn't have a built-in placeholder; MAUI handles it
+				// through the EditorHandler. We can set the placeholder color via attributed string.
+#elif ANDROID
+				editor.SetHintTextColor(new global::Android.Content.Res.ColorStateList(
+					new[] { Array.Empty<int>() },
+					new[] { (int)color.ToPlatform() }));
+#endif
+			});
+
+			EditorHandler.Mapper.AppendToMapping("CometEditorKeyboard", (handler, view) =>
+			{
+				if (view is not View cometView)
+					return;
+				var keyboard = cometView.GetEnvironment<Microsoft.Maui.Keyboard>(EnvironmentKeys.Entry.Keyboard);
+				if (keyboard == null)
+					return;
+				var editor = handler.PlatformView;
+				if (editor == null)
+					return;
+#if __IOS__ || MACCATALYST
+				editor.ApplyKeyboard(keyboard);
+#elif ANDROID
+				if (view is IEditor editorView)
+					EditorHandler.MapKeyboard(handler, editorView);
+#endif
+			});
+
+			// Apply ProgressBar track/progress colors via handler mapper
+			ProgressBarHandler.Mapper.AppendToMapping("CometProgressBarColors", (handler, view) =>
+			{
+				if (view is not View cometView)
+					return;
+				var platformView = handler.PlatformView;
+				if (platformView == null)
+					return;
+#if __IOS__ || MACCATALYST
+				var progressColor = cometView.GetEnvironment<Color>(EnvironmentKeys.ProgressBar.ProgressColor);
+				if (progressColor != null)
+					platformView.ProgressTintColor = progressColor.ToPlatform();
+				var trackColor = cometView.GetEnvironment<Color>(EnvironmentKeys.ProgressBar.TrackColor);
+				if (trackColor != null)
+					platformView.TrackTintColor = trackColor.ToPlatform();
+#elif ANDROID
+				var progressColor = cometView.GetEnvironment<Color>(EnvironmentKeys.ProgressBar.ProgressColor);
+				if (progressColor != null)
+					platformView.ProgressTintList = global::Android.Content.Res.ColorStateList.ValueOf(
+						new global::Android.Graphics.Color((int)progressColor.ToPlatform()));
+				var trackColor = cometView.GetEnvironment<Color>(EnvironmentKeys.ProgressBar.TrackColor);
+				if (trackColor != null)
+					platformView.ProgressBackgroundTintList = global::Android.Content.Res.ColorStateList.ValueOf(
+						new global::Android.Graphics.Color((int)trackColor.ToPlatform()));
+#endif
+			});
+
+			// Apply DatePicker format via handler mapper
+			DatePickerHandler.Mapper.AppendToMapping("CometDatePickerFormat", (handler, view) =>
+			{
+				if (view is not View cometView)
+					return;
+				var format = cometView.GetEnvironment<string>(EnvironmentKeys.DatePicker.Format);
+				if (string.IsNullOrEmpty(format))
+					return;
+				if (view is IDatePicker datePicker)
+				{
+					// Format is handled by MAUI's IDatePicker.Format property
+					// The environment value is read by the generated DatePicker class
+				}
+			});
+
+			// Apply DatePicker text color via handler mapper
+			DatePickerHandler.Mapper.AppendToMapping("CometDatePickerTextColor", (handler, view) =>
+			{
+				if (view is not View cometView)
+					return;
+				var color = cometView.GetEnvironment<Color>(EnvironmentKeys.DatePicker.TextColor);
+				if (color == null)
+					return;
+				var platformView = handler.PlatformView;
+				if (platformView == null)
+					return;
+#if __IOS__ || MACCATALYST
+				// UIDatePicker uses tintColor for text color on iOS 15+
+				platformView.TintColor = color.ToPlatform();
+#elif ANDROID
+				platformView.SetTextColor(color.ToPlatform());
 #endif
 			});
 
