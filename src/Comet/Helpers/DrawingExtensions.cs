@@ -166,5 +166,23 @@ namespace Comet
 				view.Background(color);
 			return view;
 		}
+
+		public static Border CornerRadius(this Border view, float radius)
+		{
+			view.SetEnvironment(EnvironmentKeys.View.ClipShape, (IShape)new RoundedRectangle(radius), false);
+			return view;
+		}
+
+		public static Border StrokeColor(this Border view, Color color)
+		{
+			view.SetEnvironment(EnvironmentKeys.Shape.StrokeColor, (Paint)new SolidPaint(color), false);
+			return view;
+		}
+
+		public static Border StrokeThickness(this Border view, double thickness)
+		{
+			view.SetEnvironment(EnvironmentKeys.Shape.LineWidth, thickness, false);
+			return view;
+		}
 	}
 }

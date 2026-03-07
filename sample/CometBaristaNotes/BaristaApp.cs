@@ -11,6 +11,7 @@ public class BaristaApp : CometApp
 	Comet.View body() =>
 		new TabView
 		{
+			MakeTab(new ControlValidationPage(), "Validate", "checkmark.circle.fill"),
 			MakeTab(new ShotLoggingPage(), "New Shot", "cup.and.saucer.fill"),
 			MakeTab(new ActivityFeedPage(), "Activity", "chart.line.uptrend.xyaxis"),
 			MakeTab(new SettingsPage(), "Settings", "gearshape.fill"),

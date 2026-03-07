@@ -7,8 +7,10 @@ using Microsoft.Maui;
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
 
 #if WINDOWS
 using Microsoft.Maui.Graphics.Win2D;
@@ -38,6 +40,52 @@ namespace Comet
 			ViewHandler.ViewMapper.AppendToMapping(nameof(IGestureView.Gestures), CometViewHandler.AddGestures);
 			ViewHandler.ViewCommandMapper.AppendToMapping(Gesture.AddGestureProperty, CometViewHandler.AddGesture);
 			ViewHandler.ViewCommandMapper.AppendToMapping(Gesture.RemoveGestureProperty, CometViewHandler.RemoveGesture);
+
+			// Apply border visual styling to Border's platform view via handler mapper
+			LayoutHandler.Mapper.AppendToMapping("CometBorderStyling", (handler, view) =>
+			{
+				if (view is not Border border)
+					return;
+				var borderStroke = (IBorderStroke)border;
+				var platformView = handler.PlatformView;
+				if (platformView == null)
+					return;
+#if __IOS__ || MACCATALYST
+				var layer = platformView.Layer;
+				if (borderStroke.Shape is RoundedRectangle rr)
+				{
+					layer.CornerRadius = rr.CornerRadius;
+				}
+				else if (borderStroke.Shape != null)
+				{
+					layer.CornerRadius = 0;
+				}
+				layer.MasksToBounds = true;
+				if (borderStroke.Stroke is SolidPaint sp && sp.Color != null)
+				{
+					layer.BorderColor = sp.Color.ToPlatform().CGColor;
+					layer.BorderWidth = (float)borderStroke.StrokeThickness;
+				}
+				else
+				{
+					layer.BorderWidth = 0;
+				}
+#elif ANDROID
+				var context = platformView.Context;
+				if (context != null)
+				{
+					var drawable = new global::Android.Graphics.Drawables.GradientDrawable();
+					if (borderStroke.Shape is RoundedRectangle rr)
+						drawable.SetCornerRadius((float)(rr.CornerRadius * context.Resources.DisplayMetrics.Density));
+					if (borderStroke.Stroke is SolidPaint sp && sp.Color != null)
+						drawable.SetStroke((int)(borderStroke.StrokeThickness * context.Resources.DisplayMetrics.Density), sp.Color.ToPlatform());
+					var bg = border.GetBackground();
+					if (bg is SolidPaint bgPaint && bgPaint.Color != null)
+						drawable.SetColor(bgPaint.Color.ToPlatform());
+					platformView.Background = drawable;
+				}
+#endif
+			});
 			Lerp.Lerps[typeof(FrameConstraints)] = new Lerp
 			{
 				Calculate = (s, e, progress) => {
@@ -52,7 +100,7 @@ namespace Comet
 				{ typeof(AbsoluteLayout), typeof(LayoutHandler) },
 				{ typeof(FlexLayout), typeof(LayoutHandler) },
 				{ typeof(ActivityIndicator), typeof(ActivityIndicatorHandler) },
-				{ typeof(Border), typeof(ContentViewHandler) },
+				{ typeof(Border), typeof(LayoutHandler) },
 			{ typeof(MauiViewHost), typeof(Handlers.MauiViewHostHandler) },
 				{ typeof(Button), typeof(ButtonHandler) },
 				{ typeof(CheckBox), typeof(CheckBoxHandler) },

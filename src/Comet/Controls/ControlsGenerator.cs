@@ -13,7 +13,7 @@ using Comet;
 [assembly: CometGenerate(typeof(ILabel), $"{nameof(ILabel.Text)}:Value", Namespace = "Comet", ClassName = "Text", DefaultValues = new[] { "MaxLines = 1" }, Skip = new[] { $"{nameof(ILabel.TextColor)}:{EnvironmentKeys.Colors.Color}", $"{nameof(ITextAlignment.HorizontalTextAlignment)}", $"{nameof(ITextAlignment.VerticalTextAlignment)}=TextAlignment.Center" })]
 
 [assembly: CometGenerate(typeof(IEntry), nameof(IEntry.Text), nameof(IEntry.Placeholder), nameof(IEntry.Completed), ClassName = "SecureField", Skip = new[] { $"{nameof(ITextStyle.TextColor)}:{EnvironmentKeys.Colors.Color}", $"{nameof(IEntry.IsPassword)}= true", $"{nameof(ITextAlignment.HorizontalTextAlignment)}", $"{nameof(ITextAlignment.VerticalTextAlignment)}=TextAlignment.Center" }, DefaultValues = new[] { $"{nameof(ITextInput.MaxLength)}=-1" }, Namespace = "Comet")]
-[assembly: CometGenerate(typeof(IActivityIndicator), Namespace = "Comet", Skip = new[] { $"{nameof(IActivityIndicator.IsRunning)}=true" })]
+[assembly: CometGenerate(typeof(IActivityIndicator), nameof(IActivityIndicator.IsRunning), Namespace = "Comet", DefaultValues = new[] { $"{nameof(IActivityIndicator.IsRunning)}=true" })]
 [assembly: CometGenerate(typeof(ICheckBox), nameof(ICheckBox.IsChecked), Namespace = "Comet")]
 [assembly: CometGenerate(typeof(IDatePicker), nameof(IDatePicker.Date), nameof(IDatePicker.MinimumDate), nameof(IDatePicker.MaximumDate), Namespace = "Comet")]
 [assembly: CometGenerate(typeof(IProgress), $"{nameof(IProgress.Progress)}:Value", ClassName = "ProgressBar", Namespace = "Comet")]
