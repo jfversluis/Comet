@@ -47,8 +47,7 @@ public class ActivityFeedPage : Comet.View
 	{
 		if (entityType == "Shot")
 		{
-			Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() =>
-			{
+			Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() => {
 				LoadNextPage(reset: true);
 				_filterVersion.Value++;
 			});
@@ -99,8 +98,7 @@ public class ActivityFeedPage : Comet.View
 		// Shot cards
 		foreach (var shot in _displayedShots)
 		{
-			wrapper.Add(ShotRecordCardFactory.Create(shot, () =>
-			{
+			wrapper.Add(ShotRecordCardFactory.Create(shot, () => {
 				Navigation?.Navigate(new ShotLoggingPage(shot.Id));
 			}));
 		}
@@ -142,16 +140,14 @@ public class ActivityFeedPage : Comet.View
 			_filters,
 			beanOptions,
 			peopleOptions,
-			onApply: applied =>
-			{
+			onApply: applied => {
 				_filters.BeanIds = applied.BeanIds;
 				_filters.MadeForIds = applied.MadeForIds;
 				_filters.Ratings = applied.Ratings;
 				LoadNextPage(reset: true);
 				_filterVersion.Value++;
 			},
-			onClear: () =>
-			{
+			onClear: () => {
 				_filters.Clear();
 				LoadNextPage(reset: true);
 				_filterVersion.Value++;
@@ -205,8 +201,7 @@ public class ActivityFeedPage : Comet.View
 
 		var store = InMemoryDataStore.Instance;
 
-		return shots.Where(s =>
-		{
+		return shots.Where(s => {
 			// Bean filter: match by looking up the bag's bean ID
 			if (_filters.BeanIds.Count > 0)
 			{

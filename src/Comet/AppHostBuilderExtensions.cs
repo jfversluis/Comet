@@ -247,6 +247,72 @@ namespace Comet
 #endif
 			});
 
+			// Apply OnValueChanged callback to Slider via handler mapper
+			SliderHandler.Mapper.AppendToMapping("CometSliderValueChanged", (handler, view) =>
+			{
+				if (view is not View cometView)
+					return;
+				var callback = cometView.GetEnvironment<Action<double>>(EnvironmentKeys.Slider.ValueChanged);
+				if (callback == null)
+					return;
+				var slider = handler.PlatformView;
+				if (slider == null)
+					return;
+#if __IOS__ || MACCATALYST
+				slider.ValueChanged += (s, e) => callback(slider.Value);
+#elif ANDROID
+				slider.ProgressChanged += (s, e) =>
+				{
+					if (e.FromUser && view is ISlider iSlider)
+						callback(iSlider.Value);
+				};
+#endif
+			});
+
+			// Apply OnToggled callback to Switch via handler mapper
+			SwitchHandler.Mapper.AppendToMapping("CometSwitchToggled", (handler, view) =>
+			{
+				if (view is not View cometView)
+					return;
+				var callback = cometView.GetEnvironment<Action<bool>>(EnvironmentKeys.Switch.Toggled);
+				if (callback == null)
+					return;
+				var platformView = handler.PlatformView;
+				if (platformView == null)
+					return;
+#if __IOS__ || MACCATALYST
+				platformView.ValueChanged += (s, e) => callback(platformView.On);
+#elif ANDROID
+				platformView.CheckedChange += (s, e) => callback(e.IsChecked);
+#endif
+			});
+
+			// Apply OnSelectedIndexChanged callback to Picker via handler mapper
+			PickerHandler.Mapper.AppendToMapping("CometPickerSelectedIndexChanged", (handler, view) =>
+			{
+				if (view is not View cometView)
+					return;
+				var callback = cometView.GetEnvironment<Action<int>>(EnvironmentKeys.Picker.SelectedIndexChanged);
+				if (callback == null)
+					return;
+				var picker = handler.PlatformView;
+				if (picker == null)
+					return;
+#if __IOS__ || MACCATALYST
+				picker.EditingDidEnd += (s, e) =>
+				{
+					if (view is IPicker iPicker)
+						callback(iPicker.SelectedIndex);
+				};
+#elif ANDROID
+				picker.AfterTextChanged += (s, e) =>
+				{
+					if (view is IPicker iPicker)
+						callback(iPicker.SelectedIndex);
+				};
+#endif
+			});
+
 			// Apply Aspect to Image via handler mapper
 			ImageHandler.Mapper.AppendToMapping("CometImageAspect", (handler, view) =>
 			{

@@ -104,6 +104,7 @@ namespace Comet
 			public const string TrackColor = "SliderTrackColor";
 			public const string ProgressColor = "SliderProgressColor";
 			public const string ThumbColor = "SliderThumbColor";
+			public const string ValueChanged = "SliderValueChanged";
 		}
 		public static class ProgressBar
 		{
@@ -123,6 +124,11 @@ namespace Comet
 		{
 			public const string OnColor = "SwitchOnColor";
 			public const string ThumbColor = "SwitchThumbColor";
+			public const string Toggled = "SwitchToggled";
+		}
+		public static class Picker
+		{
+			public const string SelectedIndexChanged = "PickerSelectedIndexChanged";
 		}
 		public static class Image
 		{

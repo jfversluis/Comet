@@ -125,12 +125,19 @@ public class BagDetailPage : Comet.View
 		stack.Add(FormHelpers.MakeFormEntryWithLimit("Notes", _notes.Value, "Bag notes", 500, v => _notes.Value = v));
 
 		// Shot count card
-		var shotCountStack = new HorizontalStackLayout();
-		var shotInfoStack = new VerticalStackLayout { Spacing = 2 };
-		shotInfoStack.Add(new MauiLabel { Text = "Shots Logged", FontFamily = Theme.FontRegular, FontSize = 14, TextColor = Theme.TextSecondary });
-		shotInfoStack.Add(new MauiLabel { Text = $"{_shotCount.Value}", FontFamily = Theme.FontSemibold, FontSize = 24, FontAttributes = MauiFontAttributes.Bold, TextColor = Theme.TextPrimary });
-		shotCountStack.Add(shotInfoStack);
-		stack.Add(FormHelpers.MakeCard(shotCountStack));
+		var shotCountView = new VStack(spacing: 2)
+		{
+			new Text("Shots Logged")
+				.FontFamily(Theme.FontRegular)
+				.FontSize(14)
+				.Color(Theme.TextSecondary),
+			new Text($"{_shotCount.Value}")
+				.FontFamily(Theme.FontSemibold)
+				.FontSize(24)
+				.FontWeight(FontWeight.Bold)
+				.Color(Theme.TextPrimary),
+		};
+		stack.Add(FormHelpers.MakeCard(shotCountView));
 
 		// Status toggle card
 		stack.Add(FormHelpers.MakeToggleRow(

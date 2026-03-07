@@ -169,5 +169,26 @@ namespace Comet
 			view.SetEnvironment(EnvironmentKeys.Entry.TextChanged, callback, false);
 			return view;
 		}
+
+		// Slider value change callback
+		public static Slider OnValueChanged(this Slider view, Action<double> callback)
+		{
+			view.SetEnvironment(EnvironmentKeys.Slider.ValueChanged, callback, false);
+			return view;
+		}
+
+		// Toggle/Switch toggled callback
+		public static Toggle OnToggled(this Toggle view, Action<bool> callback)
+		{
+			view.SetEnvironment(EnvironmentKeys.Switch.Toggled, callback, false);
+			return view;
+		}
+
+		// Picker selection change callback
+		public static Picker OnSelectedIndexChanged(this Picker view, Action<int> callback)
+		{
+			view.SetEnvironment(EnvironmentKeys.Picker.SelectedIndexChanged, callback, false);
+			return view;
+		}
 	}
 }

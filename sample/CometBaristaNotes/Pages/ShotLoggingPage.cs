@@ -73,7 +73,7 @@ MauiLabel? _timeValueLabel;
 MauiLabel? _machineNameLabel;
 VerticalStackLayout? _additionalStack;
 Microsoft.Maui.Controls.ActivityIndicator? _savingIndicator;
-MauiButton? _saveButton;
+Comet.View? _saveButton;
 
 // Data
 List<Bag> _bags = new();
@@ -115,9 +115,9 @@ contentStack.Add(BuildTimeSlider());
 contentStack.Add(BuildUserSelectionRow());
 contentStack.Add(BuildRating());
 contentStack.Add(BuildTastingNotes());
-var saveBtn = FormHelpers.MakePrimaryButton(IsEditMode ? "Update Shot" : "Add Shot", SaveShot);
-_saveButton = saveBtn as MauiButton;
-saveBtn.Margin = new Thickness(0, Theme.SpacingS, 0, 0);
+var saveBtn = FormHelpers.MakePrimaryButton(IsEditMode ? "Update Shot" : "Add Shot", SaveShot)
+	.Margin(new Thickness(0, Theme.SpacingS, 0, 0));
+_saveButton = saveBtn;
 contentStack.Add(saveBtn);
 
 contentStack.Add(BuildAdditionalDetails());
@@ -142,7 +142,7 @@ if (IsEditMode)
 }
 else
 {
-	saveBtn.Margin = new Thickness(0, Theme.SpacingS, 0, Theme.SpacingXL);
+	saveBtn.Margin(new Thickness(0, Theme.SpacingS, 0, Theme.SpacingXL));
 }
 
 var scrollView = new MauiScrollView { Content = contentStack, BackgroundColor = Theme.Background };
@@ -968,7 +968,7 @@ if (_savingIndicator != null)
 	_savingIndicator.IsVisible = true;
 }
 if (_saveButton != null)
-	_saveButton.IsEnabled = false;
+	_saveButton.IsEnabled(false);
 
 var store = InMemoryDataStore.Instance;
 if (store == null)
@@ -1047,7 +1047,7 @@ void SetSavingState(bool isSaving)
 		_savingIndicator.IsVisible = isSaving;
 	}
 	if (_saveButton != null)
-		_saveButton.IsEnabled = !isSaving;
+		_saveButton.IsEnabled(!isSaving);
 }
 
 async Task DeleteShot()

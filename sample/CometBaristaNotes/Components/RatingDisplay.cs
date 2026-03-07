@@ -1,45 +1,45 @@
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Graphics;
 using CometBaristaNotes.Models;
-
-using MauiLabel = Microsoft.Maui.Controls.Label;
-using MauiBorder = Microsoft.Maui.Controls.Border;
-using SolidColorBrush = Microsoft.Maui.Controls.SolidColorBrush;
-using MauiFontAttributes = Microsoft.Maui.Controls.FontAttributes;
+using Border = Comet.Border;
 
 namespace CometBaristaNotes.Components;
 
 /// <summary>
-/// Factory for creating rating display using native MAUI controls.
+/// Factory for creating rating display using Comet fluent UI.
 /// </summary>
 public static class RatingDisplayFactory
 {
-	public static Microsoft.Maui.Controls.View Create(RatingAggregate rating)
+	public static Comet.View Create(RatingAggregate rating)
 	{
-		var stack = new HorizontalStackLayout { Spacing = 12 };
-
-		stack.Add(MakeStatBlock("Avg", rating.RatedShots > 0 ? $"{rating.AverageRating:F1}" : "—"));
-		stack.Add(MakeStatBlock("Shots", $"{rating.TotalShots}"));
-		stack.Add(MakeStatBlock("Best", rating.BestRating?.ToString() ?? "—"));
-		stack.Add(MakeStatBlock("Worst", rating.WorstRating?.ToString() ?? "—"));
-
-		return new MauiBorder
+		return new Border
 		{
-			Content = stack,
-			BackgroundColor = Theme.CardBackground,
-			Stroke = new SolidColorBrush(Theme.CardStroke),
-			StrokeThickness = 1,
-			StrokeShape = new RoundRectangle { CornerRadius = Theme.RadiusCard },
-			Padding = new Thickness(Theme.SpacingM),
-		};
+			new HStack(spacing: 12)
+			{
+				MakeStatBlock("Avg", rating.RatedShots > 0 ? $"{rating.AverageRating:F1}" : "—"),
+				MakeStatBlock("Shots", $"{rating.TotalShots}"),
+				MakeStatBlock("Best", rating.BestRating?.ToString() ?? "—"),
+				MakeStatBlock("Worst", rating.WorstRating?.ToString() ?? "—"),
+			}
+		}
+		.CornerRadius(Theme.RadiusCard)
+		.Background(Theme.CardBackground)
+		.StrokeColor(Theme.CardStroke)
+		.StrokeThickness(1)
+		.Padding(new Thickness(Theme.SpacingM));
 	}
 
-	static Microsoft.Maui.Controls.View MakeStatBlock(string label, string value)
+	static Comet.View MakeStatBlock(string label, string value)
 	{
-		var stack = new VerticalStackLayout { Spacing = 2 };
-		stack.Add(new MauiLabel { Text = value, FontFamily = Theme.FontSemibold, FontSize = 20, FontAttributes = MauiFontAttributes.Bold, TextColor = Theme.TextPrimary });
-		stack.Add(new MauiLabel { Text = label, FontFamily = Theme.FontRegular, FontSize = 12, TextColor = Theme.TextMuted });
-		return stack;
+		return new VStack(spacing: 2)
+		{
+			new Text(value)
+				.FontFamily(Theme.FontSemibold)
+				.FontWeight(FontWeight.Bold)
+				.FontSize(20)
+				.Color(Theme.TextPrimary),
+			new Text(label)
+				.FontFamily(Theme.FontRegular)
+				.FontSize(12)
+				.Color(Theme.TextMuted),
+		};
 	}
 }
