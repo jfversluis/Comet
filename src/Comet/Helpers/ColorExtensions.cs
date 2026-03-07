@@ -129,6 +129,18 @@ namespace Comet
 			return color ?? defaultColor;
 		}
 
+		public static T NavigationBackgroundColor<T>(this T view, Binding<Color> color) where T : View
+		{
+			view.SetEnvironment(EnvironmentKeys.Navigation.BackgroundColor, color);
+			return view;
+		}
+
+		public static T NavigationTextColor<T>(this T view, Binding<Color> color) where T : View
+		{
+			view.SetEnvironment(EnvironmentKeys.Navigation.TextColor, color);
+			return view;
+		}
+
 
 		public static T Opacity<T>(this T view, Binding<double> opacity, bool cascades = false) where T : View 
 			=> view.SetEnvironment(EnvironmentKeys.View.Opacity, opacity, cascades);

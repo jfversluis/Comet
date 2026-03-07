@@ -26,7 +26,7 @@ public class ActivityFeedPage : Comet.View
 	readonly ObservableCollection<ShotRecord> _displayedShots = new();
 	readonly ShotFilterCriteria _filters = new();
 
-	[State] readonly State<bool> _isLoading = new(true);
+	[State] readonly State<bool> _isLoading = new(false);
 	[State] readonly State<string> _errorMessage = new("");
 	[State] readonly State<int> _filterVersion = new(0);
 
@@ -37,6 +37,10 @@ public class ActivityFeedPage : Comet.View
 		{
 			notifier.DataChanged += OnDataChanged;
 		}
+
+		// Load seed data immediately
+		LoadNextPage(reset: true);
+		Console.WriteLine($"[ActivityFeedPage] Constructor: store={InMemoryDataStore.Instance != null}, shots={_displayedShots.Count}, total={_totalShotCount}");
 	}
 
 	void OnDataChanged(string entityType, int entityId, DataChangeType changeType)
@@ -57,208 +61,49 @@ public class ActivityFeedPage : Comet.View
 		// Touch _filterVersion so body rebuilds when filters change
 		var _ = _filterVersion.Value;
 
-		if (_isLoading.Value)
+		var shotCount = _displayedShots.Count;
+
+		// Simple view that should always render
+		if (shotCount == 0 && !_filters.HasFilters)
 		{
-			LoadNextPage(reset: true);
-			_isLoading.Value = false;
+			return new VStack
+			{
+				new Text("No Shots Yet")
+					.FontSize(20)
+					.Color(Theme.TextPrimary),
+				new Text("Start logging your espresso shots to see them here.")
+					.FontSize(14)
+					.Color(Theme.TextSecondary),
+			}.Background(Theme.Background).FillVertical().FillHorizontal();
 		}
 
-		// Loading state
-		if (_isLoading.Value)
-		{
-			var loadingStack = new VerticalStackLayout
-			{
-				BackgroundColor = Theme.Background,
-				VerticalOptions = LayoutOptions.Fill,
-				HorizontalOptions = LayoutOptions.Fill,
-			};
-			var indicator = new Microsoft.Maui.Controls.ActivityIndicator
-			{
-				IsRunning = true,
-				Color = Theme.Primary,
-				HorizontalOptions = LayoutOptions.Center,
-				VerticalOptions = LayoutOptions.Center,
-			};
-			loadingStack.Add(indicator);
-			return new MauiViewHost(loadingStack);
-		}
-
-		// Error state
-		if (!string.IsNullOrEmpty(_errorMessage.Value))
-		{
-			var errorStack = new VerticalStackLayout
-			{
-				BackgroundColor = Theme.Background,
-				VerticalOptions = LayoutOptions.Fill,
-				HorizontalOptions = LayoutOptions.Fill,
-			};
-			errorStack.Add(FormHelpers.MakeEmptyState(Icons.Error, "Error Loading History", _errorMessage.Value));
-			var retryBtn = new MauiButton
-			{
-				Text = "Retry",
-				FontFamily = Theme.FontSemibold,
-				BackgroundColor = Theme.Primary,
-				TextColor = Colors.White,
-				FontSize = 16,
-				HeightRequest = Theme.ButtonHeight,
-				CornerRadius = (int)Theme.RadiusPill,
-				HorizontalOptions = LayoutOptions.Center,
-				Margin = new Thickness(0, Theme.SpacingM, 0, 0),
-			};
-			retryBtn.Clicked += (s, e) =>
-			{
-				_errorMessage.Value = "";
-				_isLoading.Value = true;
-			};
-			errorStack.Add(retryBtn);
-			return new MauiViewHost(errorStack);
-		}
-
-		// Unfiltered empty state
-		if (_displayedShots.Count == 0 && !_filters.HasFilters)
-		{
-			var emptyStack = new VerticalStackLayout
-			{
-				BackgroundColor = Theme.Background,
-				VerticalOptions = LayoutOptions.Fill,
-				HorizontalOptions = LayoutOptions.Fill,
-			};
-			emptyStack.Add(FormHelpers.MakeEmptyState(Icons.Coffee, "No Shots Yet", "Start logging your espresso shots to see them here."));
-			return new MauiViewHost(emptyStack);
-		}
-
+		// Main content
 		var wrapper = new VerticalStackLayout { Spacing = 0, BackgroundColor = Theme.Background };
 
-		// Spacer
+		// Header row: shot count
 		wrapper.Add(new MauiBoxView { HeightRequest = 20, BackgroundColor = Colors.Transparent });
-
-		// Header row: shot count + filter button
-		var headerRow = new HorizontalStackLayout
-		{
-			Spacing = Theme.SpacingS,
-			Padding = new Thickness(Theme.SpacingM, Theme.SpacingS),
-			VerticalOptions = LayoutOptions.Center,
-		};
 
 		var countText = _filters.HasFilters
 			? $"{_filteredShotCount} of {_totalShotCount} shots"
 			: $"{_totalShotCount} shots logged";
-		headerRow.Add(new MauiLabel
+		wrapper.Add(new MauiLabel
 		{
 			Text = countText,
 			FontFamily = Theme.FontSemibold,
 			FontSize = 14,
 			FontAttributes = MauiFontAttributes.Bold,
 			TextColor = Theme.TextSecondary,
-			VerticalTextAlignment = TextAlignment.Center,
-			HorizontalOptions = LayoutOptions.Fill,
+			Padding = new Thickness(Theme.SpacingM, Theme.SpacingS),
 		});
 
-		// Filter button with badge
-		var filterBtn = new MauiButton
+		// Shot cards
+		foreach (var shot in _displayedShots)
 		{
-			Text = _filters.HasFilters
-				? $"{Icons.FilterList} {_filters.FilterCount}"
-				: Icons.FilterList,
-			FontFamily = _filters.HasFilters ? Theme.FontSemibold : Icons.FontFamily,
-			FontSize = _filters.HasFilters ? 14 : 22,
-			BackgroundColor = _filters.HasFilters ? Theme.Primary : Colors.Transparent,
-			TextColor = _filters.HasFilters ? Colors.White : Theme.TextPrimary,
-			BorderColor = _filters.HasFilters ? Theme.Primary : Theme.Outline,
-			BorderWidth = 1,
-			CornerRadius = (int)Theme.RadiusPill,
-			HeightRequest = 36,
-			MinimumWidthRequest = 36,
-			Padding = _filters.HasFilters ? new Thickness(12, 0) : new Thickness(6, 0),
-		};
-		filterBtn.Clicked += OnFilterTapped;
-		headerRow.Add(filterBtn);
-
-		// Clear button (only when filters active)
-		if (_filters.HasFilters)
-		{
-			var clearBtn = new MauiButton
+			wrapper.Add(ShotRecordCardFactory.Create(shot, () =>
 			{
-				Text = Icons.FilterListOff,
-				FontFamily = Icons.FontFamily,
-				FontSize = 20,
-				BackgroundColor = Colors.Transparent,
-				TextColor = Theme.Error,
-				BorderColor = Theme.Error,
-				BorderWidth = 1,
-				CornerRadius = (int)Theme.RadiusPill,
-				HeightRequest = 36,
-				MinimumWidthRequest = 36,
-				Padding = new Thickness(6, 0),
-			};
-			clearBtn.Clicked += (s, e) =>
-			{
-				_filters.Clear();
-				LoadNextPage(reset: true);
-				_filterVersion.Value++;
-			};
-			headerRow.Add(clearBtn);
+				Navigation?.Navigate(new ShotLoggingPage(shot.Id));
+			}));
 		}
-
-		wrapper.Add(headerRow);
-
-		// Empty state for filtered results
-		if (_displayedShots.Count == 0 && _filters.HasFilters)
-		{
-			wrapper.Add(FormHelpers.MakeEmptyState(Icons.FilterListOff, "No Matching Shots", "Try adjusting or clearing your filters"));
-			var clearFiltersBtn = new MauiButton
-			{
-				Text = "Clear Filters",
-				FontFamily = Theme.FontSemibold,
-				BackgroundColor = Theme.Primary,
-				TextColor = Colors.White,
-				FontSize = 16,
-				HeightRequest = Theme.ButtonHeight,
-				CornerRadius = (int)Theme.RadiusPill,
-				HorizontalOptions = LayoutOptions.Center,
-				Margin = new Thickness(0, Theme.SpacingM, 0, 0),
-			};
-			clearFiltersBtn.Clicked += (s, e) =>
-			{
-				_filters.Clear();
-				LoadNextPage(reset: true);
-				_filterVersion.Value++;
-			};
-			wrapper.Add(clearFiltersBtn);
-			return new MauiViewHost(wrapper);
-		}
-
-		// Paginated CollectionView
-		var collectionView = new MauiCollectionView
-		{
-			ItemsSource = _displayedShots,
-			RemainingItemsThreshold = 5,
-			BackgroundColor = Theme.Background,
-			VerticalOptions = LayoutOptions.Fill,
-			ItemTemplate = new DataTemplate(() =>
-			{
-				var container = new Microsoft.Maui.Controls.ContentView();
-				container.BindingContextChanged += (s, e) =>
-				{
-					if (s is Microsoft.Maui.Controls.ContentView cv && cv.BindingContext is ShotRecord shot)
-					{
-						cv.Content = ShotRecordCardFactory.Create(shot, () =>
-						{
-							Navigation?.Navigate(new ShotLoggingPage(shot.Id));
-						});
-					}
-				};
-				return container;
-			}),
-		};
-
-		collectionView.RemainingItemsThresholdReached += OnThresholdReached;
-
-		wrapper.Add(collectionView);
-
-		// Give the CollectionView room to fill remaining space
-		collectionView.HeightRequest = 600;
-		Microsoft.Maui.Controls.Grid.SetRow(collectionView, 1);
 
 		return new MauiViewHost(wrapper);
 	}
