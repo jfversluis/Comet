@@ -10,16 +10,15 @@ using Syncfusion.Maui.Gauges;
 
 using MauiLabel = Microsoft.Maui.Controls.Label;
 using MauiBorder = Microsoft.Maui.Controls.Border;
-using MauiScrollView = Microsoft.Maui.Controls.ScrollView;
 using MauiSlider = Microsoft.Maui.Controls.Slider;
-using MauiEditor = Microsoft.Maui.Controls.Editor;
 using MauiButton = Microsoft.Maui.Controls.Button;
 using MauiGrid = Microsoft.Maui.Controls.Grid;
 using MauiBoxView = Microsoft.Maui.Controls.BoxView;
-using MauiEllipse = Microsoft.Maui.Controls.Shapes.Ellipse;
 using SolidColorBrush = Microsoft.Maui.Controls.SolidColorBrush;
 using MauiFontAttributes = Microsoft.Maui.Controls.FontAttributes;
 using MauiPicker = Microsoft.Maui.Controls.Picker;
+using ScrollView = Comet.ScrollView;
+using Border = Comet.Border;
 
 namespace CometBaristaNotes.Pages;
 
@@ -98,8 +97,6 @@ _profiles = store?.GetAllProfiles() ?? new();
 if (IsEditMode)
 	LoadExistingShot(store);
 
-var contentStack = new VerticalStackLayout { Spacing = Theme.SpacingM, Padding = new Thickness(Theme.SpacingM) };
-
 _savingIndicator = new Microsoft.Maui.Controls.ActivityIndicator
 {
 	Color = Theme.Primary,
@@ -107,46 +104,51 @@ _savingIndicator = new Microsoft.Maui.Controls.ActivityIndicator
 	IsVisible = false,
 	HeightRequest = 32,
 };
-contentStack.Add(_savingIndicator);
 
-contentStack.Add(BuildDoseGaugesRow());
-contentStack.Add(BuildRatioDisplay());
-contentStack.Add(BuildTimeSlider());
-contentStack.Add(BuildUserSelectionRow());
-contentStack.Add(BuildRating());
-contentStack.Add(BuildTastingNotes());
+var items = new List<Comet.View>();
+
+// Saving indicator — MAUI ActivityIndicator, wrapped
+items.Add(new MauiViewHost(_savingIndicator));
+
+// Syncfusion gauges & imperative MAUI sections — wrapped
+items.Add(new MauiViewHost(BuildDoseGaugesRow()));
+items.Add(new MauiViewHost(BuildRatioDisplay()));
+items.Add(new MauiViewHost(BuildTimeSlider()));
+items.Add(new MauiViewHost(BuildUserSelectionRow()));
+items.Add(new MauiViewHost(BuildRating()));
+
+// Tasting notes — pure Comet
+items.Add(BuildTastingNotes());
+
+// Save button — already Comet
 var saveBtn = FormHelpers.MakePrimaryButton(IsEditMode ? "Update Shot" : "Add Shot", SaveShot)
 	.Margin(new Thickness(0, Theme.SpacingS, 0, 0));
 _saveButton = saveBtn;
-contentStack.Add(saveBtn);
+items.Add(saveBtn);
 
-contentStack.Add(BuildAdditionalDetails());
+// Additional details — MAUI, wrapped
+items.Add(new MauiViewHost(BuildAdditionalDetails()));
 
+// Delete button — pure Comet
 if (IsEditMode)
 {
-	var deleteBtn = new MauiButton
-	{
-		Text = "Delete Shot",
-		FontFamily = Theme.FontSemibold,
-		FontSize = 16,
-		TextColor = Theme.Error,
-		BackgroundColor = Colors.Transparent,
-		BorderWidth = 1,
-		BorderColor = Theme.Error,
-		CornerRadius = (int)Theme.RadiusPill,
-		HeightRequest = Theme.ButtonHeight,
-	};
-	deleteBtn.Clicked += async (s, e) => await DeleteShot();
-	deleteBtn.Margin = new Thickness(0, Theme.SpacingS, 0, Theme.SpacingXL);
-	contentStack.Add(deleteBtn);
+	items.Add(new Comet.Button("Delete Shot", async () => await DeleteShot())
+		.FontFamily(Theme.FontSemibold).FontSize(16)
+		.Color(Theme.Error).Background(Colors.Transparent)
+		.CornerRadius((int)Theme.RadiusPill)
+		.Frame(height: Theme.ButtonHeight)
+		.Margin(new Thickness(0, Theme.SpacingS, 0, Theme.SpacingXL)));
 }
 else
 {
 	saveBtn.Margin(new Thickness(0, Theme.SpacingS, 0, Theme.SpacingXL));
 }
 
-var scrollView = new MauiScrollView { Content = contentStack, BackgroundColor = Theme.Background };
-return new MauiViewHost(scrollView);
+var stack = new VStack(spacing: Theme.SpacingM);
+foreach (var item in items) stack.Add(item);
+stack.Padding(new Thickness(Theme.SpacingM));
+
+return new ScrollView { stack }.Background(Theme.Background);
 }
 
 Microsoft.Maui.Controls.View BuildDoseGaugesRow()
@@ -742,29 +744,24 @@ row.Add(lbl);
 return row;
 }
 
-Microsoft.Maui.Controls.View BuildTastingNotes()
-{
-var stack = new VerticalStackLayout { Spacing = 0 };
-stack.Add(new MauiLabel { Text = "Tasting Notes (optional)", FontFamily = Theme.FontRegular, FontSize = 12, TextColor = Theme.TextSecondary, Margin = new Thickness(16, 0, 0, 4) });
-
-var editor = new MauiEditor
-{
-Text = _tastingNotes, FontSize = 16, FontFamily = Theme.FontRegular,
-TextColor = Theme.TextPrimary, BackgroundColor = Colors.Transparent, HeightRequest = 80,
-Placeholder = "E.g., bright, fruity, slightly sour...",
-Margin = new Thickness(16, 8),
-};
-editor.TextChanged += (s, e) => _tastingNotes = e.NewTextValue ?? "";
-
-var border = new MauiBorder
-{
-Content = editor, StrokeThickness = 0,
-StrokeShape = new RoundRectangle { CornerRadius = Theme.RadiusEditor },
-BackgroundColor = Theme.SurfaceVariant,
-};
-stack.Add(border);
-return stack;
-}
+Comet.View BuildTastingNotes() =>
+	new VStack(spacing: 0) {
+		new Text("Tasting Notes (optional)")
+			.FontFamily(Theme.FontRegular).FontSize(12).Color(Theme.TextSecondary)
+			.Margin(new Thickness(16, 0, 0, 4)),
+		new Border {
+			new TextEditor(_tastingNotes)
+				.FontSize(16).FontFamily(Theme.FontRegular)
+				.Color(Theme.TextPrimary).Background(Colors.Transparent)
+				.Frame(height: 80)
+				.Margin(new Thickness(16, 8))
+				.Placeholder("E.g., bright, fruity, slightly sour...")
+				.OnTextChanged(v => _tastingNotes = v)
+		}
+		.CornerRadius(Theme.RadiusEditor)
+		.Background(Theme.SurfaceVariant)
+		.StrokeThickness(0),
+	};
 
 // Bag picker reference for refreshing after inline creation
 MauiPicker? _bagPicker;

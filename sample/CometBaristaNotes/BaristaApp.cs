@@ -11,7 +11,6 @@ public class BaristaApp : CometApp
 	Comet.View body() =>
 		new TabView
 		{
-			MakeTab(new ControlValidationPage(), "Validate", "checkmark.circle.fill"),
 			MakeTab(new ShotLoggingPage(), "New Shot", "cup.and.saucer.fill"),
 			MakeTab(new ActivityFeedPage(), "Activity", "chart.line.uptrend.xyaxis"),
 			MakeTab(new SettingsPage(), "Settings", "gearshape.fill"),
@@ -24,17 +23,6 @@ public class BaristaApp : CometApp
 		nav.SetEnvironment("NavigationTextColor", (Binding<Color>)Theme.Surface);
 		nav.TabText(title);
 		nav.TabIcon(sfSymbol);
-
-		// Add toolbar item with SF Symbol icon on Validate tab
-		if (title == "Validate")
-		{
-			nav.ToolbarItems.Add(new Comet.ToolbarItem
-			{
-				IconGlyph = "line.3.horizontal.decrease.circle",
-				OnClicked = () => System.Diagnostics.Debug.WriteLine("Filter tapped!")
-			});
-		}
-
 		return nav;
 	}
 }
