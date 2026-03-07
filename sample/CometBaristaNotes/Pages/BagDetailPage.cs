@@ -69,12 +69,12 @@ public class BagDetailPage : Comet.View
 				IsActive = true
 			});
 		}
-		Microsoft.Maui.Controls.Shell.Current.GoToAsync("..");
+		Navigation?.Pop();
 	}
 
 	async void DeleteBag()
 	{
-		var page = Application.Current?.Windows.FirstOrDefault()?.Page;
+		var page = CometBaristaNotes.Services.PageHelper.GetCurrentPage();
 		if (page == null) return;
 
 		var message = _shotCount.Value > 0
@@ -88,7 +88,7 @@ public class BagDetailPage : Comet.View
 		if (store == null) return;
 
 		store.ArchiveBag(_bagId);
-		await Microsoft.Maui.Controls.Shell.Current.GoToAsync("..");
+		Navigation?.Pop();
 	}
 
 	void ReactivateBag()

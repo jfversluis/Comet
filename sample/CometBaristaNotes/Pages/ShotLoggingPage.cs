@@ -331,7 +331,7 @@ try
 var equipment = InMemoryDataStore.Instance?.GetAllEquipment() ?? new List<Models.Equipment>();
 if (equipment.Count == 0)
 {
-	var alertPage = Application.Current?.Windows.FirstOrDefault()?.Page;
+	var alertPage = Services.PageHelper.GetCurrentPage();
 	if (alertPage != null)
 		await alertPage.DisplayAlertAsync("No Equipment", "Add equipment in Settings first.", "OK");
 	return;
@@ -409,7 +409,7 @@ catch (Exception ex)
 {
 	System.Diagnostics.Debug.WriteLine($"[Equipment] ERROR: {ex}");
 	// Fallback to action sheet
-	var page = Application.Current?.Windows.FirstOrDefault()?.Page;
+	var page = Services.PageHelper.GetCurrentPage();
 	if (page != null)
 	{
 		var equipment = InMemoryDataStore.Instance?.GetAllEquipment() ?? new List<Models.Equipment>();
@@ -645,8 +645,10 @@ try
 catch
 {
 	// Fallback to ActionSheet if UXDivers popup fails
-	var result = await Application.Current?.Windows.FirstOrDefault()?.Page?.DisplayActionSheet(
-		title, "Cancel", null, items.ToArray())!;
+	var fallbackPage = Services.PageHelper.GetCurrentPage();
+	var result = fallbackPage != null
+		? await fallbackPage.DisplayActionSheet(title, "Cancel", null, items.ToArray())
+		: null;
 	if (result != null && result != "Cancel")
 	{
 		var idx = items.IndexOf(result);
@@ -822,7 +824,7 @@ return stack;
 
 async Task AddNewBeanInline()
 {
-var page = Microsoft.Maui.Controls.Shell.Current?.CurrentPage;
+var page = Services.PageHelper.GetCurrentPage();
 if (page == null) return;
 
 var beanName = await page.DisplayPromptAsync(
@@ -979,7 +981,7 @@ var bagIdx = _selectedBagIndex;
 if (bagIdx < 0 && _bags.Count > 0) bagIdx = 0;
 if (bagIdx < 0 || bagIdx >= _bags.Count)
 {
-	Microsoft.Maui.Controls.Application.Current?.Dispatcher.Dispatch(async () =>
+	Services.PageHelper.DispatchOnMainThread(async () =>
 	{
 		await _feedbackService.ShowWarning("Please select a coffee bag before saving your shot. Add a bag in Settings if none are available.");
 	});
@@ -1022,12 +1024,12 @@ else
 	store.CreateShot(record);
 }
 
-Microsoft.Maui.Controls.Application.Current?.Dispatcher.Dispatch(async () =>
+Services.PageHelper.DispatchOnMainThread(async () =>
 {
 	if (IsEditMode)
 	{
 		await _feedbackService.ShowSuccess($"Your {drinkType} shot ({_doseIn:F1}g dose) has been updated.");
-		await Microsoft.Maui.Controls.Shell.Current.GoToAsync("..");
+		Navigation?.Pop();
 	}
 	else
 	{
@@ -1050,7 +1052,7 @@ void SetSavingState(bool isSaving)
 
 async Task DeleteShot()
 {
-	var page = Application.Current?.Windows.FirstOrDefault()?.Page;
+	var page = Services.PageHelper.GetCurrentPage();
 	if (page == null) return;
 
 	var confirm = await page.DisplayAlertAsync(
@@ -1061,7 +1063,7 @@ async Task DeleteShot()
 	if (confirm)
 	{
 		InMemoryDataStore.Instance?.DeleteShot(_editingShotId);
-		await Microsoft.Maui.Controls.Shell.Current.GoToAsync("..");
+		Navigation?.Pop();
 	}
 }
 

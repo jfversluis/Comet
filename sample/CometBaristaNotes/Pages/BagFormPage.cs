@@ -59,7 +59,7 @@ public class BagFormPage : Comet.View
 			Notes = string.IsNullOrWhiteSpace(_notes.Value) ? null : _notes.Value,
 		});
 
-		Microsoft.Maui.Controls.Shell.Current.GoToAsync("..");
+		Navigation?.Pop();
 	}
 
 	[Body]

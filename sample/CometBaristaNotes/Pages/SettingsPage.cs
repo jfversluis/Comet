@@ -39,11 +39,11 @@ public class SettingsPage : Comet.View
 		// Manage section
 		stack.Add(FormHelpers.MakeSectionHeader("MANAGE"));
 		stack.Add(BuildManageItem("Equipment", "Manage machines, grinders", () =>
-			Microsoft.Maui.Controls.Shell.Current.GoToAsync("equipment")));
+			Navigation?.Navigate(new EquipmentManagementPage())));
 		stack.Add(BuildManageItem("Beans", "Manage coffee beans", () =>
-			Microsoft.Maui.Controls.Shell.Current.GoToAsync("beans")));
+			Navigation?.Navigate(new BeanManagementPage())));
 		stack.Add(BuildManageItem("User Profiles", "Manage household members", () =>
-			Microsoft.Maui.Controls.Shell.Current.GoToAsync("profiles")));
+			Navigation?.Navigate(new UserProfileManagementPage())));
 
 		// About section
 		stack.Add(FormHelpers.MakeSectionHeader("ABOUT"));

@@ -89,12 +89,12 @@ public class BeanDetailPage : Comet.View
 			});
 		}
 
-		Microsoft.Maui.Controls.Shell.Current.GoToAsync("..");
+		Navigation?.Pop();
 	}
 
 	async void DeleteBean()
 	{
-		var page = Application.Current?.Windows.FirstOrDefault()?.Page;
+		var page = Services.PageHelper.GetCurrentPage();
 		if (page == null) return;
 
 		var confirmed = await page.DisplayAlertAsync(
@@ -108,7 +108,7 @@ public class BeanDetailPage : Comet.View
 		if (store == null) return;
 
 		store.ArchiveBean(_beanId);
-		await Microsoft.Maui.Controls.Shell.Current.GoToAsync("..");
+		Navigation?.Pop();
 	}
 
 	[Body]
@@ -145,7 +145,7 @@ public class BeanDetailPage : Comet.View
 
 			stack.Add(FormHelpers.MakeSecondaryButton("+ Add Bag", () =>
 			{
-				Microsoft.Maui.Controls.Shell.Current.GoToAsync($"bag-detail?id=0&beanId={_beanId}");
+				Navigation?.Navigate(new BagFormPage(_beanId));
 			}));
 
 			foreach (var bag in _bags.Value)
@@ -168,7 +168,7 @@ public class BeanDetailPage : Comet.View
 					var shotId = shot.Id;
 					stack.Add(ShotRecordCardFactory.Create(shot, () =>
 					{
-						Microsoft.Maui.Controls.Shell.Current.GoToAsync($"shot-edit?id={shotId}");
+						Navigation?.Navigate(new ShotLoggingPage(shotId));
 					}));
 				}
 
@@ -321,7 +321,7 @@ public class BeanDetailPage : Comet.View
 		var card = FormHelpers.MakeCard(grid);
 
 		var tap = new TapGestureRecognizer();
-		tap.Tapped += (s, e) => Microsoft.Maui.Controls.Shell.Current.GoToAsync($"bag-detail?id={bag.Id}");
+		tap.Tapped += (s, e) => Navigation?.Navigate(new BagDetailPage(bag.Id));
 		card.GestureRecognizers.Add(tap);
 
 		return card;

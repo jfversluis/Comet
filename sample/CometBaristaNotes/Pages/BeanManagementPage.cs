@@ -43,7 +43,7 @@ public class BeanManagementPage : Comet.View
 			emptyStack.Add(FormHelpers.MakeEmptyState(Icons.Coffee, "No Beans Yet", "Add your favorite coffee beans to track freshness and tasting notes"));
 			emptyStack.Add(FormHelpers.MakePrimaryButton("+ Add Bean", () =>
 			{
-				Microsoft.Maui.Controls.Shell.Current.GoToAsync("bean-detail?id=0");
+				Navigation?.Navigate(new BeanDetailPage(0));
 			}));
 			return new MauiViewHost(emptyStack);
 		}
@@ -52,7 +52,7 @@ public class BeanManagementPage : Comet.View
 
 		stack.Add(FormHelpers.MakePrimaryButton("+ Add Bean", () =>
 		{
-			Microsoft.Maui.Controls.Shell.Current.GoToAsync("bean-detail?id=0");
+			Navigation?.Navigate(new BeanDetailPage(0));
 		}));
 
 		foreach (var bean in beans)
@@ -61,7 +61,7 @@ public class BeanManagementPage : Comet.View
 				bean.Name,
 				bean.Roaster,
 				bean.Origin,
-				() => Microsoft.Maui.Controls.Shell.Current.GoToAsync($"bean-detail?id={bean.Id}")
+				() => Navigation?.Navigate(new BeanDetailPage(bean.Id))
 			));
 		}
 

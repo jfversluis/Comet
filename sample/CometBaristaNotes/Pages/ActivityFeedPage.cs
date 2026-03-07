@@ -43,7 +43,7 @@ public class ActivityFeedPage : Comet.View
 	{
 		if (entityType == "Shot")
 		{
-			Microsoft.Maui.Controls.Application.Current?.Dispatcher.Dispatch(() =>
+			Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() =>
 			{
 				LoadNextPage(reset: true);
 				_filterVersion.Value++;
@@ -244,7 +244,7 @@ public class ActivityFeedPage : Comet.View
 					{
 						cv.Content = ShotRecordCardFactory.Create(shot, () =>
 						{
-							Shell.Current.GoToAsync($"shot-edit?id={shot.Id}");
+							Navigation?.Navigate(new ShotLoggingPage(shot.Id));
 						});
 					}
 				};

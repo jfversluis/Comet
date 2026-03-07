@@ -76,7 +76,7 @@ public class ProfileFormPage : Comet.View
 			});
 		}
 
-		Microsoft.Maui.Controls.Shell.Current.GoToAsync("..");
+		Navigation?.Pop();
 	}
 
 	async void Delete()
@@ -85,7 +85,7 @@ public class ProfileFormPage : Comet.View
 		var store = InMemoryDataStore.Instance;
 		if (store == null) return;
 
-		var page = Microsoft.Maui.Controls.Shell.Current?.CurrentPage;
+		var page = CometBaristaNotes.Services.PageHelper.GetCurrentPage();
 		if (page != null)
 		{
 			var confirmed = await page.DisplayAlertAsync(
@@ -97,7 +97,7 @@ public class ProfileFormPage : Comet.View
 		}
 
 		store.DeleteProfile(_profileId);
-		await Microsoft.Maui.Controls.Shell.Current.GoToAsync("..");
+		Navigation?.Pop();
 	}
 
 	async void PickPhoto()

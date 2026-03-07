@@ -44,7 +44,7 @@ public class EquipmentManagementPage : Comet.View
 			emptyStack.Add(FormHelpers.MakeEmptyState(Icons.Build, "No Equipment Yet", "Add your coffee machines, grinders, and accessories"));
 			emptyStack.Add(FormHelpers.MakePrimaryButton("+ Add Equipment", () =>
 			{
-				Microsoft.Maui.Controls.Shell.Current.GoToAsync("equipment-detail?id=0");
+				Navigation?.Navigate(new EquipmentDetailPage(0));
 			}));
 			return new MauiViewHost(emptyStack);
 		}
@@ -53,7 +53,7 @@ public class EquipmentManagementPage : Comet.View
 
 		stack.Add(FormHelpers.MakePrimaryButton("+ Add Equipment", () =>
 		{
-			Microsoft.Maui.Controls.Shell.Current.GoToAsync("equipment-detail?id=0");
+			Navigation?.Navigate(new EquipmentDetailPage(0));
 		}));
 
 		foreach (var eq in items)
@@ -62,7 +62,7 @@ public class EquipmentManagementPage : Comet.View
 				eq.Name,
 				eq.Type.ToString(),
 				eq.Notes,
-				() => Microsoft.Maui.Controls.Shell.Current.GoToAsync($"equipment-detail?id={eq.Id}")
+				() => Navigation?.Navigate(new EquipmentDetailPage(eq.Id))
 			);
 
 			stack.Add(card);

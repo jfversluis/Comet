@@ -43,7 +43,7 @@ public class UserProfileManagementPage : Comet.View
 			emptyStack.Add(FormHelpers.MakeEmptyState(Icons.Person, "No Profiles Yet", "Create profiles for different users or coffee preferences"));
 			emptyStack.Add(FormHelpers.MakePrimaryButton("+ Add Profile", () =>
 			{
-				Microsoft.Maui.Controls.Shell.Current.GoToAsync("profile-form?id=0");
+				Navigation?.Navigate(new ProfileFormPage(0));
 			}));
 			return new MauiViewHost(emptyStack);
 		}
@@ -52,7 +52,7 @@ public class UserProfileManagementPage : Comet.View
 
 		stack.Add(FormHelpers.MakePrimaryButton("+ Add Profile", () =>
 		{
-			Microsoft.Maui.Controls.Shell.Current.GoToAsync("profile-form?id=0");
+			Navigation?.Navigate(new ProfileFormPage(0));
 		}));
 
 		foreach (var profile in profiles)
@@ -61,7 +61,7 @@ public class UserProfileManagementPage : Comet.View
 				profile.Name,
 				$"Member since {profile.CreatedAt:MMM yyyy}",
 				null,
-				() => Microsoft.Maui.Controls.Shell.Current.GoToAsync($"profile-form?id={profile.Id}")
+				() => Navigation?.Navigate(new ProfileFormPage(profile.Id))
 			));
 		}
 

@@ -80,7 +80,7 @@ public class EquipmentDetailPage : Comet.View
 			});
 		}
 
-		Microsoft.Maui.Controls.Shell.Current.GoToAsync("..");
+		Navigation?.Pop();
 	}
 
 	async void Archive()
@@ -89,7 +89,7 @@ public class EquipmentDetailPage : Comet.View
 		var store = InMemoryDataStore.Instance;
 		if (store == null) return;
 
-		var page = Application.Current?.Windows.FirstOrDefault()?.Page;
+		var page = Services.PageHelper.GetCurrentPage();
 		if (page == null) return;
 
 		var confirm = await page.DisplayAlertAsync(
@@ -99,7 +99,7 @@ public class EquipmentDetailPage : Comet.View
 		if (!confirm) return;
 
 		store.ArchiveEquipment(_equipmentId);
-		Microsoft.Maui.Controls.Shell.Current.GoToAsync("..");
+		Navigation?.Pop();
 	}
 
 	[Body]
