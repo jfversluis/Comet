@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Comet.Internal;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
@@ -49,6 +50,38 @@ namespace Comet
 		public static Image Aspect(this Image view, Microsoft.Maui.Aspect aspect)
 		{
 			view.SetEnvironment(EnvironmentKeys.Image.Aspect, aspect, false);
+			return view;
+		}
+
+		// CollectionView fluent extensions
+		public static CollectionView<T> Header<T>(this CollectionView<T> view, View header)
+		{
+			view.Header = header;
+			return view;
+		}
+
+		public static CollectionView<T> Footer<T>(this CollectionView<T> view, View footer)
+		{
+			view.Footer = footer;
+			return view;
+		}
+
+		public static CollectionView<T> EmptyView<T>(this CollectionView<T> view, View emptyView)
+		{
+			view.EmptyView = emptyView;
+			return view;
+		}
+
+		public static CollectionView<T> ItemTemplate<T>(this CollectionView<T> view, Func<T, View> template)
+		{
+			view.ViewFor = template;
+			return view;
+		}
+
+		public static CollectionView<T> OnRemainingItemsThresholdReached<T>(this CollectionView<T> view, int threshold, Action action)
+		{
+			view.RemainingItemsThreshold = threshold;
+			view.RemainingItemsThresholdReached = action;
 			return view;
 		}
 	}

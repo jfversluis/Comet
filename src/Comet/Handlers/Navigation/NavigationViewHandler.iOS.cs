@@ -1,4 +1,6 @@
 ﻿using Comet.iOS;
+using CoreGraphics;
+using Foundation;
 using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
@@ -54,10 +56,53 @@ namespace Comet.Handlers
 				{
 					if (item.Order == ToolbarItemOrder.Secondary) continue;
 					var toolbarAction = item.OnClicked;
-					var barItem = new UIBarButtonItem(
-						item.IconGlyph ?? item.Text ?? "",
-						UIBarButtonItemStyle.Plain,
-						(s, e) => toolbarAction?.Invoke());
+					UIBarButtonItem barItem;
+
+					// Render font icon as UIImage if font family is specified
+					if (!string.IsNullOrEmpty(item.IconGlyph) && !string.IsNullOrEmpty(item.IconFontFamily))
+					{
+						var image = CreateFontIconImage(item.IconGlyph, item.IconFontFamily, 24);
+						if (image != null)
+						{
+							barItem = new UIBarButtonItem(
+								image,
+								UIBarButtonItemStyle.Plain,
+								(s, e) => toolbarAction?.Invoke());
+						}
+						else
+						{
+							barItem = new UIBarButtonItem(
+								item.IconGlyph ?? item.Text ?? "",
+								UIBarButtonItemStyle.Plain,
+								(s, e) => toolbarAction?.Invoke());
+						}
+					}
+					// Use SF Symbol name if glyph looks like an SF Symbol identifier
+					else if (!string.IsNullOrEmpty(item.IconGlyph) && item.IconGlyph.Contains('.'))
+					{
+						var sfImage = UIImage.GetSystemImage(item.IconGlyph);
+						if (sfImage != null)
+						{
+							barItem = new UIBarButtonItem(
+								sfImage,
+								UIBarButtonItemStyle.Plain,
+								(s, e) => toolbarAction?.Invoke());
+						}
+						else
+						{
+							barItem = new UIBarButtonItem(
+								item.Text ?? item.IconGlyph,
+								UIBarButtonItemStyle.Plain,
+								(s, e) => toolbarAction?.Invoke());
+						}
+					}
+					else
+					{
+						barItem = new UIBarButtonItem(
+							item.IconGlyph ?? item.Text ?? "",
+							UIBarButtonItemStyle.Plain,
+							(s, e) => toolbarAction?.Invoke());
+					}
 					barItem.Enabled = item.IsEnabled;
 					rightItems.Add(barItem);
 				}
@@ -91,6 +136,26 @@ namespace Comet.Handlers
 					navController.NavigationBar.CompactAppearance = appearance;
 				}
 			}
+		}
+
+		static UIImage CreateFontIconImage(string glyph, string fontFamily, nfloat size)
+		{
+			var font = UIFont.FromName(fontFamily, size);
+			if (font == null)
+				return null;
+
+			var text = new Foundation.NSString(glyph);
+			var attributes = new UIStringAttributes { Font = font };
+			var textSize = text.GetSizeUsingAttributes(attributes);
+			if (textSize.Width <= 0 || textSize.Height <= 0)
+				return null;
+
+			UIGraphics.BeginImageContextWithOptions(textSize, false, 0);
+			text.DrawString(CoreGraphics.CGPoint.Empty, attributes);
+			var image = UIGraphics.GetImageFromCurrentImageContext();
+			UIGraphics.EndImageContext();
+
+			return image?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
 		}
 	}
 }
