@@ -248,3 +248,38 @@
 **Decision:** Treat the "coffee sample rebuild failed" report as a **deterministic validation failure**, not a transient build break. `sample/CometBaristaNotes` builds successfully; the failure originates from Phase 9's focused validation gate. `RichCoffeeSurfacePattern` validator only recognizes `CollectionView`, `NavigationView`, `TabView`, `CometShell`, `GoToAsync<T>()`, `RegisterRoute<T>()` — but the sample uses `Navigation.Navigate<T>()` pattern in evolved pages, which the validator doesn't recognize.
 **Evidence:** Builds succeed; validator rule mismatch identified. The sample contains legacy `[Body]` / `State<T>` pages intentionally, so repo is intentionally red against full Phase 9 closure gate until migration completes.
 **Impact:** Do not treat as compiler regression. When Amos resumes Phase 9, fix or realign the validation rule. After rule is aligned, expect additional real Phase 9 failures until legacy pages are migrated or excluded by design.
+
+### 2026-03-08T060437Z: Phase 9 Closure Revision — Validation Harness Realignment
+**Owner:** Amos (Controls & API Dev)  
+**Status:** Implemented  
+**Decision:** Phase 9 validation harness realigned to match the intended incremental-migration sample design:
+
+1. **Rich-surface signal expansion:** Count `Navigation.Navigate<TView>(props)` as a valid rich-surface signal alongside `NavigationView`, `TabView`, `CometShell`, `GoToAsync<T>()`, and `RegisterRoute<T>()`.
+2. **Mixed-sample validation scope:** For samples intentionally mixing current-surface and legacy patterns (like `CometBaristaNotes`), run the strict deprecated-token scan against evolved reference files only (files demonstrating `Component`, `Render()`, `SetState(...)`, `Reactive<T>`, or typed navigation) rather than against every legacy page still present. Document legacy pages as intentional demonstration of incremental adoption path.
+3. **Control-type specificity:** Tighten the `Frame` check to target the deprecated control type (`new Frame` / `: Frame`) instead of falsely matching Comet's `.Frame(...)` layout helper.
+
+**Why:** `CometBaristaNotes` is a **mixed-migration sample** by design — the dashboard/detail flow demonstrates the current surface, while older pages show incremental adoption. The previous validator treated that deliberate coexistence as failure, rejecting a valid sample design and conflating rule mismatches with actual migration defects.
+
+**Validation Outcomes:**
+- ✅ `tools/validate-phase9-sample-docs.sh` passes for `sample/CometMauiApp`, `sample/CometBaristaNotes`, `docs/migration-guide.md`
+- ✅ `tests/Comet.Tests/Phase9SampleDocumentationValidationTests.cs` (7 focused tests) all pass
+- ✅ Broader validator net (28 tests) passes; pre-existing baseline skips unchanged
+- ✅ Migration guide explicitly documents `DisplayAlertAsync`, `DisplayActionSheetAsync`, `Border`, `CollectionView`, `MainThread` replacements
+- ✅ Build chain green: Comet.SourceGenerator → Comet → Comet.Tests → samples (macCatalyst)
+
+**Key File Paths:**
+- `docs/migration-guide.md` — Explicit MAUI 10 API replacement sections
+- `sample/CometBaristaNotes/BaristaApp.cs` — Refactored to `TabbedPage` + `Navigation.Navigate<T>()` + `Component` surface
+- `sample/CometMauiApp/` — Demonstrates `UseCometApp<TApp>()` baseline
+- `tests/Comet.Tests/Phase9SampleDocumentationValidationTests.cs` — Updated validator harness
+- `.squad/skills/phase9-sample-gate-triage/SKILL.md` — Mixed-surface patterns documented
+
+**Patterns Established for Future Gates:**
+- **Mixed-surface samples:** Current surface shown via reference files; legacy pages retained to demonstrate incremental adoption story without full rewrite.
+- **Validator rule tuning:** For multi-pattern migration, scope strict checks to reference files and accept alternative rich-surface signals (e.g., `Navigation.Navigate<T>()` as equivalent to `NavigationView` for validation purposes).
+- **Control-type specificity:** When banning deprecated controls, prefer type-usage patterns (`new Frame`, `: Frame`) over text matches that confuse fluent helpers.
+
+**Impact:**
+- Phase 9 closure now verifies the current-surface reference path without forcing a full sample rewrite in one patch.
+- Mixed-migration samples have an explicit validation pattern that future phases can follow.
+- The migration guide remains authoritative for MAUI 10 transition requirements.

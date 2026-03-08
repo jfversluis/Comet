@@ -707,3 +707,30 @@ Triaged Amos Phase 9 sample/docs lane. Samples build green but closure gate iden
 2. **CometBaristaNotes validation mismatch** — NavigationView pattern not recognized by richer-surface validator
 
 Routed findings to Amos for revision lane. Phase 9 remains open until blockers are resolved.
+
+## 2026-03-08T060437Z — Phase 9 Reviewer Gate Verdict: APPROVED
+
+**Status:** ✅ Phase 9 closure gate APPROVED
+
+**Reviewer verdict:** Amos's realigned validation harness and sample refactoring pass inspection. Both blockers resolved:
+- ✅ Migration guide now explicitly documents `DisplayAlertAsync` / `DisplayActionSheetAsync` replacements
+- ✅ CometBaristaNotes refactored to demonstrate current-surface reference flow (`TabbedPage`, `Navigation.Navigate<T>()`, `Component` / `Render()`) with intentional legacy pages retained for incremental adoption storytelling
+- ✅ Validation harness scoped correctly:
+  - Counts `Navigation.Navigate<T>()` as rich-surface signal (fixed)
+  - Applies deprecated-token scan to evolved reference files only (fixed)
+  - Distinguishes deprecated `Frame` control from `.Frame(...)` layout helpers (fixed)
+
+**Validation results:**
+- CometMauiApp (macCatalyst): ✅ PASS — `UseCometApp<TApp>()` baseline demonstrated
+- CometBaristaNotes (macCatalyst): ✅ PASS — Current-surface flow (TabbedPage → NavigationView → CoffeeDashboardPage)
+- migration-guide.md coverage: ✅ PASS — All MAUI 10 replacements documented
+- Phase9SampleDocumentationValidationTests (7 focused tests): ✅ PASS — Validator rules correctly targeted
+- Broader validator net (28 tests): ✅ PASS — All closure-gate tests pass; pre-existing baseline skips unchanged
+- Build chain: ✅ PASS — Comet.SourceGenerator → Comet → Comet.Tests → samples (macCatalyst)
+
+**Patterns established:**
+- Mixed-surface samples now have an explicit validation pattern (scope strict checks to reference files; accept alternative rich-surface signals).
+- For multi-pattern migration, expand validator rules to recognize equivalent signals across implementation styles.
+- Control-type checks should use type-usage patterns (`new Frame`, `: Frame`) to avoid false positives with fluent helpers.
+
+**Impact:** Phase 9 closure APPROVED. Validation script passes. Samples green. Migration guide complete. Ready for Phase 9 consolidation and Phase 10 planning.

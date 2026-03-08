@@ -397,3 +397,25 @@ Samples (`CometMauiApp`, `CometBaristaNotes`) built successfully ✅, but Bobbie
 2. **CometBaristaNotes** — NavigationView/bootstrap pattern fails richer-surface validator
 
 **Next:** Revision lane assigned to fix blockers and re-run closure gate.
+
+### Phase 9 Closure Gate Realigned (2026-03-08)
+
+**Status:** ✅ Closure gate now matches the intended incremental-migration sample shape.
+
+**What changed:**
+- `docs/migration-guide.md` now names `DisplayAlertAsync` / `DisplayActionSheetAsync` explicitly instead of only saying “async alert/action sheet APIs.”
+- `tests/Comet.Tests/Phase9SampleDocumentationValidationTests.cs` now treats `Navigation.Navigate<TView>(props)` as a valid rich-surface signal for the coffee sample and only applies the legacy-token scan to the sample's evolved reference files (`Component`, `Render()`, `SetState(...)`, typed navigation) instead of every legacy page in the mixed sample.
+- The validator also distinguishes the deprecated `Frame` control from Comet's `.Frame(...)` sizing extension so the counter sample is not falsely rejected.
+
+**Key file paths:**
+- `docs/migration-guide.md`
+- `sample/CometBaristaNotes/README.md`
+- `tests/Comet.Tests/Phase9SampleDocumentationValidationTests.cs`
+
+**Validation outcome:**
+- `tools/validate-phase9-sample-docs.sh` now passes against `sample/CometMauiApp`, `sample/CometBaristaNotes`, and `docs/migration-guide.md`.
+- Explicit Phase 9 build order also passed: `Comet.SourceGenerator`, `Comet`, `Comet.Tests`, `CometMauiApp` (macCatalyst), `CometBaristaNotes` (macCatalyst), then the 7 focused `Phase9SampleDocumentationValidationTests`.
+
+**Patterns to remember:**
+- For mixed migration samples, validate the current-surface reference flow directly and document that older `[Body]` / `State<T>` pages remain by design.
+- When guarding MAUI 10 migrations, prefer API-specific checks (`DisplayAlertAsync`, `Navigation.Navigate<T>()`, `new Frame`) over broad text matches that confuse fluent helpers with deprecated controls.

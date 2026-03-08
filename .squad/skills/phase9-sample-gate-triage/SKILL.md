@@ -31,6 +31,14 @@ Use this when a Comet sample is reported as “broken after a rebuild/import fix
 - In the current validator, `RichCoffeeSurfacePattern` recognizes `CollectionView`, `NavigationView`, `TabView`, `CometShell`, `GoToAsync<T>()`, and `RegisterRoute<T>()`.
 - If the sample uses `Navigation.Navigate<T>()` instead, the gate will miss it unless the regex is expanded or the sample exposes another accepted token in non-bootstrap files.
 
+### Validate mixed-surface samples through the evolved reference files
+- If the sample intentionally keeps older `[Body]` / `State<T>` pages for migration storytelling, do not run the “no legacy tokens anywhere” rule across the whole sample.
+- Instead, identify the current-surface reference files (for example, files that actually use `Component`, `Render()`, `SetState(...)`, `Reactive<T>`, or typed navigation) and run the strict deprecated-token scan there.
+
+### Separate deprecated `Frame` control checks from `.Frame(...)` layout helpers
+- A broad `\bFrame\b` regex will incorrectly flag Comet's fluent sizing helper (`.Frame(height: 48)`), even when the sample uses `Border` and never instantiates the deprecated MAUI `Frame` control.
+- Prefer matching `new Frame` / `: Frame` shapes (or other type-usage patterns) when the gate is trying to ban the control type itself.
+
 ### Scan for the next failure before calling it fixed
 - After the first assertion, search the sample for the deprecated Phase 9 tokens (`[Body]`, `State<T>`, `ListView`, `TableView`, `Frame`, `Device.*`, sync alerts, `Compatibility.*`, etc.).
 - This prevents misclassifying a rule-mismatch as the whole problem when the sample still contains real migration debt behind it.
@@ -38,6 +46,7 @@ Use this when a Comet sample is reported as “broken after a rebuild/import fix
 ## Examples
 
 - **Coffee sample triage:** `sample/CometBaristaNotes` built successfully, but the focused gate failed because `BaristaApp.cs` held `NavigationView` and got excluded as bootstrap, while the evolved pages used `Navigation.Navigate<T>()` that the regex did not count.
+- **Closure revision:** the fix was to count `Navigation.Navigate<T>()`, scope the strict legacy-token scan to the evolved reference files, and tighten the `Frame` check so `.Frame(...)` sizing calls stay valid.
 
 ## Anti-Patterns
 

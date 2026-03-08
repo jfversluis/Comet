@@ -423,3 +423,41 @@ Logged Phase 9 kickoff (parallel lanes: Amos samples/docs, Bobbie validation). C
 - (Git commit to follow)
 
 **Next Phase:** Phase 5 (MauiReactor API surface)
+
+---
+
+## Phase 9 Closure Gate Orchestration — 2026-03-08T060437Z
+
+**Status:** ✅ COMPLETE
+
+**Tasks Performed (Scribe role):**
+
+1. ✅ **Orchestration Log:** Created `2026-03-08T060437Z-phase9-review.md` documenting Bobbie's reviewer verdict (APPROVED) with validation results and patterns established.
+2. ✅ **Session Log:** Created `2026-03-08T060437Z-phase9-review.md` with Phase 9 closure summary.
+3. ✅ **Decision Inbox → decisions.md:** Merged `amos-phase9-closure-revision.md` into main decisions.md (mixed-surface sample validation patterns). Deleted inbox file.
+4. ✅ **Cross-Agent History:** Updated Bobbie's history with Phase 9 reviewer gate verdict (2026-03-08T060437Z entry).
+5. ✅ **Decisions Archive:** decisions.md now ~270 lines (~9KB) — no archive needed (under 20KB threshold).
+6. ✅ **Git Commit:** (pending — to be executed below)
+
+**Outcome:**
+
+Phase 9 closure gate APPROVED. Amos's validation harness realignment and sample refactoring pass inspection:
+- Migration guide: explicit MAUI 10 replacements documented
+- CometBaristaNotes: current-surface reference flow demonstrated (TabbedPage → NavigationView → CoffeeDashboardPage)
+- CometMauiApp: `UseCometApp<TApp>()` baseline shown
+- Validation script: passes all samples and documentation
+- Build chain: green (source generator → Comet → Comet.Tests → macCatalyst samples)
+
+**Patterns Established:**
+- Mixed-surface samples validated by scoping strict checks to reference files
+- Rich-surface signals expanded to include `Navigation.Navigate<T>()`
+- Deprecated control checks use type-usage patterns to avoid fluent helper false positives
+
+**Files Staged:**
+- `.squad/orchestration-log/2026-03-08T060437Z-phase9-review.md` (new)
+- `.squad/log/2026-03-08T060437Z-phase9-review.md` (new)
+- `.squad/decisions.md` (merged inbox entry)
+- `.squad/agents/bobbie/history.md` (Phase 9 verdict logged)
+- `.squad/agents/scribe/history.md` (this entry)
+
+**Next:** Phase 9 consolidation and Phase 10 planning.
