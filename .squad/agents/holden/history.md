@@ -265,3 +265,34 @@ Hot reload registration / cleanup needs lifecycle awareness. Focused tests pass 
 **Next phase:** Fresh specialist takes 3rd revision with both concerns addressed.
 
 **Phase 4.1 Status:** ✅ APPROVED — no changes needed. Key-aware reconciliation complete and stable.
+
+## Phase 10 Wave 1 — Runtime Wiring Assessment (2026-03-08T162128Z)
+
+**From:** Bobbie (Test Engineer) — Phase 10 Wave 1 sample validation kickoff
+
+**Assessment Complete:**
+- ✅ All 10 samples build successfully (0 errors, 0 warnings)
+- 🔴 1 iOS runtime blocker identified: CometBaristaNotes (CALayerInvalidGeometry crash, NaN layout)
+- ⏳ Remaining 9 samples: Runtime verification in progress (Wave 1)
+
+**Blocker Routing:**
+- CometBaristaNotes iOS crash → Amos (Controls & API Dev) for layout constraint debugging
+
+**Platform Dependencies:**
+- iOS: CALayerInvalidGeometry geometry exception handling
+- Android: Emulator rendering stack (pending verification)
+- Windows: Native layout pass (pending verification)
+- macCatalyst: Native layout pass (pending verification)
+
+**Architecture Status:**
+- Build chain stable (Source generator → Comet → Comet.Tests)
+- Sample infrastructure sound (Python orchestrator + xUnit harness)
+- Runtime validation framework operational
+- No shared blockers detected affecting architecture
+
+**Decision Context:**
+- Runtime Validation Standard adopted — all future sample work must pass runtime UI gate
+- Runtime Evidence Wave 1 — three-state model (baseline_captured, runtime_blocked, runtime_verified) prevents overclaiming
+
+**Next:** Monitor Amos's blocker fix; validate remaining 9 samples; report Wave 1 + Wave 2 closure to coordinator.
+

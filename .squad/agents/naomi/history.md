@@ -28,6 +28,12 @@ Comprehensive analysis: 19 generated controls cover all suitable IView interface
 
 ## Learnings
 
+### Template modernization for current-surface migrations (2026-03-08T000000Z)
+
+- `templates/single-project/` was still teaching the legacy starter path: `[Body]`, `[State]`, `net7.0-*`, and `Reloadify3000`.
+- Repeated sample-migration friction is lower when the starter template mirrors `sample/CometMauiApp` and demonstrates `Component<TState>`, `Render()`, `Reactive<T>`, and `SetState(...)` directly.
+- A small file-content validation test is enough to lock the template against regressing back to legacy surface patterns without needing a full template-pack build in the regular suite.
+
 ### Phase 8 Closure — Approved & Phase 9 Kickoff (2026-03-08T052745Z)
 
 **Status:** ✅ **PHASE 8 COMPLETE** → 🚀 **PHASE 9 LAUNCHED**
@@ -233,4 +239,36 @@ Comprehensive analysis: 19 generated controls cover all suitable IView interface
 
 **Recommendation to coordinator:**  
 Phase 8.1 is **COMPLETE** — Comet's generated control coverage is comprehensive for MAUI 10. All simple IView interfaces are covered. Complex controls are correctly in handwritten lane. Documentation (CONTROL_COVERAGE_PHASE_8_1.md) proves completeness. Next: Phase 8.2 (Amos) for any handwritten complex controls needed (e.g., HybridWebView wrapper if desired), Phase 8.3 (Bobbie) for test expansion/fixes.
+
+## Phase 10 — Single-Project Template Migration Task (2026-03-08T162128Z)
+
+**From:** Bobbie (Test Engineer) — Phase 10 Wave 1 decisions
+
+**Task Queued:**
+Move `templates/single-project/` to current Comet surface (Component<TState>, Render(), Reactive<T>, SetState) and update to .NET MAUI 10 targets.
+
+**Why:**
+Remaining sample migration wave needs a shared reference for "what current Comet looks like." Leaving the starter template on legacy patterns [Body], [State], net7.0-*, Reloadify3000 reintroduces patterns samples are trying to retire.
+
+**Scope:**
+1. Update `templates/single-project/MauiProgram.cs`, `App.cs`, `MainPage.cs` to demonstrate current surface
+2. Update `.csproj` to target net10.0-{android,ios,maccatalyst,windows}
+3. Remove Reloadify3000 NuGet + Reload.cs integration
+4. Retain MAUI Shell/navigation structure
+5. Test: Template builds cleanly, runs on at least one platform
+
+**Acceptance Criteria:**
+- ✅ Project file targets current MAUI platforms
+- ✅ No legacy [Body] or [State] attributes
+- ✅ Uses Component<TState>, Render(), Reactive<T>, SetState
+- ✅ Builds 0 errors/warnings
+- ✅ Runs on macCatalyst or Windows
+- ✅ No Reloadify3000 references
+
+**Impact:**
+- Future sample refactors can copy template without translating old patterns
+- Regression test: Template drift back to legacy surface fails
+- Release work: Keep template COMET_VERSION aligned with next packaged line
+
+**Timeline:** Queue for Phase 10; prioritize after Amos blocker fix.
 

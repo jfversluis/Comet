@@ -314,3 +314,103 @@
 - Roadmap through Phase 9 complete and stable.
 - All agents released. No active phase.
 - Ready for Phase 10 planning.
+
+### 2026-03-08T061500Z: Phase 10 Kickoff — Sample Validation Wave 1
+**Owner:** Bobbie (Test Engineer)  
+**Status:** In Progress  
+**Decision:** Phase 10 launches with autonomous sample validation for all 10 Comet samples. Bobbie will execute validation infrastructure setup, runtime verification, evidence capture, and blocker identification without team standby. User has authorized autonomous decision-making within Phase 10 scope.
+
+**Scope:**
+- All 10 existing samples (CometMauiApp, CometFeatureShowcase, CometAllTheLists, CometTaskApp, CometProjectManager, CometBaristaNotes, CometWeather, CometStressTest, Comet.Sample, MauiReference)
+- Build verification: 0 errors, 0 warnings
+- Runtime verification: Launch, render visible UI, complete primary flows
+- Evidence capture: Screenshots, logs, UI tree inspection, bug discovery loop
+- Blocker identification and handoff routing
+
+**Validation Tooling:**
+- Primary: `maui-ai-debugging` skill + `maui-devflow` CLI
+- Fallback: Appium (if MauiDevFlow insufficient)
+
+**Impact:**
+- Phase 10 closure criterion: All samples meet runtime-verified state or blocker+logged
+- Evidence retained in session workspace for team review
+- Decisions and handoffs documented per agent charter
+
+### 2026-03-08T070000Z: Runtime Validation Standard for Sample Work
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Adopted  
+**Decision:** All future sample work in the Comet repository must meet a **runtime UI validation gate** before claiming completion. Build success and test passing are necessary but not sufficient.
+
+**Three-Gate Requirement:**
+1. **Build gate:** Clean build with zero errors/warnings
+2. **Test gate:** All focused tests pass (if applicable)
+3. **Runtime gate (new):** App must launch, render visible UI, and complete primary user flows end-to-end
+
+**Validation Tooling:**
+- **Primary:** `maui-ai-debugging` skill + `maui-devflow` CLI for inspection, interaction, log capture, and screenshot evidence
+- **Fallback:** Appium (only when MauiDevFlow cannot cover the required interaction)
+
+**Evidence Requirements:**
+- Screenshot evidence of primary screens
+- MauiDevFlow UI tree inspection results
+- Runtime logs captured during flow execution
+- Bug log documenting any issues discovered and resolved
+
+**Rationale:**
+Phase 9 closed on the strength of a build-and-structure gate, but user reported that `CometBaristaNotes` opens to a blank white screen at runtime. Build success did not prove the sample actually rendered visible UI. This standard prevents similar gaps in future sample validation.
+
+**Impact:**
+- Sample work closure must include runtime validation evidence
+- Validation reports must include before/after screenshots
+- Bug discovery loop must be executed until all critical/high issues resolved
+- This standard applies to all 10 existing samples and all future sample work
+
+**Related:**
+- `.squad/identity/now.md` — documents the post-Phase 9 runtime validation requirement
+
+### 2026-03-08T071000Z: Runtime Evidence Wave 1 — No Overclaim Rule
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Adopted  
+**Decision:** Sample runtime verification must distinguish three states in retained evidence:
+
+1. **baseline_captured** — visible baseline or failure-state evidence exists (e.g., successful render or documented crash with logs)
+2. **runtime_blocked** — launch/interaction is blocked, but the blocker is precisely captured with logs and/or failure screenshots (e.g., exception with call stack and environment details)
+3. **runtime_verified** — only valid when screenshots, logs, comparison artifacts, flow evidence, and rerun evidence for fixed bugs are all retained
+
+**Why:**
+The Comet repository can still build cleanly while runtime truth differs per sample. In Wave 1, `CometMauiApp` produced a usable baseline render (`baseline_captured`), while `CometBaristaNotes` crashed on iOS with `CALayerInvalidGeometry` before a stable UI remained on screen (`runtime_blocked`). Treating both as equally "validated" would overclaim.
+
+**Operational Impact:**
+- Keep runtime evidence in the session workspace under `sample-validation/`.
+- When automation wiring is missing or stale, record that as a blocker instead of silently assuming the app is verified.
+- Fixed runtime issues must include rerun evidence before the report can move a sample to `runtime_verified`.
+- Use this decision to justify rerun requests when fixing blocker samples.
+
+**First Wave Evidence:**
+- CometMauiApp: State = `baseline_captured` (visible UI render, screenshot retained)
+- CometBaristaNotes iOS: State = `runtime_blocked` (CALayerInvalidGeometry crash, logs + failure screenshot retained)
+
+### 2026-03-08T072500Z: Single-Project Template Migration — Current Comet Surface
+**Owner:** Naomi (Source Generator Dev)  
+**Status:** Pending Implementation  
+**Decision:** Move the `templates/single-project/` starter to the evolved Comet surface: `Component<TState>`, `Render()`, `Reactive<T>`, and `SetState(...)`, while also updating the template project file to current .NET MAUI 10 targets and removing the stale Reloadify dependency.
+
+**Why:**
+The remaining sample migration wave still needs a clean, shared reference for "what current Comet looks like" outside the already-migrated counter sample. Leaving the starter template on `[Body]`, `[State]`, `net7.0-*`, and `Reloadify3000` keeps reintroducing the exact legacy patterns the sample work is trying to retire.
+
+**Scope:**
+- Update `templates/single-project/MauiProgram.cs`, `App.cs`, `MainPage.cs` to use `Component<TState>`, `Render()`, `Reactive<T>`, `SetState(...)`
+- Update `.csproj` to target `net10.0-android`, `net10.0-ios`, `net10.0-maccatalyst`, `net10.0-windows`
+- Remove `Reloadify3000` NuGet dependency and Reload.cs integration
+- Retain MAUI structure (Shell, navigation) but demonstrate current Comet API surface
+- Test: Template builds cleanly, runs on at least one platform
+
+**Impact:**
+- Future sample/page refactors can copy from the template without first translating old starter code
+- The repo now has a lightweight regression test that fails if the template drifts back to legacy surface usage
+- Release/publishing work should keep the template's `COMET_VERSION` default aligned with the next packaged Comet line
+
+**Related:**
+- `.squad/agents/naomi/charter.md` — Source Generator Dev domain
+- Phase 9 closure: Single-project template was out of scope but identified as pre-Phase 10 technical debt
+

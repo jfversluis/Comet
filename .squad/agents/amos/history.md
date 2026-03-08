@@ -432,3 +432,40 @@ Phase 9 lane 1 (Samples & Documentation) approved for closure. All sample work d
 Closure verdict: ✅ APPROVED
 
 Patterns established during this phase will guide future sample and documentation work. Ready for Phase 10.
+
+## Phase 10 Wave 1 — CometBaristaNotes iOS Runtime Blocker Handoff (2026-03-08T162128Z)
+
+**Incoming:** Bobbie (Test Engineer) — Phase 10 Wave 1 sample validation  
+**Status:** Blocked, awaiting fix
+
+**Blocker Details:**
+- **Sample:** CometBaristaNotes  
+- **Platform:** iOS Simulator  
+- **Failure Mode:** CALayerInvalidGeometry exception at runtime with NaN layout dimensions
+- **Observed Behavior:** App builds cleanly; crashes immediately on iOS with blank white screen (no UI renders)
+- **Likely Root Cause:** Layout container in CoffeeDashboardPage (or parent) has unresolved binding or missing size constraint, resulting in NaN being passed to native iOS CALayer geometry
+- **Evidence Location:** `/Users/davidortinau/.copilot/session-state/b26a6593-f539-47de-8f7b-3bd72e7ad681/files/sample-validation/` — crash logs and failure screenshot
+
+**Action Required:**
+1. Debug layout constraints on iOS (inspect MauiContext layout pass, check for unresolved Binding<T> in CoffeeDashboardPage)
+2. Fix root cause (likely missing size constraint or binding resolution issue)
+3. Rerun sample validation on iOS
+4. Confirm `runtime_verified` state with updated screenshots and logs
+5. Notify Bobbie when fix is ready for revalidation
+
+**Evidence Baseline:**
+- Build chain: Source generator → Comet → Comet.Tests → CometBaristaNotes (all 0 errors, 0 warnings) ✅
+- Android/Windows/macCatalyst: Pending (iOS is blocker for Wave 1)
+- iOS: CALayerInvalidGeometry crash before UI render
+
+**Related Decisions:**
+- Runtime Evidence Wave 1 (No Overclaim Rule) — Distinguishes baseline_captured, runtime_blocked, runtime_verified states
+- Runtime Validation Standard — Mandatory runtime UI gate for all sample work
+
+**Cross-Agent Context:**
+- Bobbie: Validation infrastructure complete; remaining 9 samples in progress
+- Holden: Runtime wiring assessment complete; platform-specific blockers being triaged
+- Naomi: Template migration task queued
+
+**Next:** Fix layout issue, rerun validation, confirm `runtime_verified`, close blocker.
+

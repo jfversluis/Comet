@@ -15,10 +15,15 @@ Use this when a Comet feature needs sample and documentation coverage, especiall
 ### Reuse the lightest credible sample first
 - If the goal is a starter/reference sample, prefer evolving `sample/CometMauiApp` instead of creating a new project.
 - Keep `CometApp` as the app root; show the evolved API at the page/component layer where `UseCometApp<TApp>()` already expects it.
+- When a reusable starter pattern stabilizes, mirror it into `templates/single-project/` so future sample/page migrations can copy from the template instead of re-deriving `Component<TState>` + `Render()` + `SetState(...)` from older `[Body]` files.
 
 ### Pair a green-path sample with an incremental-migration sample
 - Use one minimal sample to show the clean happy path (`Component<TState>`, `Render()`, `SetState(...)`).
 - Use one richer sample to prove coexistence with older pages, services, and interop (`sample/CometBaristaNotes` is the preferred host today).
+
+### Prefer runtime-proven tab shells in samples
+- Use `TabView` for sample tab layouts unless `TabbedPage` handler wiring is known to be active on the target runtime.
+- Wrap each tab root in `NavigationView` when you still need typed in-tab navigation flows.
 
 ### Teach typed navigation with real props
 - Prefer `Navigation.Navigate<TView>(props)` or typed shell routes in the richer sample.

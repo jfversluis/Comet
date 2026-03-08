@@ -38,6 +38,16 @@ Theme system validated with 34 tests. Confirmed concrete `Theme` base class, `Th
 
 ## Learnings
 
+### Runtime Evidence Wave 1 — P0 Baselines + No-Overclaim Guardrail (2026-03-08T163500Z)
+
+**Status:** ✅ evidence scaffolded; one P0 baseline captured; one P0 blocker classified
+
+- **New validation support landed:** `tools/sample_validation_workspace.py` creates and validates a session-workspace evidence scaffold for all 10 samples, and `tests/Comet.Tests/SampleValidationWorkspaceTests.cs` locks the no-overclaim rules so `runtime_verified` cannot be claimed without screenshots, logs, comparison artifacts, completed flow evidence, and rerun evidence for fixed bugs.
+- **Evidence root locked:** `/Users/davidortinau/.copilot/session-state/b26a6593-f539-47de-8f7b-3bd72e7ad681/files/sample-validation/` now contains per-sample baseline/evolved/comparison folders, checklist scaffolds, issue files, and a report (`sample-validation-report.json` + `.md`) tied to actual sample names.
+- **CometMauiApp baseline:** Successfully built for `net10.0-maccatalyst` and `net10.0-ios`, launched on the iPhone 16 Pro iOS simulator, and captured a visible baseline render (`baselines/CometMauiApp/screenshots/original-launch.png`). The launch baseline proves the counter UI, slider, toggle, and action buttons render, but deeper automation is still blocked this wave because MauiDevFlow did not provide a trustworthy live session for the sample.
+- **CometBaristaNotes blocker:** The sample builds cleanly for `net10.0-maccatalyst` and `net10.0-ios`, but the iOS baseline launch crashes during `CoffeeDashboardPage` layout with `ObjCRuntime.ObjCException` / `CALayerInvalidGeometry` (`position contains NaN`) on `Microsoft.Maui.Platform.LayoutView`. Failure evidence is retained in `baselines/CometBaristaNotes/logs/original-launch-diagnostics.log.txt` plus the SpringBoard fallback screenshots, and the issue is recorded as `barista-001`.
+- **Runtime tooling note:** Product-source MauiDevFlow wiring is not present for `CometBaristaNotes`, so even after the launch crash is fixed, later waves will need explicit runtime-agent support before claiming full interaction coverage there.
+
 ### Phase 9 Reviewer Gate — Samples/Docs Lane Approved (2026-03-08T083500Z)
 
 **Status:** ✅ APPROVED
@@ -759,3 +769,53 @@ Approved Phase 9 for final closure. All deliverables verified:
 Key pattern established: Mixed-surface samples now have an explicit validation pattern for multi-phase incremental migration work. This pattern is locked for Phase 10+.
 
 All agents released. Roadmap through Phase 9 stable and complete. Ready for Phase 10 planning.
+
+## Phase 10 Wave 1 — Sample Validation Infrastructure & First-Wave Blockers (2026-03-08T162128Z)
+
+**Status:** ✅ Complete (Wave 1)
+
+**Assignment:** Autonomous Phase 10 kickoff: Validate all 10 samples with full verification, retain evidence, identify blockers. User authorized autonomous decision-making.
+
+**Deliverables:**
+1. **Validation Infrastructure:**
+   - `tools/sample_validation_workspace.py` — Python orchestrator for sample builds, evidence capture, report generation
+   - `tests/Comet.Tests/SampleValidationWorkspaceTests.cs` — xUnit harness validating 3-state evidence model (baseline_captured, runtime_blocked, runtime_verified)
+   - Evidence directory: `/Users/davidortinau/.copilot/session-state/b26a6593-f539-47de-8f7b-3bd72e7ad681/files/sample-validation/`
+
+2. **Sample Validation Results:**
+   - All 10 samples build successfully ✅
+   - Runtime verification in progress (Wave 1 complete)
+   - **1 concrete blocker identified:** CometBaristaNotes iOS runtime crash
+
+3. **Blocker Details:**
+   - **Sample:** CometBaristaNotes  
+   - **Platform:** iOS Simulator  
+   - **Failure:** CALayerInvalidGeometry exception with NaN layout; blank white screen at runtime
+   - **Evidence:** Crash logs + failure screenshot in session workspace
+   - **State:** `runtime_blocked`
+   - **Handoff:** Amos (Controls & API Dev) to debug layout constraints and fix
+
+4. **Decisions Captured:**
+   - **Runtime Validation Standard** — All future sample work must pass runtime UI gate (not just build)
+   - **Runtime Evidence Wave 1 (No Overclaim Rule)** — Three-state validation model (baseline_captured, runtime_blocked, runtime_verified)
+   - **Single-Project Template Migration** — Move template to current Comet surface (Component<T>, Render(), Reactive<T>, SetState)
+   - **Phase 10 Kickoff** — Autonomous sample validation for all 10 samples
+
+5. **Session Logs:**
+   - Orchestration: `.squad/orchestration-log/20260308T162128Z-bobbie.md`
+   - Session: `.squad/log/20260308T162128Z-sample-validation-first-wave.md`
+   - Decisions merged into `.squad/decisions.md` (inbox cleared)
+
+**Key Learnings:**
+- Build success != runtime success; 1 sample passes build but crashes at iOS runtime (CALayerInvalidGeometry)
+- Runtime evidence retention essential for blocker diagnosis and rerun verification
+- Three-state model prevents overclaiming validation when evidence is incomplete
+
+**Cross-Agent Updates:**
+- ✅ Amos: Handoff on CometBaristaNotes iOS crash (debug + fix + rerun)
+- ✅ Holden: Shared runtime wiring assessment (all 10 build, 1 iOS platform blocker identified)
+- ✅ Naomi: Template migration task queued (current surface migration)
+
+**Wave 1 Status:** ✅ Complete — Infrastructure operational, first blocker identified and logged.  
+**Next:** Amos fixes CometBaristaNotes, Bobbie reruns validation, remaining 9 samples runtime-verified.
+
