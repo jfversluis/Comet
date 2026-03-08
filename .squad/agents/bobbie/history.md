@@ -8,6 +8,47 @@
 
 ## Learnings
 
+### Phase 9 Validation Infrastructure — Implementation Complete (2026-03-08T053639Z)
+
+**Status:** ✅ VALIDATION LANE COMPLETE
+
+**Task:** Deliver Phase 9 validation gate as an opt-in infrastructure without blocking Amos's parallel samples/docs work.
+
+**Actions Completed:**
+1. ✅ Created `tests/Comet.Tests/Phase9SampleDocumentationValidationTests.cs` — xUnit harness with closure criteria gates
+2. ✅ Created `tools/validate-phase9-sample-docs.sh` — opt-in wrapper runner
+3. ✅ Orchestration log written (Phase 9 validation lane completion entry)
+4. ✅ Session log written (Phase 9 validation progress snapshot)
+5. ✅ Inbox decision merged into decisions.md (Phase 9 validation lane decision added)
+6. ✅ Bobbie history updated (this file)
+7. ✅ Scribe history updated
+
+**Delivered Artifacts:**
+- Validation gate specification (4 locked requirements: sample build targets, Comet surface usage, migration guide completeness)
+- Test harness (intentionally incomplete to guide closure rules without blocking mainline suite)
+- Wrapper script (env-driven, optional by default)
+
+**Design Decision:** Validation remains opt-in until Amos lands all samples/docs. Once Phase 9 closes, gate transitions to required as closure verification. This keeps the repository green during parallel work.
+
+**Key Context:**
+- Counter sample / coffee app must target `net10.0-maccatalyst` with `UseCometApp<TApp>()`
+- Non-bootstrap feature files must use current surface (`Component`, `Render()`, `Reactive<T>`)
+- Migration guide must document build order + MAUI 10 replacements
+- Current baseline status: intentionally red (awaiting Amos samples/docs)
+
+**Next:** Amos Phase 9 (samples/docs) continues in parallel with validation lane complete.
+
+### Phase 9 Validation Infrastructure — Sample/App + Docs Lane (2026-03-08T063500Z)
+
+**Status:** ✅ anticipatory validation landed for Amos Phase 9 parallel work
+
+- **Validation shape:** Phase 9 now has a focused artifact gate in `tests/Comet.Tests/Phase9SampleDocumentationValidationTests.cs` plus a wrapper runner at `tools/validate-phase9-sample-docs.sh`.
+- **Pattern that worked:** Keep the gate runnable today by pairing env-driven real-artifact checks with synthetic fixture tests. The synthetic fixtures prove the rules compile and behave now; the env-driven branch lets Amos point the gate at real sample projects and a migration guide later without destabilizing the default suite.
+- **Artifact rules Bobbie locked in:** Counter sample and coffee app must stay MAUI single-project apps targeting `net10.0-maccatalyst`, boot through `UseCometApp<TApp>()`, and show the current Comet surface in non-bootstrap files (`Component`, `Render()`, plus `Reactive<T>` or `SetState(...)`). Product source is allowed to keep bootstrap files like `MauiProgram.cs` / `*App.cs`, but the feature files are gated away from legacy tokens such as `[Body]`, `State<T>`, `ListView`, `TableView`, `Frame`, `Device.*`, sync alert APIs, `MessagingCenter`, `Xamarin.*`, and `Compatibility.*`.
+- **Migration guide rules:** The guide must explicitly map `View` + `[Body]` + `State<T>` to `Component` + `Render()` + `Reactive<T>` / `SetState(...)`, mention typed navigation (`RegisterRoute<T>()` or `GoToAsync<T>()`), include the documented build order (`Comet.SourceGenerator` → `Comet` → `Comet.Tests`), and steer readers toward MAUI 10 replacements (`CollectionView`, `Border`, `DisplayAlertAsync`, `MainThread`).
+- **Current baseline signal:** Running the new wrapper against today’s repo is intentionally red before Amos lands Phase 9. It fails early on the existing counter lane because `sample/Comet.Sample/Views/DatePickerSample.cs` still has a `State<DateTime>` → `Binding<DateTime?>` mismatch on the maccatalyst build, and `README.md` is not yet a real migration guide for the new Component/Reactive surface.
+- **Key file paths:** `tests/Comet.Tests/Phase9SampleDocumentationValidationTests.cs`, `tools/validate-phase9-sample-docs.sh`, `sample/Comet.Sample/Views/DatePickerSample.cs`, `sample/CometBaristaNotes/BaristaApp.cs`, `README.md`.
+
 ### Phase 8 Closure — Reviewer Gate APPROVED & Phase 9 Kickoff (2026-03-08T052745Z)
 
 **Status:** ✅ **PHASE 8.3 COMPLETE** → ✅ **PHASE 8 CLOSED** → 🚀 **PHASE 9 LAUNCHED**

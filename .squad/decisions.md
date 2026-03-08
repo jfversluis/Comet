@@ -222,3 +222,15 @@
 - All meaningful changes require team consensus
 - Document architectural decisions here
 - Keep history focused on work, decisions focused on direction
+
+### 2026-03-08T053639Z: Phase 9 Validation Infrastructure — Opt-In Gate
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Implemented  
+**Decision:** Phase 9 validation is delivered as an **opt-in wrapper script** (`tools/validate-phase9-sample-docs.sh`) plus focused xUnit test harness (`tests/Comet.Tests/Phase9SampleDocumentationValidationTests.cs`). The gate remains optional (environment-driven) until Phase 9 closes, allowing Amos's parallel samples/docs work to proceed without blocking mainline test runs.
+**Locked Requirements:**
+  - Counter sample (`sample/Comet.Sample` or `sample/CounterSample`) must target `net10.0-maccatalyst` and boot via `UseCometApp<TApp>()`.
+  - Coffee app (`sample/CometBaristaNotes`) must use current Comet surface (`Component`, `Render()`, `Reactive<T>`) and avoid legacy MAUI 10 tokens (`[Body]`, `State<T>`, `ListView`, `TableView`, `Frame`, `Device.*`, etc.).
+  - Coffee app must demonstrate richer features (e.g., `CollectionView`, `TabView`, `NavigationView`, `CometShell`, typed navigation).
+  - Migration guide must document build order and MAUI 10 replacements (`CollectionView`, `Border`, `DisplayAlertAsync`, `MainThread`).
+**Design Rationale:** Validation harness intentionally incomplete to guide closure criteria while keeping repository green during parallel implementation work. Once Amos lands all samples/docs, the gate transitions to **required** as part of Phase 9 closure verification.
+**Impact:** Phase 9 validation infrastructure ready; no blockers on Amos Lane 1 (samples/docs) or suite mainline. Closure gate explicit and runnable today via opt-in script.

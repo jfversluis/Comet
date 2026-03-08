@@ -20,6 +20,11 @@ Use this when implementation and test work are happening in parallel. The goal i
 - Do not silence long-standing failures by widening skips or weakening assertions.
 - Run a focused slice that still reproduces the known failure signature so reviewers can tell “same old noise” from “new regression.”
 
+### Use env-driven artifact gates for future files
+- When the phase deliverable is a not-yet-landed sample app or documentation artifact, keep the default suite stable by making the real gate opt-in via environment variables or a wrapper script.
+- Pair that opt-in path with synthetic fixtures/tests that exercise the same validator logic today, so the gate itself is still runnable before the real artifacts exist.
+- In Comet Phase 9, Bobbie used `tools/validate-phase9-sample-docs.sh` to supply sample-project/guide paths and `Phase9SampleDocumentationValidationTests` to enforce the rules.
+
 ### Promote newly discovered blockers carefully
 - If a new gate exposes a tightly-coupled framework defect (for example, a recursion bug in the intended transfer path), capture it as a targeted skip reason instead of letting the whole suite fail before the implementation owner can respond.
 - Document the blocker in squad history/decision artifacts so the implementer knows exactly what to fix.
@@ -35,6 +40,7 @@ Use this when implementation and test work are happening in parallel. The goal i
 ## Examples
 
 - **Phase 7.2 hot reload:** Keep the historical plain-view hot reload failures active, add one runnable Component state-transfer baseline, and leave skipped gates for Component replacement/state+props/nested hot reload until Holden lands Phase 7.1.
+- **Phase 9 samples/docs:** Use synthetic fixtures to prove the validator today, then point the same xUnit class at real counter/coffee sample projects and the migration guide through a wrapper script once Amos lands the artifacts.
 
 ## Anti-Patterns
 
