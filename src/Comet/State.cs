@@ -8,7 +8,7 @@ using Comet.Reflection;
 namespace Comet
 {
 
-	public sealed class State<T> : BindingObject
+	public class State<T> : BindingObject
 	{
 		T _value;
 		bool _hasValue;
