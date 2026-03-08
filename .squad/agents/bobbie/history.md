@@ -9,3 +9,15 @@
 ## Learnings
 
 <!-- Append learnings below -->
+
+### 2025 — Phase 1.3 Component Test Infrastructure
+- **Test patterns:** All tests inherit `TestBase` (which calls `UI.Init()`), use `[Fact]`, and call `view.SetViewHandlerToGeneric()` to wire up handlers for body evaluation. The `SetViewHandlerToGeneric()` extension lives in `tests/Comet.Tests/Helpers/ViewExtensions.cs`.
+- **Handler registration:** `tests/Comet.Tests/UI.cs` registers `GenericViewHandler` for most controls. If new types (like `Component`) need handler registration, they'll need entries here.
+- **Namespace convention:** All test files use `namespace Comet.Tests` regardless of subdirectory. Inner helper classes are used for test-specific Views/state objects.
+- **Build dependency:** Test project references `src/Comet/bin/$(Configuration)/net10.0-maccatalyst/Comet.dll` directly — Comet must be built for maccatalyst before tests compile.
+- **Pre-existing failures:** 2 tests fail at baseline (not related to Component work), 10 skipped (HStack layout tests).
+- **Files created:** `tests/Comet.Tests/ComponentTests/ComponentBaseTests.cs`, `ComponentStateTests.cs`, `ComponentPropsTests.cs`, `ComponentLifecycleTests.cs` — all written to match the spec for `Component`, `Component<S>`, `Component<S,P>`, `Reactive<T>`. Will compile once Holden lands those types.
+
+### Phase 1 Completion (2026-03-08T003605Z)
+
+**Verification:** All 34 new Component tests pass. All 394 existing tests unchanged. Tests compile against Holden's Component.cs, Reactive.cs, IComponentWithState.cs types. Phase 1.3 orchestration log: `.squad/orchestration-log/2026-03-08T003605Z-bobbie.md`. Phase 1 session log: `.squad/log/2026-03-08T003605Z-phase1-complete.md`. Phase 1 complete, all 35 new tests pass, zero regressions. Ready for Phase 2: MauiReactor API (IReactor, IfElse, Switch, ForEach).
