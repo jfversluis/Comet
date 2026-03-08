@@ -33,6 +33,16 @@ Use this when validating Comet samples through real runtime launches and you nee
 - If MauiDevFlow/Appium wiring is missing, stale, or unreachable, record that explicitly instead of pretending the untouched flows are verified.
 - A broker entry that cannot be reached is not trustworthy evidence.
 
+### Broker visibility is not agent readiness
+- If MauiDevFlow lists a broker/port but the app log shows agent startup failure, keep the baseline evidence you do have and mark the deeper interaction flows blocked.
+- Example failure worth retaining verbatim: `[MauiDevFlow] Failed to start agent: Application.Current was null after 30 retries`.
+- Store that failure inside the sample-validation workspace so later code-fix lanes do not need to reconstruct it from chat or session logs.
+
+### Hidden or disabled live roots are still blocked
+- If MauiDevFlow binds and returns a live tree, but the top `Window` or root content is `[hidden] [disabled]`, classify the run as `runtime_blocked`, not `runtime_verified`.
+- Retain both the screenshot and a short tree/status text artifact so later reruns know the app progressed past startup but still never exposed a usable UI.
+- Example: `CometBaristaNotes` reached broker port `10224`, but the retained tree only showed `Window [hidden] [disabled]` and root `TabView [hidden] [disabled]`; all end-user flows stayed blocked.
+
 ### Fixed bugs require rerun evidence
 - Discovery evidence alone is not enough.
 - If an issue is marked fixed, retain post-fix logs/screenshots and attach them to the same issue entry before promoting the sample to `runtime_verified`.
@@ -40,6 +50,7 @@ Use this when validating Comet samples through real runtime launches and you nee
 ## Examples
 
 - **CometMauiApp Wave 1:** baseline render captured on iOS simulator; interaction coverage left open because no trustworthy live MauiDevFlow session was available.
+- **CometMauiApp follow-up:** Mac Catalyst broker appeared on port `10223`, but the app log still failed with `Application.Current was null after 30 retries`; keep launch evidence, open a runtime-debug issue, and leave the interaction flows blocked.
 - **CometBaristaNotes Wave 1:** build green, runtime blocked; issue recorded with SpringBoard fallback screenshot plus crash log showing `CALayerInvalidGeometry`.
 
 ## Anti-Patterns

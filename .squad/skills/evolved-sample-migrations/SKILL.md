@@ -24,6 +24,8 @@ Use this when a Comet feature needs sample and documentation coverage, especiall
 ### Prefer runtime-proven tab shells in samples
 - Use `TabView` for sample tab layouts unless `TabbedPage` handler wiring is known to be active on the target runtime.
 - Wrap each tab root in `NavigationView` when you still need typed in-tab navigation flows.
+- Keep interop-heavy pages off eagerly-created root tabs when they bring in native/third-party UI that is better entered through an explicit navigation flow.
+- For sample list rows inside `ScrollView`-driven pages, prefer simple `HStack`/`VStack` card rows over `Grid` if iOS runtime validation shows `CALayerInvalidGeometry` crashes during first layout.
 
 ### Teach typed navigation with real props
 - Prefer `Navigation.Navigate<TView>(props)` or typed shell routes in the richer sample.

@@ -414,3 +414,27 @@ The remaining sample migration wave still needs a clean, shared reference for "w
 - `.squad/agents/naomi/charter.md` — Source Generator Dev domain
 - Phase 9 closure: Single-project template was out of scope but identified as pre-Phase 10 technical debt
 
+
+### 2026-03-08T112843Z: Hidden/Disabled Live Root Means Runtime Blocked
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Affirmed  
+**Decision:** When a live sample run binds MauiDevFlow and exposes a tree, but the top Window or root content is still [hidden] [disabled], record the sample as `runtime_blocked` and keep all end-user flows unverified. Runtime-adjacent evidence (broker visibility, tree structure) does not equate to flow verification until the root becomes visible and enabled.
+**Context:** Phase 10 Wave 1 sample validation identified this pattern in CometBaristaNotes live run. MauiDevFlow broker port (10224) was accessible, but the retained live tree showed a hidden/disabled Window and root TabView. Treating that as verification would overclaim progress.
+**Impact:** Future validation waves retain the screenshot plus tree/status artifact. Awaits a visible, enabled root before checking off any flows or calling the evolved lane verified.
+
+### 2026-03-08T112658Z: Runtime Evidence Follow-up — Counter Runtime-Debug Lane
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Affirmed  
+**Decision:** In sample-validation artifacts, treat a visible MauiDevFlow broker/port as insufficient evidence by itself. When the retained app log shows agent startup failed (`Application.Current was null after 30 retries`), keep any valid launch baseline but mark the deeper interaction flows blocked and record a dedicated issue entry.
+**Context:** Phase 10 Wave 1 sample validation captured evidence showing broker port (10223) existed for CometMauiApp, but direct status probing failed and the app never produced a trustworthy live agent session. The distinction between "broker reachable" and "app live session working" is critical for no-overclaim validation.
+**Evidence:** Sample-validation artifacts now retain `baselines/{sample}/logs/original-runtime-debug-*.log.txt` alongside broker/port logs. Artifacts show broker existence is insufficient.
+**Impact:** Future sample-validation passes do not translate broker visibility into verification language. Code-fix lanes have a stable retained artifact for the Counter runtime-debug failure. Coffee sample artifacts are narrowed to real retained crash evidence instead of speculative runtime-wiring claims.
+
+### 2026-03-08T113230Z: Barista Notes Runtime Stability — Sample Shell and Card Layout
+**Owner:** Amos (Controls & API Dev) / Copilot  
+**Status:** Affirmed  
+**Decision:** For `sample/CometBaristaNotes`, keep only runtime-safe pages in the eagerly-created root TabView (`CoffeeDashboardPage`, `ActivityFeedPage`, `SettingsPage`) and route the interop-heavy `ShotLoggingPage` through navigation instead of a startup tab. Also prefer `HStack`/`VStack` list-card rows over `Grid` in sample scroll views when iOS runtime validation shows `CALayerInvalidGeometry` crashes during first layout.
+**Context:** Phase 10 Wave 1 and real iOS simulator validation reproduced two separate issues: (1) TabbedPage handler wiring was not active, so the sample shell needed to move to TabView; (2) after that shell fix, Barista Notes still crashed on launch with `ObjCRuntime.ObjCException: CALayerInvalidGeometry` while laying out six dashboard list cards. Replacing the shared list-card helper with a non-grid row removed the launch crash, and Appium then verified dashboard/activity/settings rendering plus navigation into the shot detail/editor flow.
+**Evidence:** iOS simulator launches reproduced both issues with stack traces and geometry error details.
+**Impact:** Future sample passes treat runtime-safe composition as part of the sample contract (not just compile correctness). Interop-heavy pages can still be demonstrated, but they should enter through explicit navigation so the stable sample shell stays launchable on real runtimes.
+

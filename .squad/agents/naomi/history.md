@@ -28,7 +28,7 @@ Comprehensive analysis: 19 generated controls cover all suitable IView interface
 
 ## Learnings
 
-### Template modernization for current-surface migrations (2026-03-08T000000Z)
+### Template modernization for current-surface migrations (2026-03-08T162622Z)
 
 - `templates/single-project/` was still teaching the legacy starter path: `[Body]`, `[State]`, `net7.0-*`, and `Reloadify3000`.
 - Repeated sample-migration friction is lower when the starter template mirrors `sample/CometMauiApp` and demonstrates `Component<TState>`, `Render()`, `Reactive<T>`, and `SetState(...)` directly.
@@ -272,3 +272,42 @@ Remaining sample migration wave needs a shared reference for "what current Comet
 
 **Timeline:** Queue for Phase 10; prioritize after Amos blocker fix.
 
+---
+
+## Phase 10 Wave 2 Assignment — Single-Project Template Migration
+
+**Timestamp:** 2026-03-08T16:38:59Z  
+**Assignment:** Migrate single-project starter template to current Comet surface
+
+**From:** Bobbie (Test Engineer) — Phase 10 Wave 1 validation completion
+
+**Task Summary:**
+Upgrade `templates/single-project/` from legacy [Body]/[State]/net7.0 patterns to current Component<TState>/Render()/Reactive<T>/SetState/net10.0 surface. The template serves as a visual reference for remaining sample migrations; leaving it on legacy patterns reintroduces patterns samples are trying to retire.
+
+**Acceptance Criteria:**
+- ✅ `templates/single-project/MauiProgram.cs` demonstrates current builder pattern
+- ✅ `App.cs` extends Component<AppState> with Render() (not [Body])
+- ✅ `MainPage.cs` uses Reactive<T> for state, SetState() for mutations
+- ✅ `.csproj` targets `net10.0-{android,ios,maccatalyst,windows}`
+- ✅ Reloadify3000 NuGet dependency removed
+- ✅ `Reload.cs` integration cleaned up or deprecated
+- ✅ Project builds 0 errors/warnings
+- ✅ Template runs on macCatalyst or Windows
+- ✅ Regression test: Template builds and smoke test passes
+
+**Scope:**
+1. Update `MauiProgram.cs` — register current Comet builders, remove Reloadify3000
+2. Rewrite `App.cs` — Component<AppState> with Render() method (no [Body] attribute)
+3. Rewrite `MainPage.cs` — Reactive<T> state, SetState() mutations, current layout surface
+4. Update `.csproj` — net10.0-* targets, remove legacy Reloadify dependencies
+5. Clean up `Reload.cs` — either deprecate or align with current debug-safe patterns
+6. Test — Build clean, run on at least one platform, verify no regressions
+
+**Why Now:**
+- Remaining 9 samples in validation wave need a shared reference for "current Comet"
+- Bobbie's validation infrastructure can copy-paste patterns from template without translation
+- Future sample refactors use template as baseline, reducing pattern drift
+
+**Timeline:** Medium priority. Can run in parallel with Amos' iOS fix. Target: Wave 2 closure.
+
+**Next:** Upgrade template to current surface, verify build and runtime, become reference for remaining samples.

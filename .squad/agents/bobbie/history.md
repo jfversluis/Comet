@@ -38,6 +38,22 @@ Theme system validated with 34 tests. Confirmed concrete `Theme` base class, `Th
 
 ## Learnings
 
+### Live BaristaNotes Follow-up — Broker Bound, Root Still Hidden (2026-03-08T163155Z)
+
+**Status:** ✅ evidence corrected without overclaiming
+
+- **Live run state tightened:** The rebuilt BaristaNotes launch now has retained live evidence that reaches MauiDevFlow broker port `10224`, so the sample is no longer “crash-only” on every surface. But the retained tree snapshot shows `Window [hidden] [disabled]` with root `TabView [hidden] [disabled]`, which still fails the usable-UI bar for validation.
+- **Report/checklist/issues aligned:** `CometBaristaNotes` now records the evolved lane as `runtime_blocked` instead of `not_started`, carries the live screenshot/tree evidence, and adds a second blocking issue (`barista-002`) so later reruns know exactly why the live surface is still unverified.
+- **Guardrail sharpened:** A reachable broker and live tree are still insufficient when the root surface is hidden or disabled. Until a visible, enabled root is retained, treat the run as blocked evidence only and leave end-user flows unchecked.
+
+### Runtime Evidence Follow-up — Retained Broker Failure + Crash-Only Coffee Claim (2026-03-08T162600Z)
+
+**Status:** ✅ artifacts corrected without overclaiming
+
+- **CometMauiApp follow-up evidence retained:** The sample-validation workspace now carries a concrete Mac Catalyst runtime-debug artifact at `baselines/CometMauiApp/logs/original-runtime-debug-maccatalyst.log.txt`, capturing the observed sequence where MauiDevFlow exposed broker port `10223` but the app then reported `Application.Current was null after 30 retries`. That failure now blocks the unchecked interaction flows instead of leaving them ambiguously “not started.”
+- **Counter sample reporting tightened:** `CometMauiApp` remains `baseline_captured` because the iOS launch screenshot is real evidence, but the report/checklist/issues now explicitly say the deeper interaction lane is unresolved (`counter-001`) until a trustworthy live agent session exists. Broker visibility alone is no longer treated as verification-adjacent evidence.
+- **Coffee sample claim corrected:** The workspace artifacts for `CometBaristaNotes` now focus only on the retained iOS launch crash evidence (`CoffeeDashboardPage` + `CALayerInvalidGeometry` / NaN layout) and stop asserting an unproven “missing MauiDevFlow wiring” blocker. The retained notes/checklist/issues now keep the scope on the real launch crash the code-fix lane must solve first.
+
 ### Runtime Evidence Wave 1 — P0 Baselines + No-Overclaim Guardrail (2026-03-08T163500Z)
 
 **Status:** ✅ evidence scaffolded; one P0 baseline captured; one P0 blocker classified
@@ -819,3 +835,59 @@ All agents released. Roadmap through Phase 9 stable and complete. Ready for Phas
 **Wave 1 Status:** ✅ Complete — Infrastructure operational, first blocker identified and logged.  
 **Next:** Amos fixes CometBaristaNotes, Bobbie reruns validation, remaining 9 samples runtime-verified.
 
+---
+
+## Phase 10 Wave 2 Assignment — Remaining Sample Validation & Evidence Consolidation
+
+**Timestamp:** 2026-03-08T16:38:59Z  
+**Assignment:** Continue runtime validation on 9 remaining samples, consolidate evidence, await Amos' CometBaristaNotes iOS fix
+
+**From:** Scribe (Session Logger) — Phase 10 Wave 1 completion and Wave 2 kickoff
+
+**Wave 1 Completion Summary:**
+✅ Validation infrastructure setup complete (Python runner, xUnit harness, evidence directory)  
+✅ All 10 samples build successfully (0 errors/warnings)  
+🔴 CometBaristaNotes iOS blocker identified: CALayerInvalidGeometry crash at launch  
+✅ Decisions documented: hidden-root-runtime-blocked, runtime-evidence-followup, baristanotes-runtime-stability  
+✅ Evidence captured: Crash logs, failure screenshot, call stack, UI tree snapshots
+
+**Wave 2 Task Summary:**
+Continue runtime validation on 9 remaining samples (CometMauiApp, CometFeatureShowcase, CometAllTheLists, CometTaskApp, CometProjectManager, CometWeather, CometStressTest, Comet.Sample, MauiReference). Consolidate evidence in session workspace. Await Amos' iOS fix on CometBaristaNotes; revalidate that sample when ready. Generate Phase 10 closure report.
+
+**Per-Sample Checklist:**
+- Build: 0 errors/warnings
+- Launch: No unhandled exceptions, visible UI render
+- Interaction: Navigate between tabs/pages, verify sample-specific flows (list scroll, form input, etc.)
+- Evidence: Screenshot, UI tree inspection, runtime logs
+- State: `runtime_verified` or `runtime_blocked` with reasoning
+
+**Blockers & Evidence:**
+- Flag any runtime crashes with root cause notes
+- Retain crash logs, failure screenshots, UI tree snapshots
+- Platform-specific blockers (iOS, Android, Windows, macCatalyst) logged separately
+- No overclaim: treat broker visibility as insufficient evidence; require full flow execution
+
+**Revalidation (CometBaristaNotes):**
+- When Amos completes iOS fix, rerun validation on that sample
+- Verify state transition: `runtime_blocked` → `runtime_verified` (or new blocker with evidence)
+
+**Closure Work:**
+- All-samples checklist (build, runtime, evidence completeness)
+- Per-sample issue templates for any blockers
+- Phase 10 summary report: 10 samples total, X verified, Y blocked, Z deferred
+
+**Related Decisions:**
+- Runtime Evidence Wave 1 (No Overclaim Rule) — Blocks overclaiming "validated" when evidence is incomplete
+- Runtime Validation Standard for Sample Work — Runtime UI gate mandatory; evidenced by screenshots + logs
+- Hidden/Disabled Live Root Means Runtime Blocked — MauiDevFlow visibility insufficient without visible root
+
+**Cross-Agent Context:**
+- Amos: iOS layout fix in progress; will notify when CometBaristaNotes ready for rerun
+- Naomi: Template migration in parallel; serves as reference for remaining samples
+- Holden: Shared runtime wiring assessment complete; awaiting Phase 10 closure report
+
+**Timeline:** Medium priority. Parallel with Amos' iOS fix. Target: All 9 samples runtime-verified/blocked by Wave 2 closure.
+
+**Wave 1 Status:** ✅ Complete — Infrastructure operational, first blocker identified and logged.  
+**Wave 2 Status:** 🟡 In Progress — Awaiting Amos' iOS fix; continuing validation on remaining 9 samples.  
+**Next:** Validate remaining 9 samples, await Amos' iOS fix and rerun CometBaristaNotes, consolidate evidence, generate closure report.

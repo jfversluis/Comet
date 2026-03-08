@@ -37,6 +37,39 @@ Component hot reload with MauiHotReloadHelper registration, TransferState() for 
 
 ## Learnings
 
+### P0 Sample Runtime Pass — Barista Notes launch path stabilized (2026-03-08T11:30:00Z)
+
+**Status:** ✅ **P0 SAMPLE RUNTIME PASS COMPLETE**
+
+**Assignment:** Own the first real runtime validation pass for `sample/CometMauiApp` and `sample/CometBaristaNotes`, update them to the evolved API where appropriate, and reproduce/fix the reported Barista Notes blank/white-screen behavior with real runtime evidence.
+
+**What changed:**
+- Confirmed `sample/CometMauiApp` was already on the evolved path (`Component<TState>`, `Render()`, `Reactive<T>`, `SetState(...)`) and validated it on the iOS simulator with Appium-visible controls.
+- Swapped `sample/CometBaristaNotes/BaristaApp.cs` from `TabbedPage` to `TabView`, then kept only runtime-safe root tabs (`CoffeeDashboardPage`, `ActivityFeedPage`, `SettingsPage`) while routing the interop-heavy `ShotLoggingPage` through navigation.
+- Reworked `Pages/ActivityFeedPage.cs` onto `Component<ActivityFeedState>` + `Render()` so the activity tab also teaches the evolved surface instead of falling back to older `[Body]`/`State<T>` patterns.
+- Replaced the shared `FormHelpers.MakeListCard(...)` grid row with an `HStack`/`VStack` row after iOS runtime validation showed `CALayerInvalidGeometry` crashes from eagerly-laid-out sample cards.
+
+**Runtime findings:**
+- The original Barista Notes white-screen report was not just missing `TabbedPage` handler wiring. Once the shell moved to `TabView`, the iOS simulator exposed a second launch blocker: `CALayerInvalidGeometry Reason: CALayer position contains NaN`.
+- The immediate launch crash correlated with six list-card rows on the dashboard (`BEANS TO DIAL IN` + `RECENT SHOTS`). Replacing the grid-based list-card helper removed the crash and produced a stable launch on iOS.
+- `ShotLoggingPage` remains intentionally interop-heavy and can still surface third-party/native complexity, so keeping it off an eagerly-instantiated root tab makes the sample runtime path materially safer.
+
+**Validated flows:**
+- `dotnet build sample/CometMauiApp/CometMauiApp.csproj -c Debug -f net10.0-ios --no-dependencies` ✅
+- `dotnet build sample/CometBaristaNotes/CometBaristaNotes.csproj -c Debug -f net10.0-ios --no-dependencies` ✅
+- `dotnet build sample/CometBaristaNotes/CometBaristaNotes.csproj -c Debug -f net10.0-maccatalyst --no-dependencies` ✅
+- iOS simulator launch for Barista Notes with console logs: stable after the list-card fix ✅
+- Appium validation for Barista Notes:
+  - dashboard renders ✅
+  - tab bar shows `Coffee Lab`, `Activity`, `Settings` ✅
+  - activity tab renders ✅
+  - settings tab renders ✅
+  - tapping an activity item navigates into the shot editor/detail flow ✅
+
+**Artifacts / evidence:**
+- Session screenshots under `sample-validation/evolved/`, including `CometMauiApp-counter.png` and Barista Notes launch/runtime captures.
+- Launch logs show the pre-fix `CALayerInvalidGeometry` failure and the post-fix stable `MauiDevFlow.Agent` startup on the iOS simulator.
+
 ### Phase 9 Samples & Documentation Delivered (2026-03-08T05:47:41Z)
 
 **Status:** ✅ **PHASE 9 SAMPLE/DOC LANE COMPLETE**
@@ -469,3 +502,38 @@ Patterns established during this phase will guide future sample and documentatio
 
 **Next:** Fix layout issue, rerun validation, confirm `runtime_verified`, close blocker.
 
+---
+
+## Phase 10 Wave 2 Assignment — iOS Runtime Fix
+
+**Timestamp:** 2026-03-08T16:38:59Z  
+**Assignment:** CometBaristaNotes iOS CALayerInvalidGeometry crash investigation and fix
+
+**From:** Bobbie (Test Engineer) — Phase 10 Wave 1 validation completion
+
+**Task Summary:**
+Debug and fix CometBaristaNotes iOS runtime crash (CALayerInvalidGeometry with NaN layout). The sample builds cleanly but crashes immediately on iOS Simulator with a blank white screen. Root cause is likely unresolved `Binding<T>` or missing size constraint in CoffeeDashboardPage or parent container.
+
+**Acceptance Criteria:**
+- ✅ CometBaristaNotes builds 0 errors/warnings
+- ✅ Launches on iOS Simulator without CALayerInvalidGeometry exception
+- ✅ All three dashboard list cards render with visible UI
+- ✅ Navigation into Shot Logging, Settings, Activity Feed verified
+- ✅ Runtime evidence: Fresh screenshots, UI tree inspection, runtime logs captured
+- ✅ Status updated: `runtime_blocked` → `runtime_verified`
+
+**Action Items:**
+1. Examine CoffeeDashboardPage layout container; check for unresolved bindings or missing constraints
+2. Inspect parent TabView/Shell wiring; ensure proper size propagation
+3. Validate list-card row composition (HStack vs Grid in iOS context)
+4. Test iOS Simulator launch; verify all UI renders
+5. Capture evidence: Screenshots, logs, tree inspection
+6. Update Bobbie with rerun results
+
+**Related Decisions:**
+- Barista Notes Runtime Stability (Sample Shell and Card Layout) — HStack/VStack preferred over Grid for iOS list rows
+- Runtime Evidence Wave 1 (No Overclaim Rule) — Validates `runtime_blocked` → `runtime_verified` transition
+
+**Timeline:** High priority. Unblocks Bobbie's remaining 9 sample validations.
+
+**Next:** Fix iOS layout crash, rerun validation, capture fresh evidence, notify Bobbie of completion.
