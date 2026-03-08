@@ -33,6 +33,19 @@
 **Context:** Existing code instantiates `new Theme()` directly in 12+ tests and the singleton getter. Making Theme abstract would break backward compatibility. The two-class approach (Theme + ThemeColors) keeps the old simple color properties working while adding the full MD3 semantic color system. The environment integration uses the same `View.SetGlobalEnvironment()` broadcast mechanism that the existing `Style.Apply()` uses, so theme changes propagate to all active views automatically.
 **Impact:** All existing tests pass unchanged (574 total, 2 pre-existing failures only). `Theme.Light` and `Theme.Dark` now include `ThemeColors` presets. `Theme.Current = newTheme` now triggers environment updates (additive behavior). New `EnvironmentKeys.ThemeColor.*` keys do not conflict with existing keys.
 
+### 2025-07-24: Default Theme Styles Registration
+**Owner:** Amos (Controls & API Dev)  
+**Status:** Implemented  
+**Decision:** `DefaultThemeStyles.Register(theme)` is called inside `Theme.Apply()` before applying control styles. It registers `ControlStyle<T>` entries for Button, Text, TextField, Toggle, and Slider using the theme's color scheme. It skips any control type that already has a custom style registered.
+**Rationale:** Keeps controls decoupled from theme logic (no `IThemeable` needed on generated controls). Uses the existing `ControlStyle<T>` → `SetGlobalEnvironment(Type, key, value)` pipeline. Idempotent: safe to call multiple times.
+**Impact:** Setting `Theme.Current = Theme.Light` automatically gives all buttons a primary-colored background. Users can override any default by calling `theme.SetControlStyle(customStyle)` BEFORE setting `Theme.Current`, or by using explicit fluent methods like `.Background(Colors.Red)`.
+
+### 2026-03-08: Style Builder Generation Pattern
+**Owner:** Naomi (Source Generator Dev)  
+**Status:** Implemented  
+**Decision:** Generated `{Control}StyleBuilder` classes for each `[CometGenerate]` control are placed in the `Comet.Styles` namespace. Each builder wraps `ControlStyle<T>` with: (1) Common methods (`Background`, `TextColor`) on every builder using well-known `EnvironmentKeys` constants, (2) Per-control methods derived from the control's non-Action, non-Skip extension properties using `nameof(IInterface.Property)` as the environment key, (3) Implicit conversion to `ControlStyle<T>` so builders work directly with `Theme.SetControlStyle()`.
+**Context:** Phase 2.3 needed typed style helpers alongside the generated control classes. The generator already had the property metadata, so extending it to produce builders was a natural fit. Action-type properties (events) are excluded — they aren't meaningful for styling. Common color/background methods are hardcoded on every builder to avoid fragmentation across controls.
+
 ## Governance
 
 - All meaningful changes require team consensus
