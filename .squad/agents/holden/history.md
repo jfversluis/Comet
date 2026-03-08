@@ -59,6 +59,41 @@ Defined ControlStyle<T> generic builder pattern. Theme as concrete base class wi
 - With the agent-connected `Application` + `ContentPage` + `CometHost(rootView)` path, MauiDevFlow now sees the correct root Comet views (`MainPage`, `TabView`) instead of wrapped `CometApp` roots, but hit-testing still resolves only `CometHost` / `ContentPage`, while descendant Comet controls remain `[hidden] [disabled]` with `bounds: null`, `nativeType: null`, and failed `tap` attempts.
 - A direct `UseCometApp` experiment made the Comet root topology cleaner but dropped live MauiDevFlow connectivity in the current harness, so I kept the root-view factory change on the MAUI `Application` host and left the runtime claim at render-only.
 
+### 2026-03-08 — P0 Runtime Inspection Bridge Revision (Shared Descendant Metadata)
+
+**Status:** ⚠️ Shared inspection metadata improved; interactive validation still not proven
+
+**What changed:**
+- Exposed public inspection-facing state on `src/Comet/Controls/View.cs` so descendant Comet views now surface automation, visibility, enabled, bounds, handler, and native-type data to reflection-based tooling.
+- Updated `src/Comet/Helpers/ViewExtensions.cs` so `SetAutomationId()` also sets `AccessibilityId`, and `GetAutomationId()` falls back to it.
+- Updated `src/Comet/Controls/CometHost.cs` so visual-tree inspection prefers presented/rendered content over the wrapper root.
+- Added shared handler mappings in `src/Comet/AppHostBuilderExtensions.cs` to push automation/visibility/input metadata down to native platform views during handler updates.
+- Added focused regression coverage in `tests/Comet.Tests/AccessibilityTests.cs` and `tests/Comet.Tests/ViewGetViewTests.cs`.
+
+**Validation run:**
+- Build: `dotnet build tests/Comet.Tests/Comet.Tests.csproj -c Release`
+- Tests: `dotnet test tests/Comet.Tests/Comet.Tests.csproj --no-build -c Release --filter "AccessibilityTests|ViewGetViewTests|CometHost|NativeHostInteropTests|NewFeatureTests"` → **43/43 passing**
+- Build: `dotnet build sample/CometMauiApp/CometMauiApp.csproj -c Debug -f net10.0-maccatalyst`
+- Build: `dotnet build sample/CometBaristaNotes/CometBaristaNotes.csproj -c Debug -f net10.0-maccatalyst`
+- Runtime: relaunched both MacCatalyst apps and rechecked MauiDevFlow on ports `10223` (Comet Counter) and `10224` (Barista Notes)
+
+**Evidence retained:**
+- `/Users/davidortinau/.copilot/session-state/b26a6593-f539-47de-8f7b-3bd72e7ad681/files/runtime-validation/CometMauiApp/revision2/`
+- `/Users/davidortinau/.copilot/session-state/b26a6593-f539-47de-8f7b-3bd72e7ad681/files/runtime-validation/CometBaristaNotes/revision2/`
+
+**Truthful outcome:**
+- `CometMauiApp` — **build ✅ / launch ✅ / render ✅ / interactive flow ❌**
+- `CometBaristaNotes` — **build ✅ / launch ✅ / render ✅ / interactive flow ❌**
+
+**Important finding:**
+- Direct MauiDevFlow `property` inspection now sees meaningful descendant metadata on Comet views (for example automation id, bounds, handler, and native type), which confirms the shared runtime exposure improved.
+- MauiDevFlow’s main `tree` / `query --automationId` / `hittest` / `tap` path still treats descendants as `[hidden] [disabled]`, returns no automation-id matches, resolves hit tests only to `CometHost` / `ContentPage`, and still fails taps.
+- That leaves the remaining blocker in the downstream inspection projection / hit-testing path, native accessibility consumption, or agent-side snapshot behavior rather than simple absence of Comet-side metadata.
+
+**Likely downstream benefit:**
+- If MauiDevFlow begins consuming the propagated metadata correctly, the same shared bridge should also benefit other samples on the same debug-host/runtime path, including `CometTaskApp` and `CometAllTheLists`.
+- That remains a hypothesis only; no new live proof was collected for those samples in this revision.
+
 ### Phase 7.1 — REJECTED (2026-03-08T050500Z)
 
 **Status:** ❌ REJECTED by Bobbie (Test Engineer)  
@@ -424,3 +459,25 @@ Successfully reworked shared sample DEBUG host to unblock CometMauiApp and Comet
 **Amos Status:** Remains locked out until this revision completes and Bobbie revalidates.
 
 **Decision Record:** `.squad/decisions.md` — "Bobbie — TaskApp + AllTheLists Review Gate"
+
+---
+
+## 2026-03-08T173607Z — Shared Inspection Bridge APPROVED
+
+**Status:** ✅ Artifact approved for truthfulness
+
+**Delivered:**
+- Enhanced View.cs, ViewExtensions.cs, CometHost.cs, AppHostBuilderExtensions.cs with environment-based descendant property traversal
+- DEBUG host refactor using `CreateRootView()` factory pattern
+- Direct descendant property inspection verified (AutomationId, Bounds, Handler, NativeType all accessible)
+
+**Validation:**
+- Build: SourceGenerator, Comet, Tests, CometMauiApp, CometBaristaNotes ✅
+- Regression: 43/43 passing ✅
+- Interactive blocker confirmed still present ✅
+
+**Coordinator note:** TaskApp + AllTheLists need factory-based DEBUG entry points (next revision assigned to Holden per architecture domain).
+
+**Next ownership:** Follow-up work on interactive-bridge blocker remains with Holden if requested.
+
+---

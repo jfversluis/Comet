@@ -1053,3 +1053,65 @@ Do NOT promote either sample to interactive validation until MauiDevFlow can hit
 **Architectural blocker:** MauiDevFlow automation-id hit-testing does not reach descendants inside Comet containers; requires deeper bridge between MAUI handlers and inner view tree.
 
 **Next Phase:** Wave 2 (Holden fixes architecture, Bobbie validates remaining 9 samples)
+
+---
+
+## 2026-03-08T173607Z — Shared Inspection Bridge Review
+
+**Status:** ✅ APPROVE (truthfulness), 🔒 ceiling unchanged (interactive)
+
+**Validation Performed:**
+- Inspected `src/Comet/Controls/View.cs`, `src/Comet/Helpers/ViewExtensions.cs`, `src/Comet/Controls/CometHost.cs`, and `src/Comet/AppHostBuilderExtensions.cs`
+- Reviewed retained runtime artifacts under `/Users/davidortinau/.copilot/session-state/b26a6593-f539-47de-8f7b-3bd72e7ad681/files/runtime-validation/{CometMauiApp,CometBaristaNotes}/revision2/`
+- Reran:
+  - `dotnet build src/Comet.SourceGenerator/Comet.SourceGenerator.csproj -c Release`
+  - `dotnet build src/Comet/Comet.csproj -c Release -f net10.0-maccatalyst`
+  - `dotnet build tests/Comet.Tests/Comet.Tests.csproj -c Release`
+  - `dotnet test tests/Comet.Tests/Comet.Tests.csproj --no-build -c Release --filter "AccessibilityTests|ViewGetViewTests|CometHost|NativeHostInteropTests|NewFeatureTests"` → ✅ 43/43 passing
+  - `dotnet build sample/CometMauiApp/CometMauiApp.csproj -c Debug -f net10.0-maccatalyst` → ✅ pass
+  - `dotnet build sample/CometBaristaNotes/CometBaristaNotes.csproj -c Debug -f net10.0-maccatalyst` → ✅ pass
+
+**Approved Claims:**
+- The shared inspection bridge is real in the claimed framework files.
+- Direct descendant property inspection is materially better after this revision.
+- Focused regression validation is green at 43/43.
+- Live runtime validation still tops out at `build ✅ / launch ✅ / render ✅ / interactive ❌` for both P0 samples.
+
+**Evidence Highlights:**
+- `CometMauiApp/revision2/button-automationid-property.txt` → `AutomationId: counter-increment-button`
+- `CometMauiApp/revision2/button-bounds-property.txt` → `Bounds: 6, 6, 83, 48`
+- `CometMauiApp/revision2/button-handler-property.txt` → `Handler: Microsoft.Maui.Handlers.ButtonHandler`
+- `CometMauiApp/revision2/button-nativetype-property.txt` → `NativeType: UIKit.UIButton`
+- `CometMauiApp/revision2/button-hidden-property.txt` / `button-disabled-property.txt` → `False`
+- `CometMauiApp/revision2/tree-after-native-bridge.txt` and `CometBaristaNotes/revision2/tree-after-native-bridge.txt` still mark descendants `[hidden] [disabled]`
+- `query-automationid-after-native-bridge.txt` still returns `No elements found`
+- `hittest-after-native-bridge.json` still resolves only `CometHost` / `ContentPage`
+- `tap-after-native-bridge.txt` still fails in both samples
+
+**Verdict Boundary:**
+- This revision raises the known support level for **direct descendant property inspection only**.
+- It does **not** add reviewer-approved `tree`, `query --automationId`, `hittest`, or `tap` support.
+- It does **not** create a new shared rule; the prior interactive blocker rule remains in force.
+
+**Next-owner recommendation:** No corrective rewrite is needed for this artifact. If a follow-on revision is requested for the remaining interactive bridge blocker, Holden remains the best owner.
+
+---
+
+## 2026-03-08T173607Z — Shared Inspection Bridge Approval Gate
+
+**Status:** ✅ Approved for truthfulness
+
+**Reviewed:** Holden's inspection-bridge revision claiming enhanced direct descendant property inspection.
+
+**Validation scope:**
+- Framework touch-point audit: View.cs, ViewExtensions.cs, CometHost.cs, AppHostBuilderExtensions.cs ✅
+- Build revalidation: 5 projects ✅
+- Regression subset: 43/43 passing ✅
+- Sample runtime inspection: CometMauiApp/revision2/ and CometBaristaNotes/revision2/ evidence reviewed ✅
+- Interactive blocker status: Explicitly confirmed still present ✅
+
+**Verdict:** Direct descendant property inspection is real and materially improves debugging within the approved build/launch/render floor. Interactive capabilities remain blocked.
+
+**Coordinator note:** Current approved ceiling is build ✅ / launch ✅ / render ✅ / interactive ❌. TaskApp + AllTheLists route remains blocked on Holden's architecture fix.
+
+---
