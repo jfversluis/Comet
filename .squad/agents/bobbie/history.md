@@ -38,6 +38,17 @@ Theme system validated with 34 tests. Confirmed concrete `Theme` base class, `Th
 
 ## Learnings
 
+### Coffee Sample Rebuild Triage — Build Green, Gate Red (2026-03-08T071500Z)
+
+**Status:** ✅ triaged without code changes
+
+- **What Bobbie reproduced:** The documented build chain is green for the coffee sample today. `dotnet build src/Comet.SourceGenerator/Comet.SourceGenerator.csproj -c Release`, `dotnet build src/Comet/Comet.csproj -c Release`, and `dotnet build sample/CometBaristaNotes/CometBaristaNotes.csproj -c Release -f net10.0-maccatalyst` all succeed on the current repo state.
+- **Actual failing gate:** The focused Phase 9 validation test fails deterministically: `COMET_PHASE9_COFFEE_SAMPLE_PROJECT=sample/CometBaristaNotes/CometBaristaNotes.csproj dotnet test tests/Comet.Tests/Comet.Tests.csproj --no-build -c Release --filter "FullyQualifiedName~Phase9SampleDocumentationValidationTests.CoffeeAppPassesPhase9GateWhenConfigured"`.
+- **Failure signature:** `ValidateCoffeeApp(...)` rejects the sample with “Coffee app must exercise a richer current surface...” from `tests/Comet.Tests/Phase9SampleDocumentationValidationTests.cs`.
+- **Why it happens:** The validator only counts `CollectionView`, `NavigationView`, `TabView`, `CometShell`, `GoToAsync<T>()`, and `RegisterRoute<T>()` in **product sources**. `BaristaApp.cs` does contain `NavigationView`, but `Phase9Project.IsBootstrapFile(...)` excludes any `*App.cs` file. The evolved pages use `Navigation.Navigate<T>()` in `sample/CometBaristaNotes/Pages/CoffeeDashboardPage.cs` and `sample/CometBaristaNotes/Pages/CoffeeBeanDetailPage.cs`, but that API is not part of `RichCoffeeSurfacePattern`.
+- **Why this is not just a transient flake:** Even after the rich-surface mismatch, the sample still has many intentional-red Phase 9 legacy hits (`[Body]`, `State<T>`) across older pages such as `ActivityFeedPage.cs`, `BeanDetailPage.cs`, `BagDetailPage.cs`, `SettingsPage.cs`, and others. So the current signal is a real repo-state validation failure, not an environment-only rebuild blip.
+- **Key file paths:** `sample/CometBaristaNotes/BaristaApp.cs`, `sample/CometBaristaNotes/Pages/CoffeeDashboardPage.cs`, `sample/CometBaristaNotes/Pages/CoffeeBeanDetailPage.cs`, `tests/Comet.Tests/Phase9SampleDocumentationValidationTests.cs`.
+
 ### Phase 9 Validation Infrastructure — Implementation Complete (2026-03-08T053639Z)
 
 **Status:** ✅ VALIDATION LANE COMPLETE
@@ -687,3 +698,12 @@ Theme system validated with 34 tests. Confirmed concrete `Theme` base class, `Th
 **Files touched:**
 - `tests/Comet.Tests/Phase8_ExpandedControlTests.cs` — unskipped 7, added 9 TabbedPage/FlyoutPage tests
 - `.squad/decisions/inbox/bobbie-phase8-reviewer-gate-approved.md` — verdict document
+
+## 2026-03-08T055638Z — Phase 9 Closure Gate Triage Complete
+
+Triaged Amos Phase 9 sample/docs lane. Samples build green but closure gate identified mandatory blockers:
+
+1. **DisplayAlertAsync documentation gap** in `docs/migration-guide.md`
+2. **CometBaristaNotes validation mismatch** — NavigationView pattern not recognized by richer-surface validator
+
+Routed findings to Amos for revision lane. Phase 9 remains open until blockers are resolved.

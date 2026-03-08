@@ -37,6 +37,36 @@ Component hot reload with MauiHotReloadHelper registration, TransferState() for 
 
 ## Learnings
 
+### Phase 9 Samples & Documentation Delivered (2026-03-08T05:47:41Z)
+
+**Status:** ✅ **PHASE 9 SAMPLE/DOC LANE COMPLETE**
+
+**Assignment:** Evolve sample coverage and documentation without renaming Comet or abandoning current MAUI 10 guidance.
+
+**Delivered:**
+- Reworked `sample/CometMauiApp` into **Comet Counter**, a `Component<CounterState>` sample that shows `Render()`, `SetState(...)`, `Reactive<T>`, and MAUI 10-safe controls.
+- Reworked `sample/CometBaristaNotes` into a richer coffee reference by adding `CoffeeDashboardPage : Component<CoffeeDashboardState>` and `CoffeeBeanDetailPage : Component<CoffeeBeanDetailState, CoffeeBeanDetailProps>`, then wiring them into a `TabbedPage` shell.
+- Added `docs/migration-guide.md` and updated `README.md` so the evolved component-first surface is documented alongside the classic `[Body]` API.
+- Added sample READMEs plus legacy callouts in older sample docs so readers can find the current references quickly.
+
+**Key Implementation Decisions:**
+- Reuse existing sample projects instead of creating new ones. `CometMauiApp` is the smallest surgical host for the counter sample, while `CometBaristaNotes` already has realistic coffee data, forms, and interop assets worth preserving.
+- Keep the application root on `CometApp`; the evolved API begins at the page/component level because `UseCometApp<TApp>()` still expects an `IApplication`.
+- Prefer typed navigation (`Navigation.Navigate<TView>(props)`) and typed props pages for new sample flows while leaving older interop-heavy pages in place where they still communicate the right lessons.
+- Preserve MAUI 10 guidance in touched samples: no `Compatibility` package in the refreshed starter app, `Border` over `Frame`, and async action sheet APIs in the reused coffee sample.
+
+**Validation:**
+- `dotnet build src/Comet.SourceGenerator/Comet.SourceGenerator.csproj -c Release` ✅
+- `dotnet build src/Comet/Comet.csproj -c Release` ✅
+- `dotnet build tests/Comet.Tests/Comet.Tests.csproj -c Release` ✅
+- `dotnet build sample/CometMauiApp/CometMauiApp.csproj -c Release -f net10.0-maccatalyst` ✅
+- `dotnet build sample/CometBaristaNotes/CometBaristaNotes.csproj -c Release -f net10.0-maccatalyst` ✅
+- `dotnet test tests/Comet.Tests/Comet.Tests.csproj --no-build -c Release --filter "FullyQualifiedName=Comet.Tests.ComponentStateTests.StateIsInitializedToNewInstance"` ✅
+
+**Notes:**
+- The broad `FullyQualifiedName~Component` slice can still encounter the long-standing environment/state stack-overflow path, so focused validation remains the clearest signal until that framework issue is fixed separately.
+- `ShotLoggingPage` remains the legacy interop-heavy anchor inside Barista Notes, which is intentional: the sample now demonstrates incremental migration instead of a ground-up rewrite.
+
 ### Phase 8 Closure & Phase 9 Kickoff (2026-03-08T052745Z)
 
 **Status:** ✅ **PHASE 8 COMPLETE** → 🚀 **PHASE 9 LAUNCHED**
@@ -358,3 +388,12 @@ Component hot reload with MauiHotReloadHelper registration, TransferState() for 
 
 **Next:** Phase 8.3 (Bobbie) — Control coverage test gate
 
+
+## 2026-03-08T055638Z — Phase 9 Closure Gate Failure Hold
+
+Samples (`CometMauiApp`, `CometBaristaNotes`) built successfully ✅, but Bobbie's closure gate triage identified two blockers:
+
+1. **docs/migration-guide.md** — Missing `DisplayAlertAsync` coverage (required for migration narrative)
+2. **CometBaristaNotes** — NavigationView/bootstrap pattern fails richer-surface validator
+
+**Next:** Revision lane assigned to fix blockers and re-run closure gate.

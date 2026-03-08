@@ -234,3 +234,17 @@
   - Migration guide must document build order and MAUI 10 replacements (`CollectionView`, `Border`, `DisplayAlertAsync`, `MainThread`).
 **Design Rationale:** Validation harness intentionally incomplete to guide closure criteria while keeping repository green during parallel implementation work. Once Amos lands all samples/docs, the gate transitions to **required** as part of Phase 9 closure verification.
 **Impact:** Phase 9 validation infrastructure ready; no blockers on Amos Lane 1 (samples/docs) or suite mainline. Closure gate explicit and runnable today via opt-in script.
+
+### 2026-03-08T054741Z: Phase 9 Samples & Docs Strategy — Evolve Existing
+**Owner:** Amos (Controls & API Dev)  
+**Status:** Adopted  
+**Decision:** Phase 9 sample/documentation work evolves **existing** Comet samples (`sample/CometMauiApp`, `sample/CometBaristaNotes`) and docs instead of adding brand-new sample apps. `CometMauiApp` serves as the lightest MVU starter; `CometBaristaNotes` demonstrates richer component + typed-navigation scenarios.
+**Rationale:** User requested surgical changes and reuse of existing assets. Creating separate greenfield samples would duplicate code, increase maintenance burden, and weaken the "migrate without rewriting" narrative. Both existing samples already contain relevant infrastructure (domain models, forms, data services) for credible incremental migration examples.
+**Impact:** Sample maintenance concentrated in two reference projects. Readers see both ends of the migration spectrum. Future sample work should extend these two references unless a genuinely new scenario cannot fit either host.
+
+### 2026-03-08T071500Z: Coffee Sample Rebuild Triage — Validation Gate Issue, Not Compiler
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Adopted  
+**Decision:** Treat the "coffee sample rebuild failed" report as a **deterministic validation failure**, not a transient build break. `sample/CometBaristaNotes` builds successfully; the failure originates from Phase 9's focused validation gate. `RichCoffeeSurfacePattern` validator only recognizes `CollectionView`, `NavigationView`, `TabView`, `CometShell`, `GoToAsync<T>()`, `RegisterRoute<T>()` — but the sample uses `Navigation.Navigate<T>()` pattern in evolved pages, which the validator doesn't recognize.
+**Evidence:** Builds succeed; validator rule mismatch identified. The sample contains legacy `[Body]` / `State<T>` pages intentionally, so repo is intentionally red against full Phase 9 closure gate until migration completes.
+**Impact:** Do not treat as compiler regression. When Amos resumes Phase 9, fix or realign the validation rule. After rule is aligned, expect additional real Phase 9 failures until legacy pages are migrated or excluded by design.
