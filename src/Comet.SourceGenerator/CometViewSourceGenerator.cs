@@ -146,6 +146,49 @@ namespace {{NameSpace}} {
 }
 ";
 
+		const string styleBuilderMustacheTemplate = @"
+using System;
+using Comet;
+using Comet.Styles;
+using Microsoft.Maui;
+using Microsoft.Maui.Graphics;
+namespace Comet.Styles {
+	public class {{ClassName}}StyleBuilder
+	{
+		private readonly ControlStyle<{{ClassName}}> _style = new ControlStyle<{{ClassName}}>();
+
+		public {{ClassName}}StyleBuilder Background(Paint background)
+		{
+			_style.Set(EnvironmentKeys.Colors.Background, background);
+			return this;
+		}
+
+		public {{ClassName}}StyleBuilder TextColor(Color color)
+		{
+			_style.Set(EnvironmentKeys.Colors.Color, color);
+			return this;
+		}
+
+		{{#StyleProperties}}
+		{{#StylePropertyFunc}}
+		{{/StylePropertyFunc}}
+		{{/StyleProperties}}
+
+		public ControlStyle<{{ClassName}}> Build() => _style;
+
+		public static implicit operator ControlStyle<{{ClassName}}>({{ClassName}}StyleBuilder builder)
+			=> builder._style;
+	}
+}
+";
+		const string styleBuilderPropertyMustache = @"
+		public {{ClassName}}StyleBuilder {{Name}}({{{Type}}} {{LowercaseName}})
+		{
+			_style.Set(nameof({{FullName}}), {{LowercaseName}});
+			return this;
+		}
+";
+
 		static Dictionary<(bool HasGet, bool HasSet), (string FromEnvironment, string FromProperty)> interfacePropertyDictionary;
 
 		static CometViewSourceGenerator()
@@ -219,6 +262,10 @@ namespace {{NameSpace}} {
 
 				var factorySource = stubble.Render(factoryMustacheTemplate, input);
 				context.AddSource($"{item.name}Factory.g.cs", factorySource);
+
+				// Phase 2.3: Generate style builder class
+				var styleBuilderSource = stubble.Render(styleBuilderMustacheTemplate, input);
+				context.AddSource($"{item.name}StyleBuilder.g.cs", styleBuilderSource);
 			}
 		}
 		public static string GetFullName(ISymbol symbol, string ending = null)
@@ -427,6 +474,24 @@ namespace {{NameSpace}} {
 					NewName = x.Value
 				}).ToList(),
 
+				// Phase 2.3: Style builder properties (non-Action, non-Skip extension properties)
+				StyleProperties = properties
+					.Where(x => x.ShouldBeExtension && !x.Skip)
+					.Where(x => !string.IsNullOrWhiteSpace(x.Type))
+					.Where(x => !x.Type.StartsWith("System.Action") && !x.Type.StartsWith("System.Func"))
+					.Where(x => {
+						var n = getNewName(x.Name);
+						return n != "Background" && n != "Color" && n != "TextColor";
+					})
+					.Select(x => new {
+						Type = x.Type,
+						Name = getNewName(x.Name),
+						x.FullName,
+						ClassName = name,
+						LowercaseName = getNewName(x.Name).LowercaseFirst(),
+					}).ToList(),
+				StylePropertyFunc = new Func<dynamic, string, object>((dyn, str) =>
+					stubble.Render(styleBuilderPropertyMustache, dyn)),
 
 			};
 			return input;

@@ -47,3 +47,27 @@
 
 **Next:** Phase 2.4 (Bobbie) will add regression and integration tests for the new factory API.
 
+### Phase 2.3 — Style Builder Generation (2026-03-08)
+
+**What was done:**
+- Enhanced `CometViewSourceGenerator` to produce `{Control}StyleBuilder` classes for each generated control
+- 19 style builders generated (Button, Text, TextField, Slider, Toggle, CheckBox, etc.)
+- Each builder wraps `ControlStyle<T>` with fluent setters matching the control's environment keys
+- Common methods on every builder: `Background(Paint)`, `TextColor(Color)` — map to `EnvironmentKeys.Colors.Background` and `EnvironmentKeys.Colors.Color`
+- Per-control methods generated from non-Action, non-Skip extension properties using `nameof(IInterface.Property)` as the environment key
+- Implicit operator to `ControlStyle<T>` so builders can be passed directly to `Theme.SetControlStyle()`
+- Style builders live in `Comet.Styles` namespace
+
+**Key files:**
+- `src/Comet.SourceGenerator/CometViewSourceGenerator.cs` — templates: `styleBuilderMustacheTemplate`, `styleBuilderPropertyMustache`; model: `StyleProperties`, `StylePropertyFunc`; Execute: style builder source generation
+- Generated output: `{Control}StyleBuilder.g.cs` for each control
+
+**Architecture decisions:**
+- Common Background/TextColor methods on every builder since those EnvironmentKeys apply to all views
+- Action-type properties (events/callbacks) excluded from builders — not meaningful for styling
+- Properties already covered by common methods (Background, Color, TextColor) filtered from per-control generation to avoid duplicates
+- Uses same `nameof(FullName)` pattern as existing extension methods for consistent environment key resolution
+- Purely additive — no modifications to existing generated output
+
+**Test suite status:** 578 passed + 2 pre-existing hot reload failures + 15 skipped = 595 total. No regressions.
+
