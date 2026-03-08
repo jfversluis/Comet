@@ -8,6 +8,42 @@
 
 ## Learnings
 
+### Phase 8 Closure — Reviewer Gate APPROVED & Phase 9 Kickoff (2026-03-08T052745Z)
+
+**Status:** ✅ **PHASE 8.3 COMPLETE** → ✅ **PHASE 8 CLOSED** → 🚀 **PHASE 9 LAUNCHED**
+
+**Phase 8.3 Verdict:** Phase 8 reviewer gate **APPROVED**. All three lanes pass without blockers.
+
+**Phase 8.3 Contribution (Bobbie — Reviewer):**
+- Evaluated Naomi Phase 8.1: Generator coverage analysis ✅ APPROVED
+- Evaluated Amos Phase 8.2: TabbedPage/FlyoutPage implementations ✅ APPROVED with note (handler registration deferred, acceptable)
+- Test gate outcomes: Originally 37 tests (30 pass / 7 skip) → Now 46 tests (46 pass / 0 skip)
+- All premature gates unskipped (7 were awaiting Phase 8.1/8.2 implementations; all now complete)
+- Added 9 new TabbedPage/FlyoutPage validation tests: all pass
+- Regression check: ✅ 0 failures, 0 new regressions (pre-existing baseline noise unchanged)
+- Lockout status: No lockouts triggered; Naomi and Amos both released
+
+**Overall Phase 8 Results:**
+- Total Phase 8 tests: 46 (all new)
+- Passing: 46 (100%)
+- Skipped: 0
+- Failed: 0
+- Regressions: 0 ✅
+- Build: 0 errors, 0 warnings
+- Cumulative suite: 640+ tests, 625+ passing, 0 regressions
+
+**Phase 9 Assignment:** Bobbie — Validation Infrastructure
+- Broaden test coverage for Phase 9 scenarios
+- Stabilize regression detection (reduce false positives from pre-existing baseline noise: SetEnvironment SO, HStack layout, FluentExtension)
+- Document regression baseline for Phase 10+
+- Definition of Done: No new flaky tests, baseline documented, test suite stable
+
+**Framework-Level Outstanding Items (Deferred to Phase 9+):**
+- SetEnvironment stack overflow — blocking 8 keyed reconciliation tests
+- BuiltView type detection — awaiting David Ortinau clarification
+
+**Next:** Parallel Phase 9 execution (Amos samples/docs, Bobbie validation infrastructure). Coordination via weekly sync.
+
 ### Phase 8.3 Kickoff — Control Coverage Tests (2026-03-08T050835Z)
 
 **Status:** ⚙️ **IN PROGRESS — PHASE 8 KICKOFF**

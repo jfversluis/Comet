@@ -8,6 +8,28 @@
 
 ## Learnings
 
+### Phase 8 Closure — Approved & Phase 9 Kickoff (2026-03-08T052745Z)
+
+**Status:** ✅ **PHASE 8 COMPLETE** → 🚀 **PHASE 9 LAUNCHED**
+
+**Verdict:** Phase 8 (all three lanes) **APPROVED and CLOSED**.
+
+**Phase 8.1 Contribution (Naomi):**
+- Analysis complete: All 19 generated controls comprehensively cover generator-suitable IView interfaces
+- No new generators needed; scope boundary respected (complex controls → Amos handwritten lane)
+- Documentation locked (CONTROL_COVERAGE_PHASE_8_1.md)
+- 18/18 generated-lane tests pass
+- Build: 0 errors, 0 regressions
+
+**Overall Phase 8 Results:**
+- Combined lanes: 46 tests, 46 passing, 0 skipped, 0 failed
+- Cumulative test suite: 640+ tests, 625+ passing, 0 regressions
+- Build status: 0 errors, 0 warnings
+- No lockouts triggered; all agents released
+
+**Phase 9 Assignment:** None for Naomi (standby).
+**Next:** Team proceeds with Phase 9 parallel lanes (Amos samples, Bobbie validation). Framework-level outstanding items remain deferred.
+
 ### Phase 8.1 Complete — Generated Control Coverage Comprehensive (2026-03-08T051435Z)
 
 **Status:** ✅ **PHASE 8.1 COMPLETE**

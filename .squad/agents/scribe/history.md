@@ -8,6 +8,48 @@
 
 ## Learnings
 
+### Phase 8 Closure + Phase 9 Kickoff — Session Orchestration (2026-03-08T052745Z)
+
+**Status:** ✅ COMPLETE
+
+**Task:** Log Phase 8 final approval and closure, write Phase 9 kickoff, merge inbox decisions, update agent histories, update team identity, prepare git commit.
+
+**Actions Completed:**
+1. ✅ Orchestration logs written (Phase 8 closure approved + Phase 9 kickoff entries)
+2. ✅ Session log written (Phase 8 closure + Phase 9 kickoff summary)
+3. ✅ Inbox decisions merged into decisions.md (bobbie-phase8-reviewer-gate-approved.md + bobbie-phase8-test-baseline.md → 2 new decisions)
+4. ✅ Agent histories updated (Naomi Phase 8 closure + Phase 9 standby, Amos Phase 8 closure + Phase 9 kickoff, Bobbie Phase 8 closure + Phase 9 kickoff, Scribe Phase 8 closure)
+5. ✅ Scribe history updated (this file)
+6. ⏳ Team identity to be updated (.squad/identity/now.md)
+7. ⏳ Git commit to be staged
+
+**Files Created:**
+- `.squad/orchestration-log/2026-03-08T052745Z-phase8-closure-approved.md` (Phase 8 approval verdict)
+- `.squad/orchestration-log/2026-03-08T052800Z-phase9-kickoff.md` (Phase 9 kickoff)
+- `.squad/log/2026-03-08T052745Z-phase8-close-phase9-kickoff.md` (session log)
+
+**Files Modified:**
+- `.squad/decisions.md` (Phase 8 + Phase 9 decisions merged: Phase 8 closure, Phase 9 kickoff)
+- `.squad/agents/naomi/history.md` (Phase 8 closure + Phase 9 standby entry)
+- `.squad/agents/amos/history.md` (Phase 8 closure + Phase 9 kickoff entry)
+- `.squad/agents/bobbie/history.md` (Phase 8 closure + Phase 9 kickoff entry)
+- `.squad/agents/scribe/history.md` (this file)
+
+**Files to be Deleted:**
+- `.squad/decisions/inbox/bobbie-phase8-reviewer-gate-approved.md`
+- `.squad/decisions/inbox/bobbie-phase8-test-baseline.md`
+
+**Key Context:**
+- Phase 8 complete with all 46 tests passing, 0 failures, 0 regressions, 0 skipped
+- Naomi Phase 8.1: Coverage analysis complete, no new generators needed, comprehensive documentation
+- Amos Phase 8.2: TabbedPage + FlyoutPage delivered, 9 validation tests added, handler registration deferred (acceptable)
+- Bobbie Phase 8.3: Reviewer gate passed, all 7 previously-skipped tests unskipped and working
+- Cumulative test suite: 640+ tests, 625+ passing, 0 regressions, 0 errors
+- Phase 8 approved; Phase 9 kickoff with no blockers
+- Framework-level outstanding items deferred: SetEnvironment stack overflow, BuiltView type detection
+
+**Next:** Update team identity, delete inbox files, git commit with .squad/ changes, Phase 9 parallel execution launches.
+
 ### Phase 8.2 Completion Logged + Phase 8.1 Inbox Merged (2026-03-08T051435Z)
 
 **Status:** ✅ COMPLETE

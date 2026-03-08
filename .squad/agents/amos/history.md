@@ -8,6 +8,31 @@
 
 ## Learnings
 
+### Phase 8 Closure & Phase 9 Kickoff (2026-03-08T052745Z)
+
+**Status:** ✅ **PHASE 8 COMPLETE** → 🚀 **PHASE 9 LAUNCHED**
+
+**Phase 8.2 Verdict:** Phase 8 (all lanes) **APPROVED and CLOSED**.
+
+**Phase 8.2 Contribution (Amos):**
+- TabbedPage & FlyoutPage delivered: solid parent management, disposal safety, Binding<T> support, IContainerView/IEnumerable compliance, hot reload propagation
+- Handler registration deferred (acceptable; controls compile and pass unit validation)
+- 9 new validation tests (4 TabbedPage + 5 FlyoutPage): all pass
+- 0 regressions against Phase 1–7 baseline (625+ tests still passing)
+
+**Overall Phase 8 Results:**
+- Combined lanes (Naomi + Amos + Bobbie): 46 tests, 46 passing, 0 skipped, 0 failures
+- Cumulative test suite: 640+ tests, 625+ passing, 0 regressions
+- Build status: 0 errors, 0 warnings
+
+**Phase 9 Assignment:** Amos — Samples & Documentation
+- Expand sample coverage for Phase 8 controls (TabbedPage, FlyoutPage, generated controls)
+- Update documentation to reflect new APIs
+- Verify samples build and run on all platforms (iOS, macCatalyst, Android, Windows)
+- Definition of Done: Samples build without errors, docs aligned, no new failures
+
+**Next:** Parallel Phase 9 execution (Amos samples/docs, Bobbie validation infrastructure). Framework-level outstanding items remain deferred.
+
 ### Phase 8.2 Complete — Handwritten Complex Controls Delivered (2026-03-08T051435Z)
 
 **Status:** ✅ **PHASE 8.2 COMPLETE**

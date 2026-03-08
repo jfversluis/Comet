@@ -178,6 +178,45 @@
   - Build: 0 new errors from Phase 8.1; no regressions against existing baseline
 **Key Files:** `CONTROL_COVERAGE_PHASE_8_1.md` (comprehensive coverage analysis), `.squad/agents/naomi/history.md` (phase findings)
 
+### 2026-03-08T052745Z: Phase 8 Control Expansion — APPROVED
+**Owner:** Bobbie (Test Engineer — Reviewer)  
+**Status:** Approved  
+**Decision:** Phase 8 (Control Expansion) is **CLOSED and APPROVED**. All three lanes pass: Phase 8.1 (Naomi — generator coverage analysis), Phase 8.2 (Amos — handwritten complex controls), Phase 8.3 (Bobbie — test gates + reviewer verdict).
+**Results:**
+  - **Phase 8.1:** All 19 generated controls confirmed adequate. No new generators needed. Documentation complete (CONTROL_COVERAGE_PHASE_8_1.md). 18/18 generated-lane tests pass.
+  - **Phase 8.2:** TabbedPage and FlyoutPage delivered (solid parent management, disposal safety, Binding<T> support, IContainerView compliance, hot reload propagation). Handler registration deferred (acceptable). 9 validation tests added and pass (4 TabbedPage + 5 FlyoutPage).
+  - **Phase 8.3:** Originally 37 tests (30 pass / 7 skip) → now 46 tests (46 pass / 0 skip). All premature gates unskipped. 9 new TabbedPage/FlyoutPage tests added.
+**Regression Check:**
+  - ✅ 0 failures in broader suite (excluding pre-existing SetEnvironment stack overflow framework bug)
+  - ✅ No new regressions introduced
+  - ✅ Pre-existing baseline noise unchanged (SetEnvironment SO, HStack layout skips, FluentExtension integration skips)
+**Lockout Status:**
+  - ✅ No lockouts triggered; all agents released
+  - ✅ Naomi: released (no code changes needed)
+  - ✅ Amos: released (TabbedPage/FlyoutPage validated)
+**Impact:**
+  - Cumulative test suite: 640+ tests, 625+ passing, 0 regressions, 0 errors
+  - Phase 8 deliverables stable and production-ready
+  - Framework-level outstanding items remain deferred to Phase 9+ (SetEnvironment stack overflow, BuiltView type detection)
+  - **Phase 9 kickoff approved with no blockers**
+
+### 2026-03-08T052800Z: Phase 9 Kickoff — Samples & Validation
+**Owner:** Scribe (orchestration) / Coordinator assignment  
+**Status:** Active  
+**Decision:** Phase 9 launches with **two parallel lanes**: Amos (samples/documentation enrichment) and Bobbie (validation infrastructure). Phase 8 closure triggers automatic Phase 9 start with no gate delays.
+**Phase 9 Scope:**
+  - **Lane 1 (Amos — Samples & Documentation):** Expand sample coverage for Phase 8 controls (TabbedPage, FlyoutPage, generated controls). Update documentation. Verify samples build and run on all platforms (iOS, macCatalyst, Android, Windows).
+  - **Lane 2 (Bobbie — Validation Infrastructure):** Broaden test coverage for Phase 9 scenarios. Stabilize regression detection. Document regression baseline for Phase 10+.
+**Outstanding (Framework-Level, Deferred to Phase 9+):**
+  - SetEnvironment stack overflow — blocking 8 keyed reconciliation tests
+  - BuiltView type detection — awaiting David Ortinau architectural decision
+**Success Criteria:**
+  - ✅ All Phase 8 controls documented in samples
+  - ✅ Samples build and run without errors
+  - ✅ Test suite remains stable (no new flaky tests)
+  - ✅ Regression baseline documented for Phase 10+
+**Parallel Execution:** Both lanes active. No cross-dependencies blocking start. Coordination via weekly sync on sample completeness and test stability.
+
 ## Governance
 
 - All meaningful changes require team consensus
