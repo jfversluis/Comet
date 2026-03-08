@@ -10,6 +10,16 @@
 
 <!-- Append learnings below -->
 
+### Phase 3.3 — Theme System Tests (Anticipatory)
+- **Files created:** `tests/Comet.Tests/ThemeTests/ThemeBaseTests.cs` (22 tests: 19 passing, 3 skipped), `ThemeColorsTests.cs` (25 tests: 21 passing, 4 skipped), `ControlStyleTests.cs` (25 tests: 19 passing, 6 skipped). Total: 72 new tests (72 passing, 13 skipped awaiting Phase 3.1 types).
+- **Theme infrastructure already landed:** Holden's `Theme` class exists in `src/Comet/Styles/Theme.cs` with `Theme.Current`, `Theme.Light`/`Theme.Dark` presets, `AppTheme` enum, and semantic color properties (PrimaryColor, SecondaryColor, BackgroundColor, SurfaceColor, TextColor, SecondaryTextColor, ErrorColor). `AppThemeValue` in `AppThemeBinding.cs` provides light/dark value resolution.
+- **ThemeColor/ThemeTextColor extensions:** Located in `src/Comet/Helpers/ViewExtensions.cs`. `ThemeColor` sets `IView.Background` as `SolidPaint`, `ThemeTextColor` sets `ITextStyle.TextColor`. Both resolve from `Theme.Current` at call time (not reactive).
+- **Style<T> generic functional styles:** Located in `src/Comet/Styles/Style.cs`. Apply action to typed view, supports `RegisterImplicit()`/`ApplyImplicit()`/`ClearImplicit()` for implicit style registration. Separate from the classic `Style` class (non-generic) which uses environment-based application.
+- **Environment cascade edge case:** Setting `Binding<T>` via fluent methods (e.g., `.FontSize(14)`) behaves differently from raw `.SetEnvironment(key, value)` when parent also cascades the same key. For override tests, use `.SetEnvironment()` directly on child views (matching the proven pattern from EnvironmentTests), not fluent extension methods.
+- **Not yet landed:** `IThemeable`, `ThemeColors` (semantic token class), `ControlStyle<T>`, `Theme.Changed` event. 13 tests skipped with `[Fact(Skip = "Awaiting Phase 3.1 theme base class")]`.
+- **Pre-existing failures remain at 2:** Same hot reload test failures as Phase 2.4.
+
+
 ### 2025 — Phase 1.3 Component Test Infrastructure
 - **Test patterns:** All tests inherit `TestBase` (which calls `UI.Init()`), use `[Fact]`, and call `view.SetViewHandlerToGeneric()` to wire up handlers for body evaluation. The `SetViewHandlerToGeneric()` extension lives in `tests/Comet.Tests/Helpers/ViewExtensions.cs`.
 - **Handler registration:** `tests/Comet.Tests/UI.cs` registers `GenericViewHandler` for most controls. If new types (like `Component`) need handler registration, they'll need entries here.
