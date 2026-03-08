@@ -8,6 +8,46 @@
 
 ## Learnings
 
+### Phase 6 Complete — NativeHost & Interop Bridge Approved (2026-03-08T041421Z)
+
+**Status:** ✅ Phase 6.1 APPROVED — COMPLETE
+
+**Assignment:** Phase 6.1 — NativeHost control + native view access API
+
+**Phase 6.1 Final Deliverable:**
+- `INativeHost` interface: OnConnect, OnUpdate, OnDisconnect, Sync, TryGetNativeView<T>()
+- `NativeHost` control: Handler-owned native container per platform (iOS, Android, Windows, macCatalyst)
+- Public API: Shared object-based surface (matches existing MauiViewHost / CometHost pattern)
+- Handler registration: `AppHostBuilderExtensions.UseCometHandlers()` integration
+- Documentation: README interop section complete
+- Test coverage: 12 NativeHostTests passing (control lifecycle, lazy factory, caching)
+
+**Platform Handlers:**
+- iOS: Native UIView container attachment, layout sizing
+- Android: Native View container attachment, layout sizing
+- Windows: Native XAML container attachment, layout sizing
+- macCatalyst: Native UIView container attachment, layout sizing
+
+**Architecture Insights:**
+- Handler owns native container lifecycle (initialization on handler attachment, teardown on disposal)
+- Lazy factory pattern with caching prevents duplicate instantiation
+- `TryGetNativeView<T>()` gives Comet code access to raw platform views for advanced interop
+- Object-based API (non-generic event signatures) keeps surface buildable from shared test project while accepting platform-specific views from factory
+
+**Test Results (Phase 6 Combined):**
+- NativeHostTests: 12/12 passing ✅
+- NativeHostInteropTests: 11/11 passing ✅
+- **Total Phase 6 interop tests: 23/23 passing** ✅
+- Filtered broader regression sweep: passing ✅
+- Unfiltered full suite: 2 pre-existing failures (no new regressions) ✅
+- Build: 0 errors, 0 warnings ✅
+
+**Remaining (Deferred to Phase 7+):**
+1. SetEnvironment stack overflow (framework-level, known blocker for keyed tests)
+2. BuiltView type detection (awaiting David clarification)
+
+**Next:** Phase 7 kickoff (Phase 7.1 Component Hot Reload, Phase 7.2 Hot Reload Tests).
+
 ### Phase 5 Complete — All 17 Navigation Tests Passing (2026-03-08T041000Z)
 
 **Status:** ✅ Phase 5 APPROVED

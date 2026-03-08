@@ -105,6 +105,13 @@
 **Context:** Amos is implementing Phase 6.1 (`NativeHost` + native view access) in parallel. The current repository already has working bidirectional interop seams (`MauiViewHost` and `CometHost`), so Bobbie covered those behaviors now to lock down the baseline. Limited skips to the truly blocked Phase 6.1 surface.
 **Impact:** Immediate regression protection on today's interop bridge without waiting for Amos. The 4 skipped `NativeHost` tests become the first re-review checklist once Phase 6.1 lands. 11 passing interop tests + 15 active interop test cases = baseline locked. Build: 0 errors, 0 warnings.
 
+### 2026-03-08T041421Z: Phase 6 NativeHost / Interop Bridge — APPROVED
+**Owner:** Amos (Controls & API Dev) + Bobbie (Test Engineer)  
+**Status:** Approved  
+**Decision:** Phase 6.1 (`NativeHost` control + native view access API) and Phase 6.2 (interop test baseline) are **APPROVED** for production integration. `NativeHost` uses a handler-owned native container per platform with a shared object-based public API (`OnConnect`, `OnUpdate`, `OnDisconnect`, `Sync`, `TryGetNativeView<T>()`). All 23 NativeHost/interop tests pass (4 previously-skipped placeholders converted to real assertions). No new regressions introduced.
+**Context:** Phase 6.1 implementation complete across API surface, handler registration, platform handlers (iOS, Android, Windows, macCatalyst), and README docs. Phase 6.2 validation used documented build order and comprehensive test suite. Unfiltered full-suite run reproduces 2 pre-existing failures only (ReloadTransfersStateTest.StateTransfersOnlyChangedValues, SetEnvironment stack overflow).
+**Impact:** NativeHost bridge is production-ready. Interop test baseline locked. No parallel work blockers. Phase 6 complete; Phase 7 launches immediately (parallel: Holden Component Hot Reload, Bobbie Hot Reload Tests).
+
 ## Governance
 
 - All meaningful changes require team consensus

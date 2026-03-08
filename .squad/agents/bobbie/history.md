@@ -8,6 +8,35 @@
 
 ## Learnings
 
+### Phase 6 Complete — Closure & Phase 7 Kickoff (2026-03-08T041500Z)
+
+**Status:** ✅ Phase 6 COMPLETE → Phase 7 ACTIVE
+
+**Phase 6 Final State:**
+- Phase 6.1 (Amos NativeHost): ✅ APPROVED, 12/12 tests passing
+- Phase 6.2 (Bobbie Interop Tests): ✅ APPROVED, 11/11 tests + 4 unskipped NativeHost tests = 23/23 total
+- Build: 0 errors, 0 warnings
+- Cumulative (Phases 1–6): 623 passing tests, 2 pre-existing failures, 15+ skipped
+
+**Phase 7 Launching (Parallel):**
+- **Phase 7.1** (Holden — Lead Architect): Component hot reload integration, state preservation, handler reuse
+- **Phase 7.2** (Bobbie — Test Engineer): Hot reload test coverage (C#, XAML, Blazor Hybrid), edge cases
+
+**Outstanding (Outside Phase 7):**
+1. SetEnvironment stack overflow — framework-level, known blocker for keyed tests (skip unfiltered runs)
+2. BuiltView type detection — awaiting David Ortinau architectural clarification
+
+**Next:** Phase 7 parallel implementation. No serial blockers between phases.
+
+### Phase 6 Reviewer Gate — NativeHost Approved (2026-03-08T041421Z)
+
+- **Verdict:** ✅ Phase 6 NativeHost / interop bridge approved for scope. Amos landed the three-way bridge pieces (`INativeHost`, `NativeHost`, `CometControls.Interop`, platform handlers, handler registration, README interop docs) and they hold up under Bobbie's anticipatory test shape.
+- **Anticipatory tests activated:** The 4 skipped Phase 6.2 placeholders in `tests/Comet.Tests/InteropTests/NativeHostInteropTests.cs` are now concrete and passing: immediate native wrapping, lazy/cached factory behavior, mixed Comet+MAUI+native composition, and post-handler native view access.
+- **Validation pattern that worked:** Follow the repo's build order exactly (`Comet.SourceGenerator` → `Comet` → `Comet.Tests` → `dotnet test`). Then run a tight NativeHost slice first (`NativeHostTests` + `NativeHostInteropTests`, 23/23 passing) before the broader filtered suite that excludes the long-standing hot-reload failures plus keyed stack-overflow crashers.
+- **Regression baseline:** Unfiltered full-suite execution still reproduces the historical `ReloadTransfersStateTest.StateTransfersOnlyChangedValues` failure and the known `SetEnvironment` stack overflow. No NativeHost/interop regressions surfaced; the filtered suite remained green after the new tests were enabled.
+- **Key file paths:** Production API lives in `src/Comet/INativeHost.cs`, `src/Comet/Controls/NativeHost.cs`, `src/Comet/CometControls.Interop.cs`, and `src/Comet/Handlers/NativeHost/`. Runtime registration is in `src/Comet/AppHostBuilderExtensions.cs`; test harness registration is in `tests/Comet.Tests/UI.cs`.
+- **Reviewer heuristic:** Skipped anticipatory tests are not approval evidence. For reviewer gates, convert the skipped tests into runnable assertions against the landed API first, then judge completeness from that concrete pass/fail signal.
+
 ### Phase 6.2 Complete — Interop Tests Locked (2026-03-08T035930Z)
 
 **Status:** ✅ Phase 6.2 APPROVED — COMPLETE
