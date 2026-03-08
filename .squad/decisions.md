@@ -478,3 +478,56 @@ The remaining sample migration wave still needs a clean, shared reference for "w
 **Exceptions:**
 - Keep the MAUI host wrapper when the sample explicitly demonstrates MAUI hosting, native interop, or mixed MAUI/Comet composition as the lesson.
 
+
+### 2026-03-08T120100Z: Holden — Root-View DEBUG Host
+**Owner:** Holden (Lead Architect)  
+**Status:** Approved  
+**Decision:** The shared sample DEBUG host must take a real root `Comet.View` factory and explicitly reject `CometApp` roots. `CometMauiApp` and `CometBaristaNotes` now provide `CreateRootView()` factories for DEBUG inspection instead of passing `MyApp` / `BaristaApp` into `UseCometSampleDebugHost<TView>()`.
+
+**Context:** Bobbie's review correctly called out that wrapping `CometApp` instances in `CometHost` only supported launch/render claims. The retained runtime evidence showed MauiDevFlow could connect to the MAUI `Application` host, but inner Comet elements still surfaced as hidden/disabled and could not be tapped end-to-end. I also tested a cleaner direct-`UseCometApp` debug host. That removed the `CometHost` wrapper entirely, but in the current harness it lost live MauiDevFlow agent connectivity, which made the preferred runtime validation path worse, not better.
+
+**Impact:**
+- Immediate: DEBUG hosting is now truthful about its input shape and no longer accepts `CometApp` roots silently.
+- Immediate: `CometMauiApp` and `CometBaristaNotes` launch and render under root-view DEBUG hosting with retained MauiDevFlow evidence.
+- Remaining blocker: full interactive automation still requires a deeper bridge so MauiDevFlow can hit-test/tap inner Comet descendants instead of stopping at the outer `CometHost`.
+
+### 2026-03-08T120900Z: Bobbie Decision Inbox — P0 shared-debug-host review
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Approved (launch/render only)  
+**Decision:** Holden's latest P0 shared-debug-host revision is **APPROVED at the launch/render-only ceiling** for `CometMauiApp` and `CometBaristaNotes`.
+
+**Why:**
+- The shared DEBUG host now accepts real root `Comet.View` factories and explicitly rejects `CometApp` roots.
+- `sample/CometMauiApp/MyApp.cs` and `sample/CometBaristaNotes/{MauiProgram.cs,BaristaApp.cs}` now route DEBUG hosting through `CreateRootView()`.
+- `CometHost` inspection now exposes the supplied Comet root (`MainPage`, `TabView`) instead of a wrapped `CometApp`.
+- Review validation passed:
+  - `dotnet build sample/CometMauiApp/CometMauiApp.csproj -c Debug -f net10.0-maccatalyst`
+  - `dotnet build sample/CometBaristaNotes/CometBaristaNotes.csproj -c Debug -f net10.0-maccatalyst`
+  - `dotnet test tests/Comet.Tests/Comet.Tests.csproj --no-build -c Release --filter "CometHost|ViewGetViewTests|NativeHostInteropTests|NewFeatureTests"` → 27/27 passing
+
+**Claim boundary:**
+- **CometMauiApp:** build ✅, launch/render evidence ✅, interactive end-to-end flow ❌
+- **CometBaristaNotes:** build ✅, launch/render evidence ✅, interactive end-to-end flow ❌
+
+Do **not** promote either sample to interactive validation yet. MauiDevFlow hit-testing still resolves only `CometHost` / `ContentPage`, descendant controls remain `[hidden] [disabled]`, automation-id lookup returns no elements, and retained taps fail.
+
+**Evidence hygiene note:** `/Users/davidortinau/.copilot/session-state/b26a6593-f539-47de-8f7b-3bd72e7ad681/files/runtime-validation/CometMauiApp/logs.txt` is byte-identical to the BaristaNotes port-`10224` log and should not be cited as CometMauiApp-specific evidence.
+
+### 2026-03-08T121400Z: Bobbie — TaskApp + AllTheLists Review Gate
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Approved (code migration + build), Gate applied (interactive + runtime blocked)  
+**Decision:** `sample/CometTaskApp` and `sample/CometAllTheLists` may currently be claimed as **build-only, code-migrated** samples. They may **not** be claimed as launch/render verified or interactive end-to-end verified until the DEBUG runtime host is rewired to use real root-view factories and retained launch evidence is captured in `sample-validation/`.
+
+**Context:** Bobbie reviewed Amos's latest migration wave for these two P2 samples. The code migrations are real:
+- `CometTaskApp` now uses `CollectionView` for the task surface, `Component<AddTaskPageState>` for add flow, and `Component<TaskDetailState, TaskDetailProps>` for typed-props detail editing.
+- `CometAllTheLists` now boots as a direct `CometApp` with `TabView` + `NavigationView` tabs, and the inbox moved from `ListView` to `CollectionView`.
+
+Bobbie also reran the current Debug Mac Catalyst builds successfully for both samples.
+
+However, neither sample has retained launch/render artifacts under `/Users/davidortinau/.copilot/session-state/b26a6593-f539-47de-8f7b-3bd72e7ad681/files/sample-validation/`, and both DEBUG entry points still call `UseCometSampleDebugHost<TView>()` with `CometApp` roots (`TaskApp`, `AllTheListsApp`). The shared DEBUG host explicitly rejects `CometApp` roots and requires a real root `Comet.View` factory.
+
+**Impact:**
+- Immediate: Amos's code-migration and build-success claims are approved for these two samples.
+- Immediate: Amos's "launched on Mac Catalyst with live runtime agents attached" claim is not reviewer-approved for these two samples.
+- Immediate: Both samples remain **build-only** until root-view DEBUG hosting and retained runtime evidence are fixed.
+- Routing: Because this Amos artifact overclaimed runtime proof, Amos must not own the next revision. Route the next revision to Holden.

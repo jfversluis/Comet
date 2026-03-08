@@ -609,3 +609,41 @@ Per squad rule: When reviewer issues partial approval, agent cannot author the n
 **Reference:**
 - Reviewer verdict: `.squad/decisions.md` — "P0 Runtime Review — Partial Approval Only" (2026-03-08T164448Z)
 - Orchestration: `.squad/log/20260308T164448Z-bobbie-p0-runtime-review-gate.md`
+
+---
+
+## 2026-03-08T171141Z — Lockout Status & TaskApp/AllTheLists Review Gate
+
+**Status:** 🔒 LOCKED OUT (until Holden completes architecture fix)
+
+### Wave 2 Transition
+
+P0 runtime-validation effort transitions from Amos to **Wave 2** (Holden leads architecture fix, Bobbie validates remaining 9 samples).
+
+**Your Latest Contributions (Approved):**
+- ✅ CometTaskApp code migration (CollectionView, Component<AddTaskPageState>, Component<TaskDetailState, TaskDetailProps>)
+- ✅ CometAllTheLists code migration (direct CometApp with TabView + NavigationView tabs, CollectionView inbox)
+- ✅ Both samples build successfully on Mac Catalyst
+
+**Why You're Locked Out:**
+Bobbie's gate explicitly rejects both samples' runtime evidence claims because:
+1. Both still pass `CometApp` roots to `UseCometSampleDebugHost<TView>()`, which is now explicitly rejected
+2. No retained launch/render artifacts under `sample-validation/`
+3. No `CreateRootView()` factories wired up for DEBUG entry points
+
+**Next Step for You:**
+- Do NOT author the next revision (Holden owns it per squad rules)
+- Await Holden's architecture fix landing
+- Bobbie will revalidate both samples and notify you when you can resume sample work
+
+**Decision Record:** `.squad/decisions.md` — "Bobbie — TaskApp + AllTheLists Review Gate"
+
+---
+
+## P0 Approved Floor Established
+
+The team has established an **approved P0 launch/render floor**:
+- CometMauiApp: build ✅, launch/render ✅, interactive ❌
+- CometBaristaNotes: build ✅, launch/render ✅, interactive ❌
+
+**Remaining blocker:** Interactive automation requires deeper MauiDevFlow bridge for hit-testing/tapping inner Comet descendants.

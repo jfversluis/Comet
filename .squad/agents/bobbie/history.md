@@ -38,6 +38,26 @@ Theme system validated with 34 tests. Confirmed concrete `Theme` base class, `Th
 
 ## Learnings
 
+### P0 Shared-Debug-Host Revision — Launch/Render Approved, Interactive Still Blocked (2026-03-08T171500Z)
+
+**Status:** ✅ APPROVED at the claimed ceiling
+
+- **Holden's core claim is now accurate:** the shared DEBUG host takes real root `Comet.View` factories, rejects `CometApp` roots, `sample/CometMauiApp/MyApp.cs` and `sample/CometBaristaNotes/{MauiProgram.cs,BaristaApp.cs}` now use `CreateRootView()`, and `CometHost` inspection now exposes `MainPage` / `TabView` roots instead of wrapped `CometApp` objects.
+- **Validation rerun reproduced the claimed safety net:** `dotnet build sample/CometMauiApp/CometMauiApp.csproj -c Debug -f net10.0-maccatalyst`, `dotnet build sample/CometBaristaNotes/CometBaristaNotes.csproj -c Debug -f net10.0-maccatalyst`, and `dotnet test tests/Comet.Tests/Comet.Tests.csproj --no-build -c Release --filter "CometHost|ViewGetViewTests|NativeHostInteropTests|NewFeatureTests"` all pass, with the filtered test run landing **27/27**.
+- **Claim ceiling for both P0 samples:** build ✅, launch/render evidence ✅, interactive end-to-end flow ❌. The retained runtime-validation trees show the correct roots and non-blank screenshots, but MauiDevFlow hit-testing still only resolves `CometHost` / `ContentPage`, descendant controls remain `[hidden] [disabled]`, automation-id lookup returns no elements, and retained taps fail.
+- **Evidence hygiene note:** `runtime-validation/CometMauiApp/logs.txt` is byte-identical to the BaristaNotes port-`10224` log and should not be cited as CometMauiApp-specific evidence. Likewise, `CometMauiApp`'s `initial.png`, `render.png`, and `after-tap-49a0fe39.png` are byte-identical, so they prove render stability, not interaction success.
+- **Routing:** Because this revision is approved at the launch/render-only ceiling, Holden is **not** locked out. If the next revision aims to make descendant controls hittable/tappable, Holden remains the correct owner for the runtime-host / interop lane.
+
+### TaskApp + AllTheLists Review Gate — Build-Only, Not Launch-Proven (2026-03-08T17:03:52Z)
+
+**Status:** ⚠️ PARTIAL APPROVAL ONLY
+
+- **Code claims approved:** Amos's code-level migration claims for `sample/CometTaskApp` and `sample/CometAllTheLists` are real. `TaskListPage` now uses `CollectionView`, `AddTaskPage` is `Component<AddTaskPageState>`, `TaskDetailPage` is `Component<TaskDetailState, TaskDetailProps>`, `AllTheListsApp` is now a direct `CometApp` + `TabView` shell, and `InboxPage` moved from `ListView` to `CollectionView`.
+- **Build claim approved:** Bobbie reran `dotnet build sample/CometTaskApp/CometTaskApp.csproj -c Debug -f net10.0-maccatalyst` and `dotnet build sample/CometAllTheLists/CometAllTheLists.csproj -c Debug -f net10.0-maccatalyst` successfully on the current repo state.
+- **Launch/live-agent claim rejected:** Neither sample has retained launch/render artifacts under `files/sample-validation/`, and both DEBUG entry points still call `UseCometSampleDebugHost<TView>()` with `CometApp` roots (`TaskApp`, `AllTheListsApp`). The shared DEBUG host now explicitly rejects `CometApp` roots in `sample/Shared/RuntimeDebug/SampleRuntimeDebugExtensions.cs`, so Amos's "launched on Mac Catalyst with live runtime agents attached" claim is not reviewer-approvable in the current repo state.
+- **Verification boundary:** For both samples, the current approval ceiling is **build-only plus code migration complete**. There is **no** reviewer-grade launch/render proof and **no** interactive end-to-end proof.
+- **Routing:** Because this is an Amos artifact with an overclaim, Amos must not own the next revision. Route the next revision to Holden so the shared/runtime host lane and the sample DEBUG root factories can be corrected together.
+
 ### P0 Runtime Review — Render Progress Is Not Flow Approval (2026-03-08T164448Z)
 
 **Status:** ⚠️ PARTIAL APPROVAL ONLY
@@ -945,3 +965,91 @@ Continue runtime validation on 9 remaining samples (CometMauiApp, CometFeatureSh
 - Reviewer verdict: `.squad/decisions.md` — "P0 Runtime Review — Partial Approval Only" (2026-03-08T164448Z)
 - Orchestration: `.squad/log/20260308T164448Z-bobbie-p0-runtime-review-gate.md`
 - Session log: `.squad/log/20260308T164448Z-session-reviewer-gate-handoff.md`
+
+---
+
+## 2026-03-08T171141Z — P0 Shared-DEBUG-Host Review + TaskApp/AllTheLists Gate
+
+**Status:** ✅ APPROVED (launch/render), ❌ REJECTED (interactive), 🔒 GATE (runtime)
+
+### Review 1: Holden's Root-View DEBUG Host (Approved)
+
+**Validation Performed:**
+- `dotnet build sample/CometMauiApp/CometMauiApp.csproj -c Debug -f net10.0-maccatalyst` → ✅ pass
+- `dotnet build sample/CometBaristaNotes/CometBaristaNotes.csproj -c Debug -f net10.0-maccatalyst` → ✅ pass
+- `dotnet test tests/Comet.Tests/Comet.Tests.csproj --no-build -c Release --filter "CometHost|ViewGetViewTests|NativeHostInteropTests|NewFeatureTests"` → ✅ 27/27 passing
+
+**Approved Claims:**
+- CometMauiApp: build ✅, launch/render ✅
+- CometBaristaNotes: build ✅, launch/render ✅
+
+**Rejected Claims:**
+- Interactive end-to-end flow for both samples (MauiDevFlow automation-id resolution returns zero elements; descendant controls remain hidden/disabled in automation tree)
+
+**Claim Ceiling:**
+- **CometMauiApp:** build ✅, launch/render ✅, interactive ❌
+- **CometBaristaNotes:** build ✅, launch/render ✅, interactive ❌
+
+Do NOT promote either sample to interactive validation until MauiDevFlow can hit-test/tap Comet descendants. Current state: outer CometHost accessible, inner view tree inaccessible.
+
+**Evidence Hygiene Note:** Logs from CometMauiApp port-10224 and CometBaristaNotes port-10224 are byte-identical (shared evidence artifact). Do not cite separately or imply independent verification.
+
+**Decision Record:** `.squad/decisions.md` — "Bobbie Decision Inbox — P0 shared-debug-host review"
+
+---
+
+### Review 2: Amos's TaskApp + AllTheLists Migration (Partial Approval)
+
+**Code Migration Validation:**
+
+**CometTaskApp:**
+- ✅ Task surface uses `CollectionView` (not ListView)
+- ✅ Add-task flow uses `Component<AddTaskPageState>` for isolated state
+- ✅ Detail editing uses `Component<TaskDetailState, TaskDetailProps>` with typed props
+- ✅ Builds on Mac Catalyst
+
+**CometAllTheLists:**
+- ✅ Boots as direct `CometApp` (not wrapped in Shell)
+- ✅ Root uses `TabView` + `NavigationView` tabs
+- ✅ Inbox collection migrated to `CollectionView`
+- ✅ Builds on Mac Catalyst
+
+**Build Validation:**
+- `dotnet build sample/CometTaskApp/CometTaskApp.csproj -c Debug -f net10.0-maccatalyst` → ✅ pass
+- `dotnet build sample/CometAllTheLists/CometAllTheLists.csproj -c Debug -f net10.0-maccatalyst` → ✅ pass
+
+**Approved Claims:**
+- Code migration real and correct for both samples
+- Build success on Mac Catalyst confirmed
+
+**Rejected Claims:**
+- Launch/render evidence (both samples still pass `CometApp` roots to `UseCometSampleDebugHost<TView>()`, which is now explicitly rejected)
+- Interactive end-to-end flow (same architectural mismatch blocks evidence capture)
+- Runtime evidence (no retained launch artifacts under `sample-validation/`)
+
+**Gate Applied:** Both samples remain **build-only** until:
+1. Root-view DEBUG hosting refactored to accept real factories (Holden's work)
+2. Both samples updated to provide `CreateRootView()` factories
+3. Fresh launch/render evidence captured and retained
+
+**Routing Decision:** Next revision owns to **Holden** (not Amos). Reason: architectural fix required; this is not sample-storytelling polish.
+
+**Decision Record:** `.squad/decisions.md` — "Bobbie — TaskApp + AllTheLists Review Gate"
+
+---
+
+## P0 Validation Status Summary
+
+**Approved P0 floor (launch/render only):**
+- CometMauiApp
+- CometBaristaNotes
+- Comet.Sample (pending Bobbie's continuation validation)
+
+**Blocked pending architecture (interactive automation):**
+- CometTaskApp
+- CometAllTheLists
+- Remaining 7 samples
+
+**Architectural blocker:** MauiDevFlow automation-id hit-testing does not reach descendants inside Comet containers; requires deeper bridge between MAUI handlers and inner view tree.
+
+**Next Phase:** Wave 2 (Holden fixes architecture, Bobbie validates remaining 9 samples)

@@ -28,6 +28,37 @@ Defined ControlStyle<T> generic builder pattern. Theme as concrete base class wi
 
 ## Learnings
 
+### 2026-03-08 — P0 Runtime Host Revision (Root-View DEBUG Hosting)
+
+**Status:** ⚠️ Improved, render-only validation still truthful  
+**Reviewer context:** Bobbie partial approval only; Amos's prior P0 signoff artifact rejected for full-runtime claims.
+
+**What changed:**
+- Reworked `sample/Shared/RuntimeDebug/SampleRuntimeDebugExtensions.cs` so the shared DEBUG host now accepts a real root `Comet.View` factory and rejects `CometApp` roots with an explicit guard.
+- Updated `sample/CometMauiApp/MyApp.cs` and `sample/CometBaristaNotes/MauiProgram.cs` to use root-view debug hosting (`CreateRootView`) instead of passing `MyApp` / `BaristaApp` into `UseCometSampleDebugHost<TView>()`.
+- Added explicit root-view factories in `sample/CometMauiApp/MyApp.cs` and `sample/CometBaristaNotes/BaristaApp.cs`.
+- Improved `src/Comet/Controls/CometHost.cs` visual-tree exposure so inspection sees the supplied Comet root view before its rendered child chain.
+- Added automation IDs to the primary `CometMauiApp` interactive controls and tab-root IDs in `BaristaApp` to make future inspection work more targetable once the host bridge exposes native/tappable descendants.
+
+**Validation run:**
+- Build: `dotnet build sample/CometMauiApp/CometMauiApp.csproj -c Debug -f net10.0-maccatalyst`
+- Build: `dotnet build sample/CometBaristaNotes/CometBaristaNotes.csproj -c Debug -f net10.0-maccatalyst`
+- Tests: `dotnet test tests/Comet.Tests/Comet.Tests.csproj --no-build -c Release --filter "CometHost|ViewGetViewTests|NativeHostInteropTests|NewFeatureTests"` → **27/27 passing**
+- Runtime: restarted both MacCatalyst apps and validated through MauiDevFlow on ports `10223` (Comet Counter) and `10224` (Barista Notes).
+
+**Evidence retained:**
+- `/Users/davidortinau/.copilot/session-state/b26a6593-f539-47de-8f7b-3bd72e7ad681/files/runtime-validation/CometMauiApp/`
+- `/Users/davidortinau/.copilot/session-state/b26a6593-f539-47de-8f7b-3bd72e7ad681/files/runtime-validation/CometBaristaNotes/`
+
+**Truthful outcome:**
+- **Launch:** yes
+- **Render:** yes
+- **Interactive flow:** no
+
+**Remaining blocker:**
+- With the agent-connected `Application` + `ContentPage` + `CometHost(rootView)` path, MauiDevFlow now sees the correct root Comet views (`MainPage`, `TabView`) instead of wrapped `CometApp` roots, but hit-testing still resolves only `CometHost` / `ContentPage`, while descendant Comet controls remain `[hidden] [disabled]` with `bounds: null`, `nativeType: null`, and failed `tap` attempts.
+- A direct `UseCometApp` experiment made the Comet root topology cleaner but dropped live MauiDevFlow connectivity in the current harness, so I kept the root-view factory change on the MAUI `Application` host and left the runtime claim at render-only.
+
 ### Phase 7.1 — REJECTED (2026-03-08T050500Z)
 
 **Status:** ❌ REJECTED by Bobbie (Test Engineer)  
@@ -337,3 +368,59 @@ Hot reload registration / cleanup needs lifecycle awareness. Focused tests pass 
 **Reference:**
 - Reviewer verdict: `.squad/decisions.md` — "P0 Runtime Review — Partial Approval Only" (2026-03-08T164448Z)
 - Orchestration: `.squad/log/20260308T164448Z-bobbie-p0-runtime-review-gate.md`
+
+---
+
+## 2026-03-08T171141Z — Approved Launch/Render Artifact
+
+**Status:** ✅ APPROVED (launch/render only)
+
+### Artifact: Root-View DEBUG Host Refactor
+
+Successfully reworked shared sample DEBUG host to unblock CometMauiApp and CometBaristaNotes from architectural mismatch.
+
+**Key Changes:**
+- Shared DEBUG host now accepts real root `Comet.View` factories (rejects CometApp silently)
+- CometMauiApp routes through `CreateRootView()` factory returning app-specific root view
+- CometBaristaNotes routes through `CreateRootView()` factory returning TabView root
+- CometHost inspection exposes correct root (no wrapped CometApp confusion)
+- Automation IDs added to improve visual-tree debugging
+
+**Validation:**
+- Build: Both samples compile on Mac Catalyst
+- Launch: Both samples launch without Application.Current crash
+- Render: MauiDevFlow confirms visible & enabled root UI (baseline captured)
+
+**Claim Boundary:**
+- ✅ Build success
+- ✅ Launch baseline + render evidence
+- ❌ Interactive automation (MauiDevFlow hit-testing still resolves only CometHost/ContentPage; descendants remain inaccessible)
+
+**Architecture Note:** The deeper bridge allowing MauiDevFlow to reach descendant Comet controls remains a future work item.
+
+**Decision Record:** `.squad/decisions.md` — "Holden — Root-View DEBUG Host"
+
+---
+
+## 2026-03-08T171141Z — TaskApp + AllTheLists Routing Gate
+
+**Status:** 🔀 ROUTED (from Amos, next revision assigned to Holden)
+
+### Task: Fix Architecture for TaskApp + AllTheLists Runtime Evidence
+
+**Current Issue:**
+- Both samples still pass `CometApp` roots to `UseCometSampleDebugHost<TView>()`, which is now explicitly rejected
+- No retained launch/render artifacts under `sample-validation/`
+- No fresh DEBUG-host entry points using `CreateRootView()` factories
+
+**Next Steps:**
+1. Create `CreateRootView()` factories for `CometTaskApp` and `CometAllTheLists`
+2. Wire DEBUG entry points to use real root-view factories instead of CometApp roots
+3. Capture fresh launch/render evidence
+4. Route to Bobbie for revalidation
+
+**Why Holden (not Amos):** Architecture fix (CometApp vs CometHost bridge) is Holden's domain, not sample-storytelling polish.
+
+**Amos Status:** Remains locked out until this revision completes and Bobbie revalidates.
+
+**Decision Record:** `.squad/decisions.md` — "Bobbie — TaskApp + AllTheLists Review Gate"
