@@ -8,6 +8,54 @@
 
 ## Learnings
 
+### Phase 6.2 Complete — Interop Tests Locked (2026-03-08T035930Z)
+
+**Status:** ✅ Phase 6.2 APPROVED — COMPLETE
+
+**Assignment:** Phase 6.2 interop test infrastructure — baseline bridge coverage complete, Phase 6.1 blockers explicitly skipped.
+
+**Phase 6.2 Final Deliverable:**
+- Location: `tests/Comet.Tests/InteropTests/`
+- Namespace: `Comet.Tests` (flat, per squad convention)
+- Active tests: 11 passing (regression-locked on bridge primitives)
+- Explicitly skipped: 4 tests pending Phase 6.1 `NativeHost` API
+- Build: 0 errors, 0 warnings ✅
+
+**Test Coverage (11 Passing):**
+1. **MauiViewHost Sizing** — Comet → MAUI host layout sizing propagation
+2. **MauiViewHost Disposal** — Handler cleanup and resource release
+3. **MauiViewHost Factory** — Dynamic MAUI content instantiation
+4. **CometHost Property Semantics** — MAUI → Comet property bridge
+5. **GetView() Caching** — Hosted view instance reuse
+6. **Mixed Interop Layouts** — Nested Comet/MAUI containers
+7. **Handler Initialization Timing** — View tree readiness
+8. **Reusable Content Factories** — Factory lambda lifecycle
+9. **CometHost Disposal** — Cascading disposal safety
+10. **Bridge Content Refresh** — View swap without remounting
+11. **Bidirectional Binding** — Property propagation both directions
+
+**Skipped Tests (4 — Phase 6.1 Blockers):**
+1. Immediate native control hosting (pending `NativeHost` factory)
+2. Lazy/cached native factories (pending `NativeHost` lifecycle)
+3. Mixed-layout native composition (pending native container integration)
+4. Native view access post-handler (pending `GetNativeView()` API)
+
+**Impact:**
+- ✅ Regression protection on existing interop bridge (MauiViewHost, CometHost, GetView)
+- ✅ No blockers for Amos Phase 6.1 parallel work
+- ✅ Four skipped tests form re-review checklist once Phase 6.1 lands
+- ✅ Wider interop-focused validation slice now 54 passing tests (across interop, navigation, component domains)
+
+**Phase 6 Status:**
+- Amos (Phase 6.1 NativeHost): IN PROGRESS
+- Bobbie (Phase 6.2 Interop Tests): ✅ COMPLETE, ready for Phase 6.1 integration testing
+
+**Remaining (Deferred to Post-Phase 6):**
+1. SetEnvironment stack overflow (framework-level)
+2. BuiltView type detection (awaiting David clarification)
+
+**Next:** Await Phase 6.1 NativeHost landing, then re-review and unskip 4 interop tests.
+
 ### Phase 5 Complete — All 17 Navigation Tests Passing (2026-03-08T041000Z)
 
 **Status:** ✅ Phase 5 APPROVED — CLOSURE

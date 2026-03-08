@@ -8,6 +8,36 @@
 
 ## Learnings
 
+### Phase 6.2 Progress Logged (2026-03-08T035930Z)
+
+**Status:** ✅ COMPLETE
+
+**Task:** Log Bobbie Phase 6.2 completion (interop test baseline).
+
+**Actions Completed:**
+1. ✅ Orchestration log written (Bobbie Phase 6.2 completion entry)
+2. ✅ Session log written (Phase 6 mid-flight progress snapshot)
+3. ✅ Inbox decision merged into decisions.md (bobbie-phase6-interop-test-shape.md)
+4. ✅ Bobbie history updated (Phase 6.2 completion entry)
+5. ✅ Scribe history updated (this file)
+
+**Files Created:**
+- `.squad/orchestration-log/2026-03-08T035930Z-bobbie-phase6-2-complete.md`
+- `.squad/log/2026-03-08T035930Z-phase6-midflight.md`
+
+**Files Modified:**
+- `.squad/decisions.md` (Phase 6.2 decision merged, phase-5-complete decision maintained)
+- `.squad/agents/bobbie/history.md` (Phase 6.2 completion entry)
+- `.squad/agents/scribe/history.md` (this file)
+
+**Key Context:**
+- Phase 6.2 landed with 11 passing tests (interop baseline locked)
+- 4 tests intentionally skipped (awaiting Amos Phase 6.1 NativeHost API)
+- Wider interop validation slice now 54 passing tests
+- Phase 6.1 (Amos) in parallel — no blockers from Phase 6.2 side
+
+**Next:** Git commit with .squad/ changes, team continues parallel Phase 6 work (Amos Phase 6.1, Bobbie awaiting Phase 6.1 for re-review).
+
 ### Phase 5 Closure & Phase 6 Kickoff — Inbox Merged (2026-03-08T041000Z)
 
 **Status:** ✅ COMPLETE

@@ -98,6 +98,13 @@
 **Context:** Typed route registration (`CometShell.RegisterRoute<TView>`), generic navigation overloads (`GoToAsync<TView>`, `Navigate<TView>`), parameter flow (Props injection for Component pages + IQueryAttributable fallback), NavigationParameterHelper (query building, URL encoding), shell fluent API (`AddItem`, `AddSection`, `WithRoute`), factory methods (`CometControls.Navigation.cs`).
 **Remaining (outside Phase 5):** SetEnvironment stack overflow (framework-level), BuiltView type detection (awaiting David clarification). Both deferred to Phase 6.
 
+### 2026-03-08T035930Z: Phase 6.2 Interop Test Shape
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Approved  
+**Decision:** Phase 6.2 interop coverage starts with a dedicated `tests/Comet.Tests/InteropTests/` subdirectory while keeping the flat `Comet.Tests` namespace. The suite mixes immediately-runnable regression coverage for existing bridge primitives (`MauiViewHost`, `CometHost`, `GetView()` caching) with explicitly skipped placeholders for the not-yet-landed `NativeHost` and native-view-access API.
+**Context:** Amos is implementing Phase 6.1 (`NativeHost` + native view access) in parallel. The current repository already has working bidirectional interop seams (`MauiViewHost` and `CometHost`), so Bobbie covered those behaviors now to lock down the baseline. Limited skips to the truly blocked Phase 6.1 surface.
+**Impact:** Immediate regression protection on today's interop bridge without waiting for Amos. The 4 skipped `NativeHost` tests become the first re-review checklist once Phase 6.1 lands. 11 passing interop tests + 15 active interop test cases = baseline locked. Build: 0 errors, 0 warnings.
+
 ## Governance
 
 - All meaningful changes require team consensus
