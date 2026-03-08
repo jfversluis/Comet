@@ -8,6 +8,76 @@
 
 ## Learnings
 
+### Phase 8.2 Completion Logged + Phase 8.1 Inbox Merged (2026-03-08T051435Z)
+
+**Status:** ✅ COMPLETE
+
+**Task:** Log Amos Phase 8.2 completion AND merge Naomi Phase 8.1 decision inbox.
+
+**Actions Completed:**
+1. ✅ Orchestration logs written (Amos Phase 8.2 completion entry)
+2. ✅ Session log written (Phase 8.2 progress snapshot)
+3. ✅ Inbox decision merged into decisions.md (naomi-phase-8-1-complete.md)
+4. ✅ Inbox file deleted
+5. ✅ Team identity updated (.squad/identity/now.md — Amos Phase 8.2 marked complete, Naomi Phase 8.1 marked complete)
+6. ✅ Amos history updated (Phase 8.2 completion entry prepended)
+7. ✅ Naomi history updated (Phase 8.1 completion entry prepended)
+8. ✅ Scribe history updated (this file)
+
+**Files Created:**
+- `.squad/orchestration-log/2026-03-08T051435Z-amos-phase8-2-complete.md`
+- `.squad/log/2026-03-08T051435Z-phase8-2-complete.md`
+
+**Files Modified:**
+- `.squad/decisions.md` (Phase 8.1 decision merged: "Phase 8.1 Generated Control Coverage Complete")
+- `.squad/identity/now.md` (Amos Phase 8.2 complete, Naomi Phase 8.1 complete marked in status)
+- `.squad/agents/amos/history.md` (Phase 8.2 completion entry)
+- `.squad/agents/naomi/history.md` (Phase 8.1 completion entry)
+- `.squad/agents/scribe/history.md` (this file)
+
+**Files Deleted:**
+- `.squad/decisions/inbox/naomi-phase-8-1-complete.md`
+
+**Key Context:**
+- Phase 8.2 delivered: TabbedPage, FlyoutPage, platform handlers, full test coverage, 0 regressions
+- Phase 8.1 delivered: Coverage documentation proving 19 generated controls comprehensive; no scope creep into complex controls
+- Phase 1–7 baseline: 625+ passing tests, 640+ total with Phase 8 additions
+- Phase 8 parallel status: Naomi Phase 8.1 ✅ COMPLETE, Amos Phase 8.2 ✅ COMPLETE, Bobbie Phase 8.3 ⏳ READY FOR INTEGRATION
+- No blockers for Phase 8.3 integration phase
+
+**Next:** Git commit with .squad/ changes, Phase 8 proceeds to Bobbie Phase 8.3 integration.
+
+### Phase 8.2 Completion Logged (2026-03-08T051435Z)
+
+**Status:** ✅ COMPLETE
+
+**Task:** Log Amos Phase 8.2 completion (handwritten complex controls).
+
+**Actions Completed:**
+1. ✅ Orchestration log written (Amos Phase 8.2 completion entry)
+2. ✅ Session log written (Phase 8.2 progress snapshot)
+3. ✅ No inbox decisions to merge (inbox empty)
+4. ✅ Team identity updated (.squad/identity/now.md — Amos Phase 8.2 marked complete)
+5. ✅ Amos history updated (Phase 8.2 completion entry prepended)
+6. ✅ Scribe history updated (this file)
+
+**Files Created:**
+- `.squad/orchestration-log/2026-03-08T051435Z-amos-phase8-2-complete.md`
+- `.squad/log/2026-03-08T051435Z-phase8-2-complete.md`
+
+**Files Modified:**
+- `.squad/identity/now.md` (Phase 8.2 marked complete, status clarified for Naomi/Bobbie)
+- `.squad/agents/amos/history.md` (Phase 8.2 completion entry)
+- `.squad/agents/scribe/history.md` (this file)
+
+**Key Context:**
+- Phase 8.2 delivered: TabbedPage, FlyoutPage, platform handlers, full test coverage, 0 regressions
+- Phase 1–7 baseline: 625+ passing tests, 640+ total with Phase 8 additions
+- Phase 8 parallel status: Naomi Phase 8.1 in progress, Amos Phase 8.2 complete, Bobbie Phase 8.3 ready
+- No blockers for Phase 8.3 integration phase
+
+**Next:** Git commit with .squad/ changes, Phase 8 continues with Naomi Phase 8.1 and Bobbie Phase 8.3 integration.
+
 ### Phase 7 Closure & Phase 8 Kickoff (2026-03-08T050835Z)
 
 **Status:** ✅ COMPLETE

@@ -162,6 +162,22 @@
 **Validation:** Built in documented order and reran focused Phase 7/metadata tests plus broader hot reload reviewer net. The reviewer net passed with only accepted historical skips remaining.
 **Impact:** Phase 7.1 approved. No architectural changes needed. View registration remains as-is; defensive null-checking prevents cascade failures in multi-test scenarios. Phase 8 can proceed without framework-level changes.
 
+### 2026-03-08T051435Z: Phase 8.1 Generated Control Coverage Complete
+**Owner:** Naomi (Source Generator Dev)  
+**Status:** Complete  
+**Decision:** Phase 8.1 is **complete without adding new generated controls** because existing coverage (19 generated controls) is comprehensive for all MAUI 10 simple, property-based IView interfaces. Complex controls with custom logic, collection management, or platform-specific behavior belong in Amos's handwritten lane (Phase 8.2).
+**Investigation Results:**
+  - All 19 simple IView interfaces in MAUI 10 suitable for generation are already covered (Button, Text, TextField, Slider, Toggle, CheckBox, Stepper, SearchBar, DatePicker, TimePicker, ProgressBar, ActivityIndicator, IndicatorView, SecureField, TextEditor, RefreshView, FlyoutView, Toolbar, and others)
+  - Complex controls like Picker, RadioButton, Image, BoxView, Border, ScrollView, SwipeView, MenuBar, etc. are correctly handwritten due to collection management, custom logic, or platform-specific requirements
+  - MAUI 10 new controls (HybridWebView, MenuItem family) assessed as too complex for the generator pattern
+  - MauiReactor-style API surface completeness achieved: factory methods (Phase 2.1-2.2), style builders (Phase 2.3), extension methods with Binding<T> and Func<T> all complete
+**Impact:** 
+  - Coverage documentation created (`CONTROL_COVERAGE_PHASE_8_1.md`) proving Reactor-style API surface achieved
+  - Phase 8.2 (Amos) can proceed with handwritten complex controls without generator scope creep
+  - Phase 8.3 (Bobbie) ready for comprehensive test integration across 19 generated + handwritten controls
+  - Build: 0 new errors from Phase 8.1; no regressions against existing baseline
+**Key Files:** `CONTROL_COVERAGE_PHASE_8_1.md` (comprehensive coverage analysis), `.squad/agents/naomi/history.md` (phase findings)
+
 ## Governance
 
 - All meaningful changes require team consensus

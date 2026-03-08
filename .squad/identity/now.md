@@ -1,10 +1,10 @@
 ---
-updated_at: 2026-03-08T050835Z
-focus_area: Phase 8 — Control Expansion (Naomi/Amos) & Validation (Bobbie)
+updated_at: 2026-03-08T051435Z
+focus_area: Phase 8 — Control Expansion (Naomi ACTIVE, Amos COMPLETE) & Validation (Bobbie)
 active_agents:
-  - Naomi (Phase 8.1 — IView Controls Expansion)
-  - Amos (Phase 8.2 — Handwritten Complex Controls)
-  - Bobbie (Phase 8.3 — Control Coverage Tests & Reviewer Gate)
+  - Naomi (Phase 8.1 — IView Controls Expansion) ⏳ IN PROGRESS
+  - Amos (Phase 8.2 — Handwritten Complex Controls) ✅ COMPLETE
+  - Bobbie (Phase 8.3 — Control Coverage Tests & Reviewer Gate) ⏳ READY, AWAITING INPUTS
 active_issues: 
   - "SetEnvironment stack overflow (framework-level, deferred to Phase 9+)"
   - "BuiltView type detection (awaiting David clarification, deferred to Phase 9+)"
