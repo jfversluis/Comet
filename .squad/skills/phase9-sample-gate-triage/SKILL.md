@@ -23,6 +23,10 @@ Use this when a Comet sample is reported as “broken after a rebuild/import fix
 - Run the focused Phase 9 test directly with the environment variable for the artifact under test instead of only relying on the wrapper script.
 - For the coffee lane, use `COMET_PHASE9_COFFEE_SAMPLE_PROJECT=... dotnet test tests/Comet.Tests/Comet.Tests.csproj --no-build -c Release --filter "FullyQualifiedName~Phase9SampleDocumentationValidationTests.CoffeeAppPassesPhase9GateWhenConfigured"`.
 
+### Normalize env paths when bypassing the wrapper
+- The xUnit gate resolves `COMET_PHASE9_*` paths with `Path.GetFullPath(...)` inside the test host, so repo-relative values can resolve under `tests/Comet.Tests/bin/...` instead of the repository root.
+- When running the env-driven gate directly, pass **absolute** project/guide paths. The wrapper script is safer because it normalizes relative CLI arguments before exporting `COMET_PHASE9_COUNTER_SAMPLE_PROJECT`, `COMET_PHASE9_COFFEE_SAMPLE_PROJECT`, and `COMET_PHASE9_MIGRATION_GUIDE`.
+
 ### Check bootstrap exclusion against the accepted feature tokens
 - `Phase9Project.IsBootstrapFile(...)` excludes `MauiProgram.cs`, `Program.cs`, `AppShell.cs`, and any `*App.cs`.
 - If the only `NavigationView`, `TabView`, or other “rich surface” token lives in `*App.cs`, the gate can false-fail even though the sample is wired correctly.

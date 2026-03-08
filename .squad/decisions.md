@@ -283,3 +283,34 @@
 - Phase 9 closure now verifies the current-surface reference path without forcing a full sample rewrite in one patch.
 - Mixed-migration samples have an explicit validation pattern that future phases can follow.
 - The migration guide remains authoritative for MAUI 10 transition requirements.
+
+### 2026-03-08T061500Z: Phase 9 Closure Approved — Final Review Verdict
+**Owner:** Bobbie (Test Engineer)  
+**Status:** ✅ APPROVED  
+**Decision:** Formally approve Phase 9 (Samples & Validation Infrastructure) for closure. All deliverables verified. Roadmap through Phase 9 now complete.
+
+**Evidence:**
+- Build chain: ✅ Comet.SourceGenerator → Comet → Comet.Tests → samples (macCatalyst)
+- Lane 1 (Amos): ✅ Sample coverage expanded; documentation updated; migration guide complete
+- Lane 2 (Bobbie): ✅ Validation infrastructure delivered; wrapper script passes; all closure tests pass
+- Sample builds: ✅ CometMauiApp, CometBaristaNotes (net10.0-maccatalyst)
+- Validation gates: ✅ Phase9SampleDocumentationValidationTests (7/7 pass)
+
+**Artifacts verified:**
+- `docs/migration-guide.md` — Explicit MAUI 10 API coverage (DisplayAlertAsync, DisplayActionSheetAsync, Border, CollectionView, MainThread)
+- `sample/CometMauiApp/` — Demonstrates `UseCometApp<TApp>()` baseline
+- `sample/CometBaristaNotes/` — Mixed-surface design with evolved reference flow
+- `tests/Comet.Tests/Phase9SampleDocumentationValidationTests.cs` — Harness correctly scoped
+- `tools/validate-phase9-sample-docs.sh` — Wrapper script validated
+
+**Key patterns locked for Phase 10+:**
+1. Mixed-surface samples: Current surface via reference files; legacy pages retained for incremental adoption narrative
+2. Validator rule tuning: For multi-pattern migration, scope strict checks to reference files; accept alternative rich-surface signals
+3. Control-type specificity: When banning deprecated controls, use type-usage patterns (`new Frame`, `: Frame`) to avoid false positives with fluent helpers
+4. Phase gate pattern: Realignment + re-run (closure revision) + reviewer verdict → closure approval
+
+**Impact:**
+- Phase 9 closure approved. No blockers.
+- Roadmap through Phase 9 complete and stable.
+- All agents released. No active phase.
+- Ready for Phase 10 planning.

@@ -38,6 +38,17 @@ Theme system validated with 34 tests. Confirmed concrete `Theme` base class, `Th
 
 ## Learnings
 
+### Phase 9 Reviewer Gate — Samples/Docs Lane Approved (2026-03-08T083500Z)
+
+**Status:** ✅ APPROVED
+
+- **Formal gate evidence:** The documented build chain is green end-to-end for the reviewed artifacts: `src/Comet.SourceGenerator/Comet.SourceGenerator.csproj`, `src/Comet/Comet.csproj`, `tests/Comet.Tests/Comet.Tests.csproj`, `sample/CometMauiApp/CometMauiApp.csproj -f net10.0-maccatalyst`, and `sample/CometBaristaNotes/CometBaristaNotes.csproj -f net10.0-maccatalyst`.
+- **Validation harness behavior:** `Phase9SampleDocumentationValidationTests` now passes 7/7 when pointed at the real repo artifacts, and `tools/validate-phase9-sample-docs.sh` passes against `sample/CometMauiApp`, `sample/CometBaristaNotes`, and `docs/migration-guide.md`.
+- **Counter sample pattern locked in:** `sample/CometMauiApp/MainPage.cs` is the evolved starter reference: `Component<CounterState>`, `Render()`, `SetState(...)`, `Reactive<string>`, and MAUI-current controls such as `Border`, `Slider`, `Toggle`, and `NavigationView`. `sample/CometMauiApp/MyApp.cs` keeps the app rooted in `CometApp` via `builder.UseCometApp<MyApp>()`.
+- **Coffee sample pattern locked in:** `sample/CometBaristaNotes/Pages/CoffeeDashboardPage.cs` and `sample/CometBaristaNotes/Pages/CoffeeBeanDetailPage.cs` are the current-surface reference files for mixed migration (`Component`, typed props, `SetState(...)`, `Navigation.Navigate<T>()`, `MainThread`). `sample/CometBaristaNotes/BaristaApp.cs` intentionally stays a `CometApp` + `TabbedPage` bootstrap shell while older pages remain in place for migration storytelling.
+- **Docs lane shape:** `docs/migration-guide.md` is now the authoritative Phase 9 migration doc, and `README.md`, `sample/CometMauiApp/README.md`, and `sample/CometBaristaNotes/README.md` correctly route readers to the counter reference, coffee reference, and migration guide without renaming Comet.
+- **Operational note:** The wrapper script is the safest closure entry point because it normalizes CLI inputs to absolute paths before exporting `COMET_PHASE9_*`. If a reviewer bypasses the wrapper and runs the env-driven xUnit gate directly, use absolute artifact paths rather than repo-relative ones.
+
 ### Coffee Sample Rebuild Triage — Build Green, Gate Red (2026-03-08T071500Z)
 
 **Status:** ✅ triaged without code changes
@@ -734,3 +745,17 @@ Routed findings to Amos for revision lane. Phase 9 remains open until blockers a
 - Control-type checks should use type-usage patterns (`new Frame`, `: Frame`) to avoid false positives with fluent helpers.
 
 **Impact:** Phase 9 closure APPROVED. Validation script passes. Samples green. Migration guide complete. Ready for Phase 9 consolidation and Phase 10 planning.
+
+## 2026-03-08T061500Z — Phase 9 Closure Complete
+
+**Status:** ✅ PHASE 9 FORMALLY CLOSED
+
+Approved Phase 9 for final closure. All deliverables verified:
+- Sample coverage expanded and builds green on macCatalyst
+- Validation infrastructure delivered; wrapper script passes
+- Migration guide complete with explicit MAUI 10 API coverage
+- All closure gates pass
+
+Key pattern established: Mixed-surface samples now have an explicit validation pattern for multi-phase incremental migration work. This pattern is locked for Phase 10+.
+
+All agents released. Roadmap through Phase 9 stable and complete. Ready for Phase 10 planning.
