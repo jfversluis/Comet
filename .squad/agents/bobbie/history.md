@@ -179,3 +179,41 @@ Theme system validated with 34 tests. Confirmed concrete `Theme` base class, `Th
 **Coordinator note:** Current approved ceiling is build ✅ / launch ✅ / render ✅ / interactive ❌. TaskApp + AllTheLists route remains blocked on Holden's architecture fix.
 
 ---
+## 2026-03-08T175446Z — External-Blocker Review Gate
+
+**Status:** ✅ APPROVE
+
+- Reviewed Holden's retained `revision3-external-blocker/` evidence for `CometMauiApp` and `CometBaristaNotes`, plus the implicated framework files (`View.cs`, `ViewExtensions.cs`, `CometHost.cs`, `AppHostBuilderExtensions.cs`) and sample debug-host wiring.
+- Reran the approved build/test chain: SourceGenerator, Comet (`net10.0-maccatalyst`), Comet.Tests build, focused regression filter, `CometMauiApp`, and `CometBaristaNotes` — all passing; focused tests remain **43/43** green.
+- `CometMauiApp` native proof is strong enough to isolate the remaining blocker downstream of Comet for this reviewed P0 sample: the increment button already exposes `AutomationId` / `AccessibilityId`, `NativeView.AccessibilityIdentifier`, `UserInteractionEnabled=True`, `Hidden=False`, and a real accessibility frame, while MauiDevFlow `query --automationId`, `hittest`, and `tap` still fail.
+- `CometBaristaNotes` shows the same pattern on the Coffee Lab tab root: live native accessibility metadata is present, but MauiDevFlow still returns no automation-id match and still treats the shell as hidden/disabled for interaction.
+- Verdict boundary: the team may now reasonably treat the remaining interactive blocker as **external/downstream to Comet for the currently reviewed P0 samples only** (`CometMauiApp`, `CometBaristaNotes`). Do **not** upgrade `CometTaskApp` or `CometAllTheLists` beyond interactive ❌ from this pass because they were not freshly revalidated.
+- Next owner: shift the remaining investigation to the MauiDevFlow consumption path; Holden does not need another speculative Comet rewrite on this artifact.
+
+---
+
+
+## 2026-03-08T180100Z — P0 Gate Complete: External-Blocker Boundary Affirmed
+
+**Status:** ✅ APPROVED for production merge  
+**Decision:** `.squad/decisions.md` — "Bobbie — P0 Gate: External Blocker Boundary Affirmed"
+
+**Gate action:** Final affirmation of external-blocker boundary for P0 samples.
+
+**Boundary affirmed:**
+- **Comet responsibility:** Build ✅ → Launch ✅ → Render ✅ → Descendants (property inspection) ✅
+- **Downstream (MauiDevFlow):** Interactive automation (element, query --automationId, hittest, tap) ❌
+
+**Guardrails locked:**
+- P0 samples (CometMauiApp, CometBaristaNotes) confirmed at interactive ❌ with external-blocker justification
+- Do not promote either P0 sample beyond interactive ❌
+- Do not generalize to CometTaskApp or CometAllTheLists (not revalidated in this pass)
+- Next investigation: MauiDevFlow consumption path
+
+**Approval scope:**
+- Holden's root-view DEBUG host refactor: truthful and complete ✅
+- Holden's inspection-bridge descendant exposure: truthful and complete ✅
+- P0 interactive ceiling confirmed at render; blocker is external ✅
+
+**Result:** P0 boundary locked for production. Interactive work deferred to MauiDevFlow team.
+

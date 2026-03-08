@@ -565,3 +565,45 @@ However, neither sample has retained launch/render artifacts under `/Users/david
 
 **Next-owner recommendation:** No corrective rewrite is required for this artifact. If follow-on work is requested for the remaining interactive bridge blocker, Holden remains the best owner.
 
+
+### ### 2026-03-08T180000Z: Holden — Shared Inspection Bridge & Root-View DEBUG Host — APPROVED
+
+**Owner:** Holden (Lead Architect)  
+**Status:** Approved  
+**Decision:** Holden's two coordinated revisions completing the P0 sample inspection bridge and root-view DEBUG host refactor are **APPROVED** for production integration. The shared inspection bridge enables descendant property exposure (AutomationId, Bounds, Handler, NativeType) via environment traversal. The root-view DEBUG host refactor routes CometMauiApp and CometBaristaNotes through factory-pattern `CreateRootView()` instead of CometApp wrappers, unblocking build/launch/render evidence.
+
+**What was delivered:**
+- Framework changes to `View.cs`, `ViewExtensions.cs`, `CometHost.cs`, `AppHostBuilderExtensions.cs` enabling property inspection of descendant views
+- DEBUG host refactor to accept real root `View` factories (rejecting CometApp wrappers silently)
+- Verification that MauiDevFlow captures live native metadata from descendant controls
+- 5/5 build validations passing (SourceGenerator, Comet, Tests, CometMauiApp, CometBaristaNotes)
+- 43/43 regression tests passing (AccessibilityTests, ViewGetViewTests, CometHost, NativeHostInteropTests, NewFeatureTests)
+
+**Approved scope:**
+- ✅ Build: All P0 samples (CometMauiApp, CometBaristaNotes) compile successfully
+- ✅ Launch: No Application.Current failures
+- ✅ Render: MauiDevFlow captures baseline native metadata
+- ✅ Descendants: Direct property inspection (AutomationId, Bounds, Handler, NativeType) via GetView()
+- ❌ Interactive: Automation ID consumption (element, query --automationId, hittest, tap) remains in MauiDevFlow scope
+
+**Boundary Note:** Interactive automation blocked downstream in MauiDevFlow. Comet's metadata bridge is complete and truthful.
+
+**Impact:** P0 sample infrastructure ready for downstream integration testing. Framework interop API stable. Interactive blocker confirmed as external with evidence.
+
+### ### 2026-03-08T180100Z: Bobbie — P0 Gate: External Blocker Boundary Affirmed
+
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Approved  
+**Decision:** P0 samples (CometMauiApp, CometBaristaNotes) are **confirmed at interactive ❌ with external-blocker justification**. Bobbie reviewed Holden's revision3-external-blocker evidence and affirms the new repository boundary: Comet is approved **up to render + descendant property inspection**, while interactive automation remains **blocked downstream in MauiDevFlow**.
+
+**Gate criteria satisfied:**
+- Comet surfaces live native metadata on tested descendants/tabs ✅
+- MauiDevFlow fails to consume that metadata (element, query, hittest, tap) — external responsibility ✅
+
+**Guardrails enforced:**
+- Do **not** promote CometMauiApp or CometBaristaNotes beyond interactive ❌
+- Do **not** generalize this ruling to CometTaskApp or CometAllTheLists (not revalidated in this pass)
+- Next investigation moves to MauiDevFlow's automation consumption path
+
+**Impact:** P0 boundary locked. Comet framework responsibility ends at property exposure. Interactive work deferred to MauiDevFlow team.
+

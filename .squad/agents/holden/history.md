@@ -481,3 +481,83 @@ Successfully reworked shared sample DEBUG host to unblock CometMauiApp and Comet
 **Next ownership:** Follow-up work on interactive-bridge blocker remains with Holden if requested.
 
 ---
+
+## 2026-03-08T204500Z — Shared Runtime Bridge External-Blocker Isolation
+
+**Status:** ✅ Stronger live evidence captured; no further justified Comet rewrite identified
+
+**What I did:**
+- Re-ran the approved shared validation chain for the current worktree: `Comet.SourceGenerator`, `Comet` (`net10.0-maccatalyst`), `Comet.Tests`, focused regression filter, `CometMauiApp`, and `CometBaristaNotes`.
+- Reused the live MauiDevFlow Mac Catalyst agents for `Comet Counter` (`10223`) and `Barista Notes` (`10224`) to probe descendant elements beyond the earlier property-only proof.
+- Collected fresh retained evidence showing the key descendant/native bridge facts and the still-failing interactive path side by side.
+
+**Important finding:**
+- For `CometMauiApp`, the descendant increment button still serializes through MauiDevFlow `element` as `automationId: null`, `isVisible: false`, `isEnabled: false`, `bounds: null`, and `nativeType: null`.
+- But the same live element still exposes all of the expected Comet/native state through direct property access:
+  - `AutomationId: counter-increment-button`
+  - `AccessibilityId: counter-increment-button`
+  - `NativeType: UIKit.UIButton`
+  - `NativeView.AccessibilityIdentifier: counter-increment-button`
+  - `NativeView.UserInteractionEnabled: True`
+  - `NativeView.Hidden: False`
+  - `NativeView.AccessibilityFrame: {{542.5, 585}, {83, 48}}`
+- A live `hittest` at the center of that native accessibility frame (`584,609`) still resolves only `CometHost` / `ContentPage`, `query --automationId counter-increment-button` still returns `No elements found`, and `tap b9240872` still fails.
+- `CometBaristaNotes` shows the same pattern on the root tab navigation view:
+  - `AutomationId: barista-coffeelab-tab-root`
+  - `NativeView.AccessibilityIdentifier: barista-coffeelab-tab-root`
+  - `NativeView.UserInteractionEnabled: True`
+  - `NativeView.Hidden: False`
+  - `query --automationId barista-coffeelab-tab-root` still returns `No elements found`
+
+**Conclusion:**
+- At this point Comet is already surfacing the needed descendant/native metadata for the tested controls and tabs, including real native accessibility identifiers on the live platform views.
+- The remaining failure is now best explained by the downstream MauiDevFlow snapshot/query/hittest/tap consumption path, not by another missing Comet descendant-exposure change.
+- I did **not** make another speculative runtime-bridge code change in-repo, because the current live evidence now shows the native descendant metadata is already present while the tool still cannot consume it for interactive automation.
+
+**Validation:**
+- Build: `dotnet build src/Comet.SourceGenerator/Comet.SourceGenerator.csproj -c Release`
+- Build: `dotnet build src/Comet/Comet.csproj -c Release -f net10.0-maccatalyst`
+- Build: `dotnet build tests/Comet.Tests/Comet.Tests.csproj -c Release`
+- Tests: `dotnet test tests/Comet.Tests/Comet.Tests.csproj --no-build -c Release --filter "AccessibilityTests|ViewGetViewTests|CometHost|NativeHostInteropTests|NewFeatureTests"` → passing
+- Build: `dotnet build sample/CometMauiApp/CometMauiApp.csproj -c Debug -f net10.0-maccatalyst`
+- Build: `dotnet build sample/CometBaristaNotes/CometBaristaNotes.csproj -c Debug -f net10.0-maccatalyst`
+- Runtime: live MauiDevFlow recheck against ports `10223` and `10224`
+
+**Evidence retained:**
+- `/Users/davidortinau/.copilot/session-state/b26a6593-f539-47de-8f7b-3bd72e7ad681/files/runtime-validation/CometMauiApp/revision3-external-blocker/`
+- `/Users/davidortinau/.copilot/session-state/b26a6593-f539-47de-8f7b-3bd72e7ad681/files/runtime-validation/CometBaristaNotes/revision3-external-blocker/`
+
+**Truthful support level after this pass:**
+- `CometMauiApp` — **build ✅ / launch ✅ / render ✅ / interactive ❌**
+- `CometBaristaNotes` — **build ✅ / launch ✅ / render ✅ / interactive ❌**
+
+**TaskApp / AllTheLists note:**
+- I did not run fresh live proof for those two samples in this pass.
+- Their current shared outcome should still remain **interactive ❌**. The same downstream MauiDevFlow blocker is now the most likely explanation once they are on the same root-view debug-host path, but I am not promoting them beyond the already approved blocked state from this session alone.
+
+**Next move:** shift the investigation out of Comet and into MauiDevFlow’s element snapshot / automation-id query / hit-test consumption path, using the retained native-proof artifacts above as the starting repro set.
+
+---
+
+### 2026-03-08 — P0 External-Blocker Boundary (APPROVED)
+
+**Status:** ✅ APPROVED for production merge  
+**Decision:** `.squad/decisions.md` — "Holden — Shared Inspection Bridge & Root-View DEBUG Host"
+
+**What was completed:**
+1. **Inspection Bridge (Revision 2):** Extended framework to expose descendant view properties (AutomationId, Bounds, Handler, NativeType) via environment traversal. `CometHost.GetView()` and `ViewExtensions` enhanced for direct property access.
+2. **Root-View DEBUG Host (Revision 1):** Refactored `UseCometSampleDebugHost<TView>()` to accept real root `View` factories and reject CometApp wrappers.
+
+**Validation results:**
+- Build: 5/5 samples passing (SourceGenerator, Comet, Tests, CometMauiApp, CometBaristaNotes)
+- Regression: 43/43 tests passing (AccessibilityTests, ViewGetViewTests, CometHost, NativeHostInteropTests, NewFeatureTests)
+- MauiDevFlow: Live native metadata captured from descendants ✅
+
+**Approved boundary:**
+- ✅ Build → Launch → Render → Descendants (property inspection)
+- ❌ Interactive (automation ID consumption in MauiDevFlow)
+
+**Gate:** Bobbie affirmed external-blocker status for P0 samples.
+
+**Remaining:** Interactive work deferred to MauiDevFlow team. No further Comet bridge revisions needed per current evidence.
+
