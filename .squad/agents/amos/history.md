@@ -647,3 +647,24 @@ The team has established an **approved P0 launch/render floor**:
 - CometBaristaNotes: build ✅, launch/render ✅, interactive ❌
 
 **Remaining blocker:** Interactive automation requires deeper MauiDevFlow bridge for hit-testing/tapping inner Comet descendants.
+
+---
+
+## CometBaristaNotes Tap Crash Fix (iOS/Mac Catalyst)
+
+**Date:** 2025-03-08
+**Issue:** CometBaristaNotes crashes on tap in iOS Simulator — `EXC_CRASH / SIGABRT` with unhandled managed exception.
+
+### Root Cause
+Handler mapper callbacks in `AppHostBuilderExtensions.cs` subscribe native iOS events (`EditingDidEnd`, `EditingChanged`, `Changed`, `ValueChanged`) via `AppendToMapping`. These mappers fire every time `SetVirtualView()` is called — which happens on every `Reload()/ResetView()` cycle triggered by state changes. Each re-fire adds a NEW event subscription without removing the old one.
+
+After N state changes, the native `UITextField` (Picker's platform view) has N `EditingDidEnd` handlers. When the Picker dismisses (`resignFirstResponder → EditingDidEnd`), stale callbacks fire with references to disposed/replaced virtual views, causing `NullReferenceException` → `xamarin_unhandled_exception_handler` → `abort()`.
+
+### Fix Applied
+1. **`ConditionalWeakTable<NativeView, EventHandler>`** tracking for Picker, Entry, and Editor iOS handlers — unsubscribe old handler before subscribing new one
+2. **try-catch** around ALL handler mapper callbacks (Picker, Entry, Editor, Slider, Toggle) as defense-in-depth
+3. **Null-safe text** in Entry/Editor callbacks (`entry.Text ?? string.Empty`)
+4. **`FormHelpers.MakeFormEntryWithLimit`** null check (`text ??= string.Empty` before `text.Length`)
+
+### Key Learning
+`AppendToMapping` is NOT idempotent — it fires on every `SetVirtualView()` call, not just on initial handler connection. Any event subscriptions in mapper callbacks MUST track and unsubscribe previous handlers to prevent accumulation. The `ConditionalWeakTable` pattern allows tracking per-native-view without preventing GC.

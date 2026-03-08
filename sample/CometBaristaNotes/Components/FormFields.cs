@@ -194,13 +194,13 @@ public static class FormHelpers
 			.VerticalTextAlignment(TextAlignment.Center)
 			.Padding(new Thickness(Theme.SpacingS, 0));
 
-		var grid = new Grid(columns: new object[] { "*", "Auto" }, rows: new object[] { "Auto" })
+		var row = new HStack(spacing: Theme.SpacingS)
 		{
-			infoStack.Cell(row: 0, column: 0),
-			chevron.Cell(row: 0, column: 1),
+			infoStack.FillHorizontal(),
+			chevron,
 		};
 
-		View card = new Border { grid }
+		View card = new Border { row }
 			.CornerRadius(Theme.RadiusCard)
 			.Background(Theme.CardBackground)
 			.StrokeColor(Theme.CardStroke)
@@ -310,6 +310,7 @@ public static class FormHelpers
 					.Frame(height: (float)Theme.FormFieldHeight)
 					.OnTextChanged(text =>
 					{
+						text ??= string.Empty;
 						if (text.Length > maxLength)
 							text = text[..maxLength];
 						onChanged(text);

@@ -10,6 +10,7 @@ using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Platform;
 
 #if WINDOWS
@@ -20,6 +21,17 @@ namespace Comet
 {
 	public static class AppHostBuilderExtensions
 	{
+		// Weak tables to track event subscriptions per platform view, preventing
+		// duplicate handlers when mappers re-fire during SetVirtualView/Reload.
+#if __IOS__ || MACCATALYST
+		static readonly ConditionalWeakTable<UIKit.UITextField, EventHandler> _pickerEditingDidEndHandlers = new();
+		static readonly ConditionalWeakTable<UIKit.UITextField, EventHandler> _entryEditingChangedHandlers = new();
+		static readonly ConditionalWeakTable<UIKit.UITextView, EventHandler> _editorChangedHandlers = new();
+#elif ANDROID
+		static readonly ConditionalWeakTable<object, object> _pickerTextChangedHandlers = new();
+		static readonly ConditionalWeakTable<object, object> _entryTextChangedHandlers = new();
+		static readonly ConditionalWeakTable<object, object> _editorTextChangedHandlers = new();
+#endif
 		static void AddHandlers(this IMauiHandlersCollection collection, Dictionary<Type, Type> handlers) => handlers.ForEach(x => collection.AddHandler(x.Key, x.Value));
 		public static MauiAppBuilder UseCometApp<TApp>(this MauiAppBuilder builder)
 			where TApp : class, IApplication
@@ -40,6 +52,31 @@ namespace Comet
 			ViewHandler.ViewMapper.AppendToMapping(nameof(IGestureView.Gestures), CometViewHandler.AddGestures);
 			ViewHandler.ViewCommandMapper.AppendToMapping(Gesture.AddGestureProperty, CometViewHandler.AddGesture);
 			ViewHandler.ViewCommandMapper.AppendToMapping(Gesture.RemoveGestureProperty, CometViewHandler.RemoveGesture);
+			ViewHandler.ViewMapper.AppendToMapping(nameof(IView.AutomationId), (handler, view) =>
+			{
+				if (view is View cometView)
+					ApplyInspectionMetadata(handler, cometView);
+			});
+			ViewHandler.ViewMapper.AppendToMapping(nameof(IView.Visibility), (handler, view) =>
+			{
+				if (view is View cometView)
+					ApplyInspectionMetadata(handler, cometView);
+			});
+			ViewHandler.ViewMapper.AppendToMapping(nameof(IView.IsEnabled), (handler, view) =>
+			{
+				if (view is View cometView)
+					ApplyInspectionMetadata(handler, cometView);
+			});
+			ViewHandler.ViewMapper.AppendToMapping(nameof(IView.InputTransparent), (handler, view) =>
+			{
+				if (view is View cometView)
+					ApplyInspectionMetadata(handler, cometView);
+			});
+			ViewHandler.ViewMapper.AppendToMapping(nameof(IView.Semantics), (handler, view) =>
+			{
+				if (view is View cometView)
+					ApplyInspectionMetadata(handler, cometView);
+			});
 
 			// Apply shadow to any view that has it set via environment
 			ViewHandler.ViewMapper.AppendToMapping("CometShadow", (handler, view) =>
@@ -259,12 +296,20 @@ namespace Comet
 				if (slider == null)
 					return;
 #if __IOS__ || MACCATALYST
-				slider.ValueChanged += (s, e) => callback(slider.Value);
+				slider.ValueChanged += (s, e) =>
+				{
+					try { callback(slider.Value); }
+					catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[Comet] Slider ValueChanged callback failed: {ex.Message}"); }
+				};
 #elif ANDROID
 				slider.ProgressChanged += (s, e) =>
 				{
-					if (e.FromUser && view is ISlider iSlider)
-						callback(iSlider.Value);
+					try
+					{
+						if (e.FromUser && view is ISlider iSlider)
+							callback(iSlider.Value);
+					}
+					catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[Comet] Slider ValueChanged callback failed: {ex.Message}"); }
 				};
 #endif
 			});
@@ -281,9 +326,17 @@ namespace Comet
 				if (platformView == null)
 					return;
 #if __IOS__ || MACCATALYST
-				platformView.ValueChanged += (s, e) => callback(platformView.On);
+				platformView.ValueChanged += (s, e) =>
+				{
+					try { callback(platformView.On); }
+					catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[Comet] Switch Toggled callback failed: {ex.Message}"); }
+				};
 #elif ANDROID
-				platformView.CheckedChange += (s, e) => callback(e.IsChecked);
+				platformView.CheckedChange += (s, e) =>
+				{
+					try { callback(e.IsChecked); }
+					catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[Comet] Switch Toggled callback failed: {ex.Message}"); }
+				};
 #endif
 			});
 
@@ -299,16 +352,38 @@ namespace Comet
 				if (picker == null)
 					return;
 #if __IOS__ || MACCATALYST
-				picker.EditingDidEnd += (s, e) =>
+				// Remove previous subscription to prevent duplicates on re-map
+				if (_pickerEditingDidEndHandlers.TryGetValue(picker, out var oldHandler))
 				{
-					if (view is IPicker iPicker)
-						callback(iPicker.SelectedIndex);
+					picker.EditingDidEnd -= oldHandler;
+					_pickerEditingDidEndHandlers.Remove(picker);
+				}
+				EventHandler newHandler = (s, e) =>
+				{
+					try
+					{
+						if (view is IPicker iPicker)
+							callback(iPicker.SelectedIndex);
+					}
+					catch (Exception ex)
+					{
+						System.Diagnostics.Debug.WriteLine($"[Comet] Picker SelectedIndexChanged callback failed: {ex.Message}");
+					}
 				};
+				_pickerEditingDidEndHandlers.AddOrUpdate(picker, newHandler);
+				picker.EditingDidEnd += newHandler;
 #elif ANDROID
 				picker.AfterTextChanged += (s, e) =>
 				{
-					if (view is IPicker iPicker)
-						callback(iPicker.SelectedIndex);
+					try
+					{
+						if (view is IPicker iPicker)
+							callback(iPicker.SelectedIndex);
+					}
+					catch (Exception ex)
+					{
+						System.Diagnostics.Debug.WriteLine($"[Comet] Picker SelectedIndexChanged callback failed: {ex.Message}");
+					}
 				};
 #endif
 			});
@@ -500,9 +575,25 @@ namespace Comet
 				if (entry == null)
 					return;
 #if __IOS__ || MACCATALYST
-				entry.EditingChanged += (s, e) => callback(entry.Text);
+				// Remove previous subscription to prevent duplicates on re-map
+				if (_entryEditingChangedHandlers.TryGetValue(entry, out var oldHandler))
+				{
+					entry.EditingChanged -= oldHandler;
+					_entryEditingChangedHandlers.Remove(entry);
+				}
+				EventHandler newHandler = (s, e) =>
+				{
+					try { callback(entry.Text ?? string.Empty); }
+					catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[Comet] Entry TextChanged callback failed: {ex.Message}"); }
+				};
+				_entryEditingChangedHandlers.AddOrUpdate(entry, newHandler);
+				entry.EditingChanged += newHandler;
 #elif ANDROID
-				entry.AfterTextChanged += (s, e) => callback(entry.Text);
+				entry.AfterTextChanged += (s, e) =>
+				{
+					try { callback(entry.Text ?? string.Empty); }
+					catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[Comet] Entry TextChanged callback failed: {ex.Message}"); }
+				};
 #endif
 			});
 
@@ -518,9 +609,25 @@ namespace Comet
 				if (editor == null)
 					return;
 #if __IOS__ || MACCATALYST
-				editor.Changed += (s, e) => callback(editor.Text);
+				// Remove previous subscription to prevent duplicates on re-map
+				if (_editorChangedHandlers.TryGetValue(editor, out var oldHandler))
+				{
+					editor.Changed -= oldHandler;
+					_editorChangedHandlers.Remove(editor);
+				}
+				EventHandler newHandler = (s, e) =>
+				{
+					try { callback(editor.Text ?? string.Empty); }
+					catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[Comet] Editor TextChanged callback failed: {ex.Message}"); }
+				};
+				_editorChangedHandlers.AddOrUpdate(editor, newHandler);
+				editor.Changed += newHandler;
 #elif ANDROID
-				editor.AfterTextChanged += (s, e) => callback(editor.Text);
+				editor.AfterTextChanged += (s, e) =>
+				{
+					try { callback(editor.Text ?? string.Empty); }
+					catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[Comet] Editor TextChanged callback failed: {ex.Message}"); }
+				};
 #endif
 			});
 
@@ -540,6 +647,7 @@ namespace Comet
 				{ typeof(ActivityIndicator), typeof(ActivityIndicatorHandler) },
 				{ typeof(Border), typeof(LayoutHandler) },
 			{ typeof(MauiViewHost), typeof(Handlers.MauiViewHostHandler) },
+			{ typeof(NativeHost), typeof(Handlers.NativeHostHandler) },
 				{ typeof(Button), typeof(ButtonHandler) },
 				{ typeof(CheckBox), typeof(CheckBoxHandler) },
 				{ typeof(CometWindow), typeof(WindowHandler) },
@@ -645,12 +753,52 @@ namespace Comet
 				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.NavigationPage, Microsoft.Maui.Handlers.NavigationViewHandler>();
 				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.TabbedPage, Microsoft.Maui.Handlers.TabbedViewHandler>();
 				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.FlyoutPage, Microsoft.Maui.Handlers.FlyoutViewHandler>();
+				// Phase 8: Comet TabbedPage/FlyoutPage deferred
+				//handlersCollection.TryAddHandler<Comet.TabbedPage, Microsoft.Maui.Handlers.TabbedViewHandler>();
+				//handlersCollection.TryAddHandler<Comet.FlyoutPage, Microsoft.Maui.Handlers.FlyoutViewHandler>();
 			});
 
 
 			ThreadHelper.SetFireOnMainThread(MainThread.BeginInvokeOnMainThread);
 
 			return builder;
+		}
+
+		static void ApplyInspectionMetadata(IViewHandler handler, View view)
+		{
+			if (handler?.PlatformView == null || view == null)
+				return;
+
+			var automationId = view.AutomationId;
+			var isEnabled = view.IsEnabled;
+			var isVisible = view.IsVisible;
+			var inputTransparent = view.InputTransparent;
+
+#if __IOS__ || MACCATALYST
+			if (handler.PlatformView is UIKit.UIView platformView)
+			{
+				if (!string.IsNullOrWhiteSpace(automationId))
+				{
+					platformView.AccessibilityIdentifier = automationId;
+					platformView.IsAccessibilityElement = true;
+				}
+
+				platformView.Hidden = !isVisible;
+				platformView.UserInteractionEnabled = isEnabled && !inputTransparent;
+			}
+#elif ANDROID
+			if (handler.PlatformView is global::Android.Views.View platformView)
+			{
+				if (!string.IsNullOrWhiteSpace(automationId))
+					platformView.ContentDescription = automationId;
+
+				platformView.Enabled = isEnabled;
+				platformView.Visibility = isVisible
+					? global::Android.Views.ViewStates.Visible
+					: global::Android.Views.ViewStates.Gone;
+				platformView.Clickable = !inputTransparent;
+			}
+#endif
 		}
 
 
