@@ -102,6 +102,32 @@ namespace {{NameSpace}} {
 		public static T {{Name}}<T>(this T view, {{{Type}}} {{LowercaseName}}, bool cascades = true) where T : {{ClassName}} =>
 			view.SetEnvironment(nameof({{FullName}}),{{LowercaseName}},cascades);
 ";
+		const string onPrefixedExtensionActionProperty = @"
+		public static T On{{Name}}<T>(this T view, {{{Type}}} {{LowercaseName}}, bool cascades = true) where T : {{ClassName}} =>
+			view.SetEnvironment(nameof({{FullName}}),{{LowercaseName}},cascades);
+";
+		const string factoryMustacheTemplate = @"
+using System;
+using Comet;
+using Microsoft.Maui;
+namespace {{NameSpace}} {
+	public static partial class CometControls
+	{
+		public static {{ClassName}} {{ClassName}}({{#ParametersFunction}} Binding<{{{Type}}}> {{LowercaseName}}{{DefaultValueString}}{{/ParametersFunction}})
+			=> new {{ClassName}}({{#ParameterNamesFunction}} {{LowercaseName}}{{/ParameterNamesFunction}});
+
+		{{#FuncConstructorFunction}}
+		public static {{ClassName}} {{ClassName}}({{#ParametersFunction}} Func<{{{Type}}}> {{LowercaseName}}{{DefaultValueString}}{{/ParametersFunction}})
+			=> new {{ClassName}}({{#ParameterNamesFunction}} {{LowercaseName}}{{/ParameterNamesFunction}});
+		{{/FuncConstructorFunction}}
+
+		{{#HasParameters}}
+		public static {{ClassName}} {{ClassName}}()
+			=> new {{ClassName}}();
+		{{/HasParameters}}
+	}
+}
+";
 		const string extensionMustacheTemplate = @"
 using Comet;
 using Microsoft.Maui;
@@ -190,6 +216,9 @@ namespace {{NameSpace}} {
 
 				var extensionSource = stubble.Render(extensionMustacheTemplate, input);
 				context.AddSource($"{item.name}Extension.g.cs", extensionSource);
+
+				var factorySource = stubble.Render(factoryMustacheTemplate, input);
+				context.AddSource($"{item.name}Factory.g.cs", factorySource);
 			}
 		}
 		public static string GetFullName(ISymbol symbol, string ending = null)
@@ -370,6 +399,10 @@ namespace {{NameSpace}} {
 					x.DefaultValueString
 				}).Replace("Binding<System.Action>", "System.Action")))),
 
+				ParameterNamesFunction = new Func<dynamic, string, object>((dyn, str) => string.Join(",", ((IEnumerable<dynamic>)dyn.Parameters).Select(x => stubble.Render(str, new {
+					x.LowercaseName
+				})))),
+
 				FuncConstructorFunction = new Func<dynamic, string, object>((dyn, str) =>
 						//Feeling lazy, didnt want another template. May change this later
 						dyn.HasParameters ? stubble.Render(str, dyn).Replace("(Binding<System.Action>)", "").Replace("Func<System.Action>", "System.Action") : ""),
@@ -379,7 +412,15 @@ namespace {{NameSpace}} {
 					return stubble.Render(template, dyn);
 				}),
 
-				ExtensionPropertiesFunc = new Func<dynamic, string, object>((dyn, str) => dyn.ShouldBeExtension && !dyn.Skip ? stubble.Render(dyn.Type == "System.Action" ? extensionActionProperty : extensionProperty, dyn) : ""),
+				ExtensionPropertiesFunc = new Func<dynamic, string, object>((dyn, str) => {
+					if (!dyn.ShouldBeExtension || dyn.Skip) return "";
+					string typeStr = dyn.Type;
+					var result = stubble.Render(typeStr.StartsWith("System.Action") ? extensionActionProperty : extensionProperty, dyn);
+					// Phase 2.2: Add "On" prefixed alias for Action-type extension properties
+					if (typeStr.StartsWith("System.Action"))
+						result += stubble.Render(onPrefixedExtensionActionProperty, dyn);
+					return result;
+				}),
 				HasRenamedProperties = propertyNameTransforms.Any(),
 				RenamedProperties = propertyNameTransforms.Select(x => new {
 					OldName = x.Key,
