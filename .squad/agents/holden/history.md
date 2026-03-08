@@ -6,6 +6,26 @@
 - **Role:** Lead Architect
 - **Joined:** 2026-03-08T00:00:54.043Z
 
+### Phases 1–6 Archive (Summary)
+
+**Phase 1 (Component Base Classes):**  
+Architected Component extending View with public abstract Render() method. Body lambda wired automatically. IComponentWithState for hot reload state transfer without generic coupling. All 394 existing + 35 new tests pass.
+
+**Phase 2–3 (Control Generation, Style System, Theme Integration):**  
+Defined ControlStyle<T> generic builder pattern. Theme as concrete base class with ThemeColors preset separation. Environment-driven theme propagation. 574+ total tests passing.
+
+**Phase 4 (Key-Aware Reconciliation):**  
+**APPROVED.** Designed opt-in key-based view diffing using `.Key(string)` fluent API. Dictionary-backed O(1) lookup. Fully backward compatible — unkeyed children use original index-based algorithm unchanged.
+
+**Phase 7 (Component Hot Reload):**  
+**REJECTED (Phase 7.1).** Implemented hot reload integration with MauiHotReloadHelper.RegisterReplacedView(). Root cause of rejection: suite-order dependent registration cleanup leading to NullReferenceException at `CometApp.MauiContext` during TriggerReload(). All 5 failures have identical signature; broader net intolerance. Fresh specialist approved 3rd revision fix (Holden locked per squad rules).
+
+**Overall Results (Phases 1–7):**  
+- 640+ tests, 625+ passing, 0 regressions (final)
+- Holden Phase 7.1 rejected; locked from further work
+- Fresh specialist Phase 7.1 revision approved; all 5 regressions fixed
+- Framework-level items deferred: SetEnvironment stack overflow (8 keyed tests blocked), BuiltView type detection
+
 ## Learnings
 
 ### Phase 7.1 — REJECTED (2026-03-08T050500Z)

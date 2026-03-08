@@ -6,6 +6,36 @@
 - **Role:** Test Engineer
 - **Joined:** 2026-03-08T00:00:54.044Z
 
+### Phases 1–7 Archive (Summary)
+
+**Phase 1 (Component Base Classes):**  
+Developed component foundation with reactive state. Created 34 component tests covering base, state, props, lifecycle. All 394 existing + 35 new tests pass. Established `tests/Comet.Tests/ComponentTests/` subdirectory with flat `Comet.Tests` namespace pattern.
+
+**Phase 2 (Control Generation & Style System):**  
+Validated factory methods + style builders. 14 factory tests + 20 style tests all passing. Established `using static Comet.CometControls;` pattern and per-control `ControlStyle<T>` builders in `Comet.Styles` namespace.
+
+**Phase 3 (Theme System Integration):**  
+Theme system validated with 34 tests. Confirmed concrete `Theme` base class, `ThemeColors` preset separation, environment-driven color propagation. 574+ total tests passing.
+
+**Phase 4 (Key-Aware Reconciliation + Component Merge):**  
+**Phase 4.1 APPROVED:** Key-based view diffing (O(1) Dictionary lookup, backward compatible, zero regression).  
+**Phase 4.2 REJECTED twice; fresh specialist approved 3rd revision:** Disposal-aware component merge (detaches merged children from old container before container disposal). 619 tests total, 599 passing, 0 regressions.
+
+**Phase 5 (Typed Navigation):**  
+17 passing navigation tests: 11 ShellWrapperTests (routing, modals, queries, extensions, fluent API, factories) + 6 TypedNavigationApiTests (generic registration, typed nav, props injection). CometShell.RegisterRoute<TView>(), GoToAsync<TView>(), Navigate<TView>() with IQueryAttributable fallback.
+
+**Phase 6 (Platform Interop):**  
+11 passing interop tests (4 skipped awaiting Amos NativeHost API). 23 total interop slice. Baseline locked. Zero regressions.
+
+**Phase 7 (Component Hot Reload):**  
+**Phase 7.1 REJECTED (Holden); Fresh specialist approved.** Component hot reload integration with MauiHotReloadHelper registration, state transfer via TransferState(), view tree diffing with handler reuse. 46/46 focused tests pass. 0 regressions. Locked Holden per squad rules.
+
+**Overall Results (Phases 1–7):**  
+- 640+ tests, 625+ passing, 0 regressions
+- 313+ new tests written
+- 2 pre-existing failures (unrelated to test work)
+- 18+ skipped (framework-level: SetEnvironment SO, BuiltView type detection)
+
 ## Learnings
 
 ### Phase 9 Validation Infrastructure — Implementation Complete (2026-03-08T053639Z)

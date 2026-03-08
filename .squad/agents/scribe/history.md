@@ -6,6 +6,36 @@
 - **Role:** Session Logger
 - **Joined:** 2026-03-08T00:00:54.045Z
 
+### Phases 1–8 Orchestration Archive (Summary)
+
+**Phase 1–2 Kickoff + Progress:**  
+Logged Phase 1 completion (69 tests), Phase 2 kickoff, Phase 2 mid-flight (55 tests). Established orchestration-log pattern with ISO 8601 UTC timestamps.
+
+**Phase 3 Closure + Phase 4 Kickoff:**  
+Logged Phase 3 completion (34 tests, 158 total). Phase 4.1 kickoff (Holden key-aware reconciliation). Merged 1 inbox decision.
+
+**Phase 4 — Rejection & Turnarounds:**  
+Logged Phase 4.2 rejection (Defect 1: container child swap missing). Amos revision rejected (Defect 2: disposal cascade). Fresh specialist approved (3rd revision). Phase 4 closure: 619 tests, 599 passing, 0 regressions.
+
+**Phase 5–6 Progression:**  
+Logged Phase 5.3 anticipatory tests (Bobbie), Phase 5 closure (17 passing), Phase 6.1 (Amos NativeHost), Phase 6.2 (Bobbie interop baseline), Phase 6 closure (23 passing).
+
+**Phase 7 — Rejection & Fresh Specialist Approval:**  
+Logged Phase 7.1 rejection (Holden, 5 new regressions). Locked Holden. Fresh specialist approved (disposal-aware fix). Phase 7 closure: 46 focused tests pass, 0 regressions.
+
+**Phase 8 — All Lanes Complete:**  
+Logged Phase 8.1 (Naomi coverage analysis), Phase 8.2 (Amos TabbedPage/FlyoutPage), Phase 8.3 (Bobbie reviewer gate), Phase 8 closure: 46 new tests, 625+ cumulative passing, 0 regressions.
+
+**Phase 9 Launch:**  
+Logged Phase 9 kickoff (parallel lanes: Amos samples/docs, Bobbie validation). Continuous orchestration-log entries track progress.
+
+**Overall Results (Phases 1–8):**  
+- Orchestration complete for all 8 phases
+- 640+ tests, 625+ passing, 0 regressions
+- 313+ new tests written
+- 2 agents locked (Holden Phase 7, Amos Phase 4); both released post-resolution
+- Framework-level items deferred: SetEnvironment SO, BuiltView type detection
+
 ## Learnings
 
 ### Phase 8 Closure + Phase 9 Kickoff — Session Orchestration (2026-03-08T052745Z)

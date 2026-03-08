@@ -6,6 +6,26 @@
 - **Role:** Source Generator Dev
 - **Joined:** 2026-03-08T00:00:54.044Z
 
+### Phases 1–7 Archive (Summary)
+
+**Phase 1–2 (Control Generation, Factory Methods):**  
+Designed CometGenerateAttribute + CometViewSourceGenerator. Generates View subclass wrappers with constructor parameters, Binding<T> properties, environment key mappings. Factory methods live in static CometControls partial class. 14+ factory tests passing.
+
+**Phase 3 (Style Builder Generation):**  
+Extended generator to produce per-control `{Control}StyleBuilder` classes in `Comet.Styles` namespace. Common methods (Background, TextColor) on every builder. Per-control methods derived from non-Action/non-Skip properties using environment keys.
+
+**Phase 4–6 (Stability):**  
+No Phase 4–6 contributions (Amos/Bobbie-led phases).
+
+**Phase 8.1 (Generated Control Coverage Analysis):**  
+Comprehensive analysis: 19 generated controls cover all suitable IView interfaces. Generator scope boundary respected (complex controls → Amos handwritten lane, e.g., TabbedPage, FlyoutPage). Documentation CONTROL_COVERAGE_PHASE_8_1.md locked. 18/18 generated-lane tests pass. 0 regressions.
+
+**Overall Results (Phases 1–8):**  
+- 640+ tests, 625+ passing, 0 regressions
+- Generator framework stable and comprehensive
+- Control generation scope well-defined and respected
+- Framework-level items deferred: SetEnvironment stack overflow, BuiltView type detection
+
 ## Learnings
 
 ### Phase 8 Closure — Approved & Phase 9 Kickoff (2026-03-08T052745Z)

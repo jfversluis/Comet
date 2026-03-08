@@ -6,6 +6,35 @@
 - **Role:** Controls & API Dev
 - **Joined:** 2026-03-08T00:00:54.044Z
 
+### Phases 1–7 Archive (Summary)
+
+**Phase 1 (Component Foundation):**  
+Established reactive `State<T>` extension pattern. Component.SetState() with StateManager batching. No changes needed to View.cs; State<T> unsealed for Reactive<T> subclassing.
+
+**Phase 2 (Generated Controls & Factories):**  
+Created CometControls static factory class with Binding<T> + Func<T> overloads. Partial class pattern allows future additions. 14 tests all passing.
+
+**Phase 3 (Style Builders & Theme Integration):**  
+Delivered per-control `ControlStyle<T>` builders in `Comet.Styles` namespace. Theme.Apply() integration via DefaultThemeStyles.Register(). 34+ theme tests passing.
+
+**Phase 4 (Component Merge Logic):**  
+**Phase 4.2 REJECTED twice; fresh specialist approved 3rd revision.** Disposal-aware merge logic with DetachMergedChild() ensuring merged components don't dispose prematurely. Child swap in container collection before old container disposed.
+
+**Phase 5 (Typed Navigation API):**  
+Delivered CometShell.RegisterRoute<TView>(), generic overloads (GoToAsync<TView>(), Navigate<TView>()), NavigationParameterHelper, fluent shell composition API. 17+ passing tests.
+
+**Phase 6 (NativeHost Control):**  
+NativeHost platform integration exposing native view access. 23 interop tests (11 passing, 4 skipped awaiting NativeHost API). Handler registration laid groundwork for Phase 8.
+
+**Phase 7 (Hot Reload Integration):**  
+Component hot reload with MauiHotReloadHelper registration, TransferState() for state preservation, view tree diffing with handler reuse. Fresh specialist revision approved (5 regressions fixed). 46/46 focused tests pass, 0 regressions.
+
+**Overall Results (Phases 1–7):**  
+- 640+ tests, 625+ passing, 0 regressions
+- 313+ new tests written
+- TabbedPage, FlyoutPage delivered in Phase 8.2 with 9 new tests
+- Framework-level items deferred: SetEnvironment SO, BuiltView type detection
+
 ## Learnings
 
 ### Phase 8 Closure & Phase 9 Kickoff (2026-03-08T052745Z)
