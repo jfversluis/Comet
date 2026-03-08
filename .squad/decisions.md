@@ -53,6 +53,13 @@
 **Context:** Phase 4.1 implemented. Key-aware diffing preserves view instances across reorders, improving state and animation fidelity. Dictionary pre-builds amortize cost across all children (O(n) vs O(n²) worst-case). String keys chosen over object for simpler equality and debugging. 100% backward compatible — unkeyed lists diff identically to before.
 **Impact:** Dynamic lists (e.g., todo items, chat messages) reuse view instances when keyed, preserving handler state and animations. Non-component views and unkeyed lists see zero regression. Hot reload state transfer works transparently via environment mechanism.
 
+### 2026-03-08T022000Z: Phase 4.2 Component Merge Logic — REJECTED
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Rejected (Revision assigned to Amos)  
+**Decision:** Phase 4.2 (Component-to-Component merge logic) is **REJECTED** due to two critical defects: (1) Nested component instance preservation broken — merged component not written back to parent container children collection after merge, (2) Component vs BuiltView type detection broken — returns rendered output instead of Component wrapper. Phase 4.1 (key-aware reconciliation) is **APPROVED**.
+**Context:** Validation identified that TryMergeComponents() returns the merged (old) instance correctly, but the parent container's child list is never updated to reference the merged instance. The diff algorithm walks the tree but doesn't modify containers in-place. Root cause: missing logic to swap new instance for merged instance in container children collection. Defect severity: CRITICAL — breaks all nested Component scenarios.
+**Impact:** Nested components are recreated on every parent render instead of being reused. BuiltView type checking fails, breaking component-based diffing. Revision ownership to Amos; Holden locked per reviewer rules.
+
 ## Governance
 
 - All meaningful changes require team consensus

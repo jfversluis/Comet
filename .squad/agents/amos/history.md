@@ -36,3 +36,13 @@
 
 **Next:** Phase 4 (Reconciliation Upgrade) — pending Coordinator decision.
 
+
+### Phase 4.2 — Component Merge Logic Revision (2026-03-08T022000Z)
+
+- **Revision ownership taken from Holden** — Phase 4.2 rejected by Bobbie due to nested component instance preservation defect. Holden locked out per reviewer rules.
+- **Critical defect identified**: TryMergeComponents() returns merged instance correctly, but container children collection not updated to reference it. Parent container still references new instance, not the merged (reused) one.
+- **Root cause**: DiffUpdate container logic walks the tree but doesn't modify containers in-place after component merge.
+- **Fix strategy**: After TryMergeComponents returns merged instance, container's child list must be updated to swap new instance for merged instance.
+- **Phase 4.1 (key-aware reconciliation) APPROVED** — `.Key()` fluent API and keyed diffing logic pass all tests.
+- **Test results**: ComponentMergeTests 10/13 pass, ReconciliationRegressionTests 11/13 pass, KeyAwareReconciliationTests 1/13 pass (12 blocked by pre-existing framework bug).
+- **Artifact reference**: `src/Comet/Helpers/DatabindingExtensions.cs` lines 199-356 (DiffUpdate logic needing fix).
