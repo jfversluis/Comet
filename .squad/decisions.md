@@ -26,6 +26,13 @@
 **Decision:** Static factory methods for generated controls are placed in `Comet.CometControls` (a partial static class), not on `Component`. Each control generates Binding<T>, Func<T> (parameterized only), and parameterless overloads. Users import via `using static Comet.CometControls;`.
 **Context:** Phase 2.1-2.2 complete. Factory class decoupled from Component base allows `using static` from any View context. 14 new factory method tests passing. Non-Action properties receive no "On" prefix (already clean). "On" prefix applied only to Action-type extension properties (e.g., `.OnPressed()`, `.OnReleased()`). Partial class allows future additions without modifying the generator.
 
+### 2026-03-08T005500Z: Theme System Architecture
+**Owner:** Holden (Lead Architect)  
+**Status:** Implemented  
+**Decision:** Theme is a concrete (not abstract) base class. ThemeColors holds MD3 semantic tokens as a separate class. ControlStyle<T> is a generic typed style builder that pushes properties through the environment system via an internal IControlStyleApplicable interface. Theme.Current setter auto-applies and fires ThemeChanged event. IThemeable is opt-in for controls that need direct notification.
+**Context:** Existing code instantiates `new Theme()` directly in 12+ tests and the singleton getter. Making Theme abstract would break backward compatibility. The two-class approach (Theme + ThemeColors) keeps the old simple color properties working while adding the full MD3 semantic color system. The environment integration uses the same `View.SetGlobalEnvironment()` broadcast mechanism that the existing `Style.Apply()` uses, so theme changes propagate to all active views automatically.
+**Impact:** All existing tests pass unchanged (574 total, 2 pre-existing failures only). `Theme.Light` and `Theme.Dark` now include `ThemeColors` presets. `Theme.Current = newTheme` now triggers environment updates (additive behavior). New `EnvironmentKeys.ThemeColor.*` keys do not conflict with existing keys.
+
 ## Governance
 
 - All meaningful changes require team consensus

@@ -237,6 +237,24 @@ namespace Comet
 			return view;
 		}
 
+		/// <summary>
+		/// Applies the given theme to this view subtree, overriding the global theme.
+		/// </summary>
+		public static T ApplyTheme<T>(this T view, Styles.Theme theme) where T : View
+		{
+			theme.Apply(view);
+			return view;
+		}
+
+		/// <summary>
+		/// Applies a typed functional <see cref="Styles.Style{T}"/> to this view.
+		/// </summary>
+		public static T ApplyControlStyle<T>(this T view, Styles.ControlStyle<T> style) where T : View
+		{
+			style.Apply(view);
+			return view;
+		}
+
 		// Visibility
 		public static T IsVisible<T>(this T view, bool visible = true) where T : View =>
 			view.SetEnvironment(nameof(IView.Visibility), visible ? Visibility.Visible : Visibility.Collapsed);

@@ -150,6 +150,43 @@ namespace Comet
 			public const string BorderWidth = "ButtonBorderWidth";
 			public const string BorderColor = "ButtonBorderColor";
 		}
+
+		public static class ThemeColor
+		{
+			public const string Primary = "Theme.Primary";
+			public const string OnPrimary = "Theme.OnPrimary";
+			public const string PrimaryContainer = "Theme.PrimaryContainer";
+			public const string OnPrimaryContainer = "Theme.OnPrimaryContainer";
+
+			public const string Secondary = "Theme.Secondary";
+			public const string OnSecondary = "Theme.OnSecondary";
+			public const string SecondaryContainer = "Theme.SecondaryContainer";
+			public const string OnSecondaryContainer = "Theme.OnSecondaryContainer";
+
+			public const string Tertiary = "Theme.Tertiary";
+			public const string OnTertiary = "Theme.OnTertiary";
+			public const string TertiaryContainer = "Theme.TertiaryContainer";
+			public const string OnTertiaryContainer = "Theme.OnTertiaryContainer";
+
+			public const string Error = "Theme.Error";
+			public const string OnError = "Theme.OnError";
+			public const string ErrorContainer = "Theme.ErrorContainer";
+			public const string OnErrorContainer = "Theme.OnErrorContainer";
+
+			public const string Background = "Theme.Background";
+			public const string OnBackground = "Theme.OnBackground";
+			public const string Surface = "Theme.Surface";
+			public const string OnSurface = "Theme.OnSurface";
+			public const string SurfaceVariant = "Theme.SurfaceVariant";
+			public const string OnSurfaceVariant = "Theme.OnSurfaceVariant";
+
+			public const string Outline = "Theme.Outline";
+			public const string OutlineVariant = "Theme.OutlineVariant";
+
+			public const string InverseSurface = "Theme.InverseSurface";
+			public const string InverseOnSurface = "Theme.InverseOnSurface";
+			public const string InversePrimary = "Theme.InversePrimary";
+		}
 	}
 
 	[AttributeUsage(AttributeTargets.Field)]
