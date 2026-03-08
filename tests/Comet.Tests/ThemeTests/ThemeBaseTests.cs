@@ -319,51 +319,81 @@ namespace Comet.Tests
 		}
 
 		// ================================================================
-		// Awaiting Phase 3.1 — Theme change notification, IThemeable
+		// Phase 3.1 complete — Theme change notification, IThemeable
 		// ================================================================
 
-		[Fact(Skip = "Awaiting Phase 3.1 theme base class — Theme.Changed event")]
+		[Fact]
 		public void ThemeCurrentChangedRaisesEvent()
 		{
-			// When Holden adds Theme.Changed event:
-			// var original = Theme.Current;
-			// try
-			// {
-			//     var fired = false;
-			//     Theme.Changed += () => fired = true;
-			//     Theme.Current = Theme.Dark;
-			//     Assert.True(fired);
-			// }
-			// finally
-			// {
-			//     Theme.Current = original;
-			// }
+			var original = Theme.Current;
+			try
+			{
+				Theme fired = null;
+				void handler(Theme t) => fired = t;
+				Theme.ThemeChanged += handler;
+				try
+				{
+					Theme.Current = Theme.Dark;
+					Assert.NotNull(fired);
+					Assert.Same(Theme.Current, fired);
+				}
+				finally
+				{
+					Theme.ThemeChanged -= handler;
+				}
+			}
+			finally
+			{
+				Theme.Current = original;
+			}
 		}
 
-		[Fact(Skip = "Awaiting Phase 3.1 theme base class — IThemeable interface")]
+		[Fact]
 		public void ThemeableViewReceivesThemeOnChange()
 		{
-			// When Holden adds IThemeable:
-			// var original = Theme.Current;
-			// try
-			// {
-			//     var view = new ThemeableTestView();
-			//     view.SetViewHandlerToGeneric();
-			//     Theme.Current = Theme.Dark;
-			//     Assert.True(view.ThemeWasApplied);
-			// }
-			// finally
-			// {
-			//     Theme.Current = original;
-			// }
+			var original = Theme.Current;
+			try
+			{
+				var view = new ThemeableTestView();
+				view.SetViewHandlerToGeneric();
+				Theme.Current = Theme.Dark;
+				Assert.True(view.ThemeWasApplied);
+			}
+			finally
+			{
+				Theme.Current = original;
+			}
 		}
 
-		[Fact(Skip = "Awaiting Phase 3.1 theme base class — Theme subclassing")]
+		[Fact]
 		public void CustomThemeSubclassCanOverrideDefaults()
 		{
-			// When Holden finalizes Theme extensibility:
-			// var custom = new BrandTheme();
-			// Assert.Equal(BrandTheme.BrandPrimary, custom.PrimaryColor);
+			var custom = new BrandTheme();
+			Assert.Equal(BrandTheme.BrandPrimary, custom.PrimaryColor);
+		}
+	}
+
+	// Test helpers for IThemeable
+	public class ThemeableTestView : View, IThemeable
+	{
+		public bool ThemeWasApplied { get; private set; }
+
+		public void ApplyTheme(Theme theme)
+		{
+			ThemeWasApplied = true;
+		}
+
+		[Body]
+		View body() => new Text("Themeable");
+	}
+
+	public class BrandTheme : Theme
+	{
+		public static readonly Color BrandPrimary = Colors.DeepPink;
+
+		public BrandTheme()
+		{
+			PrimaryColor = BrandPrimary;
 		}
 	}
 }

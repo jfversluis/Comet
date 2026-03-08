@@ -83,6 +83,11 @@ namespace Comet.Styles
 			// Push semantic color tokens if a ColorScheme is configured
 			ColorScheme?.ApplyToEnvironment(target);
 
+			// Register default control styles for any controls that don't
+			// already have a custom style. This ensures themed controls
+			// "just work" without explicit setup.
+			DefaultThemeStyles.Register(this);
+
 			// Apply registered per-control styles
 			foreach (var kvp in _controlStyles)
 			{

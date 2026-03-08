@@ -370,93 +370,112 @@ namespace Comet.Tests
 		}
 
 		// ================================================================
-		// Awaiting Phase 3.1 — ControlStyle<T>
+		// ControlStyle<T> — now implemented (Phase 3.1 complete)
 		// ================================================================
 
-		[Fact(Skip = "Awaiting Phase 3.1 theme base class — ControlStyle<T> creation")]
+		[Fact]
 		public void ControlStyleCreation()
 		{
-			// When Holden adds ControlStyle<T>:
-			// var style = new ControlStyle<Button>(b => b
-			//     .Background(new SolidPaint(Colors.Blue))
-			//     .Color(Colors.White)
-			// );
-			// Assert.NotNull(style);
+			var style = new ControlStyle<Button>()
+				.Set(EnvironmentKeys.Colors.Background, new SolidPaint(Colors.Blue))
+				.Set(EnvironmentKeys.Colors.Color, Colors.White);
+			Assert.NotNull(style);
+			Assert.True(style.HasProperty(EnvironmentKeys.Colors.Background));
+			Assert.True(style.HasProperty(EnvironmentKeys.Colors.Color));
 		}
 
-		[Fact(Skip = "Awaiting Phase 3.1 theme base class — ControlStyle<T> apply")]
+		[Fact]
 		public void ControlStyleAppliesProperties()
 		{
-			// When Holden adds ControlStyle<T>:
-			// var style = new ControlStyle<Button>(b => b
-			//     .Background(new SolidPaint(Colors.Blue))
-			// );
-			// var button = new Button("Click");
-			// style.Apply(button);
-			// var bg = button.GetEnvironment<Paint>(nameof(IView.Background));
-			// var solid = Assert.IsType<SolidPaint>(bg);
-			// Assert.Equal(Colors.Blue, solid.Color);
+			ResetComet();
+			var style = new ControlStyle<Button>()
+				.Set(EnvironmentKeys.Colors.Background, new SolidPaint(Colors.Blue))
+				.Set(EnvironmentKeys.Colors.Color, Colors.White);
+
+			// Apply globally
+			style.Apply();
+
+			// Create a button and verify the typed global env is set
+			var bgPaint = View.GetGlobalEnvironment<object>(
+				ContextualObject.GetTypedKey(typeof(Button), EnvironmentKeys.Colors.Background));
+			Assert.NotNull(bgPaint);
+			var solid = Assert.IsType<SolidPaint>(bgPaint);
+			Assert.Equal(Colors.Blue, solid.Color);
 		}
 
-		[Fact(Skip = "Awaiting Phase 3.1 theme base class — ControlStyle<T> cascading")]
+		[Fact]
 		public void ControlStyleCascadesThroughViewTree()
 		{
-			// When Holden adds ControlStyle<T> with cascading:
-			// ResetComet();
-			// var buttonStyle = new ControlStyle<Button>(b => b
-			//     .Background(new SolidPaint(Colors.Purple))
-			// );
-			// Button btn = null;
-			// var view = new View
-			// {
-			//     Body = () => new VStack { (btn = new Button("Click")) }
-			// };
-			// buttonStyle.ApplyToTree(view);
-			// var handler = view.SetViewHandlerToGeneric();
-			// var bg = btn.GetEnvironment<Paint>(nameof(IView.Background));
-			// Assert.NotNull(bg);
+			ResetComet();
+			var style = new ControlStyle<Button>()
+				.Set(EnvironmentKeys.Colors.Background, new SolidPaint(Colors.Purple));
+
+			style.Apply();
+
+			Button btn = null;
+			var view = new View
+			{
+				Body = () => new VStack { (btn = new Button("Click")) }
+			};
+
+			var handler = view.SetViewHandlerToGeneric();
+			var bg = btn.GetBackground(typeof(Button));
+			Assert.NotNull(bg);
 		}
 
-		[Fact(Skip = "Awaiting Phase 3.1 theme base class — Theme provides default ControlStyle<T>")]
+		[Fact]
 		public void ThemeProvidesDefaultControlStyles()
 		{
-			// When Holden integrates ControlStyle<T> with Theme:
-			// var theme = new Theme();
-			// var buttonStyle = theme.GetControlStyle<Button>();
-			// Assert.NotNull(buttonStyle);
+			var theme = Theme.Light;
+			theme.Apply();
+
+			// DefaultThemeStyles.Register is called by Apply, so styles should exist
+			var buttonStyle = theme.GetControlStyle<Button>();
+			Assert.NotNull(buttonStyle);
+			Assert.True(buttonStyle.HasProperty(EnvironmentKeys.Colors.Background));
 		}
 
-		[Fact(Skip = "Awaiting Phase 3.1 theme base class — ControlStyle<T> composing with explicit")]
+		[Fact]
 		public void ExplicitOverridesControlStyle()
 		{
-			// When Holden adds ControlStyle<T>:
-			// var style = new ControlStyle<Button>(b => b
-			//     .Background(new SolidPaint(Colors.Blue))
-			// );
-			// var button = new Button("Click");
-			// style.Apply(button);
-			// button.Background(new SolidPaint(Colors.Red));
-			// var bg = button.GetEnvironment<Paint>(nameof(IView.Background));
-			// var solid = Assert.IsType<SolidPaint>(bg);
-			// Assert.Equal(Colors.Red, solid.Color);
+			ResetComet();
+			var style = new ControlStyle<Button>()
+				.Set(EnvironmentKeys.Colors.Background, new SolidPaint(Colors.Blue));
+
+			// Apply typed style globally
+			style.Apply();
+
+			// Create a button with an explicit background override
+			var button = new Button("Click")
+				.Background(new SolidPaint(Colors.Red));
+
+			var bg = button.GetEnvironment<Paint>(nameof(IView.Background));
+			Assert.NotNull(bg);
+			var solid = Assert.IsType<SolidPaint>(bg);
+			Assert.Equal(Colors.Red, solid.Color);
 		}
 
-		[Fact(Skip = "Awaiting Phase 3.1 theme base class — Theme values propagate through environment")]
+		[Fact]
 		public void ThemeValuesFlowThroughEnvironmentSystem()
 		{
-			// When Holden adds full Theme/Environment integration:
-			// ResetComet();
-			// var theme = new Theme { PrimaryColor = Colors.Teal };
-			// Theme.Current = theme;
-			// Text text = null;
-			// var view = new View
-			// {
-			//     Body = () => (text = new Text("Hello").ThemeColor(t => t.PrimaryColor))
-			// };
-			// var handler = view.SetViewHandlerToGeneric();
-			// var bg = text.GetEnvironment<Paint>(nameof(IView.Background));
-			// var solid = Assert.IsType<SolidPaint>(bg);
-			// Assert.Equal(Colors.Teal, solid.Color);
+			ResetComet();
+			var original = Theme.Current;
+			try
+			{
+				var theme = new Theme { PrimaryColor = Colors.Teal };
+				Theme.Current = theme;
+
+				var view = new Text("Hello")
+					.ThemeColor(t => t.PrimaryColor);
+
+				var bg = view.GetEnvironment<Paint>(nameof(IView.Background));
+				var solid = Assert.IsType<SolidPaint>(bg);
+				Assert.Equal(Colors.Teal, solid.Color);
+			}
+			finally
+			{
+				Theme.Current = original;
+			}
 		}
 	}
 }

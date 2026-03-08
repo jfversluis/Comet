@@ -266,67 +266,68 @@ namespace Comet.Tests
 		}
 
 		// ================================================================
-		// Awaiting Phase 3.1 — ThemeColors class, semantic tokens
+		// Phase 3.1 complete — ThemeColors class, semantic tokens
 		// ================================================================
 
-		[Fact(Skip = "Awaiting Phase 3.1 theme base class — ThemeColors type")]
+		[Fact]
 		public void ThemeColorsHasSemanticTokens()
 		{
-			// When Holden adds ThemeColors:
-			// var colors = new ThemeColors();
-			// Assert.NotNull(colors.Primary);
-			// Assert.NotNull(colors.Secondary);
-			// Assert.NotNull(colors.Background);
-			// Assert.NotNull(colors.Surface);
-			// Assert.NotNull(colors.OnPrimary);
-			// Assert.NotNull(colors.OnSecondary);
-			// Assert.NotNull(colors.OnBackground);
-			// Assert.NotNull(colors.OnSurface);
-			// Assert.NotNull(colors.Error);
-			// Assert.NotNull(colors.OnError);
+			var colors = ThemeColors.LightScheme;
+			Assert.NotNull(colors.Primary);
+			Assert.NotNull(colors.Secondary);
+			Assert.NotNull(colors.Background);
+			Assert.NotNull(colors.Surface);
+			Assert.NotNull(colors.OnPrimary);
+			Assert.NotNull(colors.OnSecondary);
+			Assert.NotNull(colors.OnBackground);
+			Assert.NotNull(colors.OnSurface);
+			Assert.NotNull(colors.Error);
+			Assert.NotNull(colors.OnError);
 		}
 
-		[Fact(Skip = "Awaiting Phase 3.1 theme base class — ThemeColors light/dark")]
+		[Fact]
 		public void ThemeColorsLightAndDarkVariants()
 		{
-			// When Holden adds ThemeColors with variants:
-			// var lightColors = ThemeColors.Light();
-			// var darkColors = ThemeColors.Dark();
-			// Assert.NotEqual(lightColors.Background, darkColors.Background);
-			// Assert.NotEqual(lightColors.Surface, darkColors.Surface);
+			var lightColors = ThemeColors.LightScheme;
+			var darkColors = ThemeColors.DarkScheme;
+			Assert.NotEqual(lightColors.Background, darkColors.Background);
+			Assert.NotEqual(lightColors.Surface, darkColors.Surface);
 		}
 
-		[Fact(Skip = "Awaiting Phase 3.1 theme base class — ThemeColors environment propagation")]
+		[Fact]
 		public void ThemeColorsPropagateThroughEnvironment()
 		{
-			// When Holden adds ThemeColors with environment integration:
-			// ResetComet();
-			// var colors = new ThemeColors { Primary = Colors.Teal };
-			// var theme = new Theme { Colors = colors };
-			// Theme.Current = theme;
-			//
-			// Text text = null;
-			// var view = new View
-			// {
-			//     Body = () => (text = new Text("Hello"))
-			// };
-			// var handler = view.SetViewHandlerToGeneric();
-			// var resolved = text.GetEnvironment<Color>("Theme.Primary");
-			// Assert.Equal(Colors.Teal, resolved);
+			ResetComet();
+			var original = Theme.Current;
+			try
+			{
+				var colors = new ThemeColors { Primary = Colors.Teal };
+				var theme = new Theme { ColorScheme = colors };
+				Theme.Current = theme;
+
+				var resolved = View.GetGlobalEnvironment<Color>(EnvironmentKeys.ThemeColor.Primary);
+				Assert.Equal(Colors.Teal, resolved);
+			}
+			finally
+			{
+				Theme.Current = original;
+			}
 		}
 
-		[Fact(Skip = "Awaiting Phase 3.1 theme base class — custom ThemeColors palette")]
+		[Fact]
 		public void ThemeColorsCustomPalette()
 		{
-			// When Holden adds ThemeColors:
-			// var colors = ThemeColors.FromPalette(
-			//     primary: Colors.DeepPink,
-			//     secondary: Colors.Cyan,
-			//     background: Colors.White,
-			//     surface: Colors.LightGray
-			// );
-			// Assert.Equal(Colors.DeepPink, colors.Primary);
-			// Assert.Equal(Colors.Cyan, colors.Secondary);
+			var colors = new ThemeColors
+			{
+				Primary = Colors.DeepPink,
+				Secondary = Colors.Cyan,
+				Background = Colors.White,
+				Surface = Colors.LightGray
+			};
+			Assert.Equal(Colors.DeepPink, colors.Primary);
+			Assert.Equal(Colors.Cyan, colors.Secondary);
+			Assert.Equal(Colors.White, colors.Background);
+			Assert.Equal(Colors.LightGray, colors.Surface);
 		}
 	}
 }

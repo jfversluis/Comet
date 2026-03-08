@@ -9,3 +9,16 @@
 ## Learnings
 
 <!-- Append learnings below -->
+
+### Phase 3.2 — Control Style Integration (2025-07-24)
+
+- **Environment cascade is the backbone**: Theme values flow through `SetGlobalEnvironment(Type, key, value)` for typed per-control defaults. The lookup chain is: local context → parent chain → global typed key → global plain key. Explicit `.Background()` writes to local context (non-cascading), so it always wins over global typed defaults. This is the key insight that makes "explicit overrides win" work without any special precedence code.
+
+- **ControlStyle<T> uses typed global keys**: `ControlStyle<T>.Apply()` calls `View.SetGlobalEnvironment(typeof(T), key, value)` which stores under `"Comet.Button.Background"` style keys. This means Button defaults don't leak to Text controls. Clean separation.
+
+- **DefaultThemeStyles must be idempotent**: `Theme.Apply()` is called every time `Theme.Current` is set. `DefaultThemeStyles.Register()` skips controls that already have a custom `ControlStyle<T>` registered, so user-provided styles are never overwritten.
+
+- **ThemeExtensions write to standard environment keys**: `.ThemeBackground()` writes to `nameof(IView.Background)` as a `SolidPaint`, `.ThemeForeground()` writes to `EnvironmentKeys.Colors.Color`. Same keys as `.Background()` and `.Color()`, so the override semantics are identical.
+
+- **Files created**: `src/Comet/Styles/ThemeExtensions.cs`, `src/Comet/Styles/DefaultThemeStyles.cs`
+- **Files modified**: `src/Comet/Styles/Theme.cs` (added `DefaultThemeStyles.Register(this)` call in `Apply()`), un-skipped 13 Phase 3.1 test stubs across ThemeBaseTests/ThemeColorsTests/ControlStyleTests, added 21 new integration tests in `ThemeIntegrationTests.cs`
