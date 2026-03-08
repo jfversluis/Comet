@@ -34,3 +34,16 @@
 - `ParametersFunction` joins rendered per-parameter templates with commas
 - Source generator output files appear at `obj/{Config}/{TFM}/generated/{GeneratorAssembly}/{GeneratorClass}/`
 - Need `EmitCompilerGeneratedFiles=true` build property to see generated files on disk
+
+### Phase 2 Complete — Phase 2.1/2.2 (2026-03-08T004600Z)
+
+**Status:** Phase 2.1 and 2.2 implementation complete. All 14 factory method tests passing. Generator now produces:
+- Static factory methods in `Comet.CometControls` for all 20+ generated controls
+- Binding<T>, Func<T> (parameterized only), and parameterless overloads
+- "On" prefixed extension aliases for Action-type properties
+- Factory pattern fully integrated with fluent extension API
+
+**Test suite status:** 458 baseline tests green + 14 new factory tests = 472 total (Phase 1 + Phase 2.1-2.2).
+
+**Next:** Phase 2.4 (Bobbie) will add regression and integration tests for the new factory API.
+

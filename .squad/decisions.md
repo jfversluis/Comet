@@ -20,6 +20,12 @@
 **Decision:** Component tests live in `tests/Comet.Tests/ComponentTests/` subdirectory but keep the `Comet.Tests` namespace (matching existing project convention where namespace doesn't mirror folder structure). This groups related tests logically on disk without fragmenting the namespace.
 **Context:** Phase 1.3 complete. 34 new Component tests passing (ComponentBaseTests, ComponentStateTests, ComponentPropsTests, ComponentLifecycleTests). All 394 existing tests remain green.
 
+### 2026-03-08T004600Z: Factory Class Named `CometControls`
+**Owner:** Naomi (Source Generator Dev)  
+**Status:** Implemented  
+**Decision:** Static factory methods for generated controls are placed in `Comet.CometControls` (a partial static class), not on `Component`. Each control generates Binding<T>, Func<T> (parameterized only), and parameterless overloads. Users import via `using static Comet.CometControls;`.
+**Context:** Phase 2.1-2.2 complete. Factory class decoupled from Component base allows `using static` from any View context. 14 new factory method tests passing. Non-Action properties receive no "On" prefix (already clean). "On" prefix applied only to Action-type extension properties (e.g., `.OnPressed()`, `.OnReleased()`). Partial class allows future additions without modifying the generator.
+
 ## Governance
 
 - All meaningful changes require team consensus
