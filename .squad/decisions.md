@@ -138,6 +138,30 @@
 **Context:** While shaping anticipatory gates, Bobbie discovered that `Component<TState, TProps>.IComponentWithState.TransferStateFrom()` currently recurses into itself and stack-overflows, so the props-transfer path is kept as a skip gate rather than promoted to active failing test. Focused `ComponentHotReloadTests` slice passes with skips only. Broader filtered hot reload/component slice is green once the 2 known historical hot reload failures are excluded.
 **Impact:** Phase 7.2 gates define acceptance criteria for Phase 7.1 without destabilizing the suite. Holden's rejection invalidates Phase 7 approval, but test infrastructure scaffolding remains useful for the fresh specialist's revision work.
 
+### 2026-03-08T050835Z: Phase 7.1 Fresh Specialist Revision — APPROVED
+**Owner:** Bobbie (Test Engineer) — reviewer gate  
+**Status:** Approved  
+**Decision:** The fresh specialist's Phase 7.1 revision (hot reload suite-order dependency fix) is **APPROVED for merge**. The 5 previously-rejected tests now pass, the broader hot reload/component/reconciliation reviewer net passes with only accepted historical baseline noise (3 intentional skips, 2 pre-existing), and zero new regressions remain.
+**Production Fixes Verified:**
+  1. `DatabindingExtensions.AreSameType` — handler-local context preference eliminates null dereference during detached reloads
+  2. `CometApp.MauiContext` — safe cast returns null instead of throwing when no app is running
+**Test Adjustments:** The fresh specialist added `InitializeHandlers()` calls before `TriggerReload()` in `ComponentHotReloadTests` and `MetadataUpdateHandlerTests`. These are valid test-setup hardening (ensure handler trees properly initialized before reload triggers), not workarounds.
+**Bonus:** `ReloadTransfersStateTest.StateTransfersOnlyChangedValues` (previously a historical failure) now passes as a side effect of the `AreSameType` fix.
+**Validation Results:** Focused validation gate: 46/46 pass. Broader reviewer net: 28 tests, 25 passed, 3 skipped (all known), 0 failed. Full build chain: 0 errors.
+**Impact:** Phase 7 is now **approved and closed**. Hot reload integration complete. Holden's Phase 7.1 lockout can be released. **Phase 8 kicks off with no blockers.**
+**Key Files:** `src/Comet/Helpers/DatabindingExtensions.cs`, `src/Comet/HotReload/CometApp.cs`, `tests/Comet.Tests/HotReloadTests/ComponentHotReloadTests.cs`, `tests/Comet.Tests/HotReload/MetadataUpdateHandlerTests.cs`, `tests/Comet.Tests/HotReload/ReloadTransfersStateTest.cs`.
+
+### 2026-03-08T050835Z: Phase 7.1 Revision Architecture — Suite-Order Dependency Fix
+**Owner:** Fresh implementation specialist  
+**Status:** Implemented  
+**Decision:** Keep the existing View-based hot reload engine intact, but make the renderer-type comparison path tolerate handler trees that do not have a live `IMauiContext` yet. This fixes the suite-order dependency introduced by accumulated stale views in the hot reload registry.
+**Implementation Notes:**
+  - `DatabindingExtensions.AreSameType` now prefers handler-local `MauiContext`, then `StateManager.CurrentContext`, and skips renderer comparison when no context is available.
+  - `CometApp.MauiContext` now returns `null` safely when no current app/window/context holder exists instead of throwing during detached test reloads.
+  - Hot reload tests strengthened to initialize handlers before `TriggerReload()` so the no-context path stays covered.
+**Validation:** Built in documented order and reran focused Phase 7/metadata tests plus broader hot reload reviewer net. The reviewer net passed with only accepted historical skips remaining.
+**Impact:** Phase 7.1 approved. No architectural changes needed. View registration remains as-is; defensive null-checking prevents cascade failures in multi-test scenarios. Phase 8 can proceed without framework-level changes.
+
 ## Governance
 
 - All meaningful changes require team consensus

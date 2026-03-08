@@ -8,6 +8,39 @@
 
 ## Learnings
 
+### Phase 8.2 Kickoff — Handwritten Complex Controls (2026-03-08T050835Z)
+
+**Status:** ⚙️ **IN PROGRESS — PHASE 8 KICKOFF**
+
+**Assignment:** Phase 8.2 — Handwritten complex controls requiring custom logic
+
+**Scope:**
+- Implement controls beyond source generator scope (composite, specialized state, platform-specific)
+- Full test coverage and state management
+- Integrate with Phase 8.1 control inventory
+
+**Dependencies:**
+- ✅ Phase 7 approved and closed (hot reload integration stable)
+- ✅ Phase 1–6 complete (640+ tests, 625+ passing, 0 regressions)
+- ✅ Phase 6.1 NativeHost as reference (existing handwritten complex control example)
+
+**Parallel Work:**
+- Naomi Phase 8.1 (IView controls expansion)
+- Bobbie Phase 8.3 (coverage tests & reviewer gate)
+
+**Implementation Strategy:**
+1. Review Phase 6.1 NativeHost as complex-control reference
+2. Identify Phase 8.2 control candidates (composite, state-intensive, platform-specific)
+3. Design control API and state management
+4. Implement with test-first approach
+5. Submit to Bobbie for Phase 8.3 integration
+
+**Key Context from Prior Phases:**
+- Handler registration: `AppHostBuilderExtensions.UseCometHandlers()`
+- Platform-specific code: Directory.Build.targets (`.iOS.cs`, `.Android.cs`, etc.)
+- State management: `State<T>`, `Binding<T>`, `IComponentWithState` for hot reload
+- NativeHost pattern: Handler-owned platform-native container (Phase 6.1 reference)
+
 ### Phase 6 Complete — NativeHost & Interop Bridge Approved (2026-03-08T041421Z)
 
 **Status:** ✅ Phase 6.1 APPROVED — COMPLETE

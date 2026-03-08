@@ -1,13 +1,13 @@
 ---
-updated_at: 2026-03-08T050500Z
-focus_area: Phase 7 Revision in Progress — Holden Locked
+updated_at: 2026-03-08T050835Z
+focus_area: Phase 8 — Control Expansion (Naomi/Amos) & Validation (Bobbie)
 active_agents:
-  - Fresh Specialist (Phase 7.1 Revision — Hot Reload Hardening)
-  - Bobbie (Phase 7.2 Test Gates — Awaiting Phase 7.1 Approval)
+  - Naomi (Phase 8.1 — IView Controls Expansion)
+  - Amos (Phase 8.2 — Handwritten Complex Controls)
+  - Bobbie (Phase 8.3 — Control Coverage Tests & Reviewer Gate)
 active_issues: 
-  - "Phase 7.1 rejected — 5 new regressions (suite-order dependent registration cleanup)"
-  - "SetEnvironment stack overflow (framework-level, deferred to Phase 7+)"
-  - "BuiltView type detection (awaiting David clarification, deferred to Phase 7+)"
+  - "SetEnvironment stack overflow (framework-level, deferred to Phase 9+)"
+  - "BuiltView type detection (awaiting David clarification, deferred to Phase 9+)"
 ---
 
 # What We're Focused On
@@ -15,7 +15,8 @@ active_issues:
 **Phase 4: ✅ COMPLETE**  
 **Phase 5: ✅ COMPLETE**  
 **Phase 6: ✅ COMPLETE**  
-**Phase 7: ⚙️ REVISION IN PROGRESS (Holden Locked)**
+**Phase 7: ✅ COMPLETE (Fresh Specialist Revision Approved)**  
+**Phase 8: ⚙️ IN PROGRESS (Control Expansion)**
 
 - **Phase 1** (Holden, Bobbie): Component base classes, reactive state, test infrastructure — ✅ 69 tests
 - **Phase 2** (Naomi, Bobbie): Factory methods, control generation, style builders — ✅ 55 tests
@@ -30,46 +31,34 @@ active_issues:
 - **Phase 6** (Amos, Bobbie): Platform Integration & Interop Tests — ✅ **APPROVED**
   - **Phase 6.1** (Amos): NativeHost control, native view access API, handler registration — ✅ **APPROVED**
   - **Phase 6.2** (Bobbie): Interop test baseline (11 passing + 4 unskipped = 23 total) — ✅ **APPROVED**
-- **Phase 7** (Holden, Bobbie, Fresh Specialist): Component Hot Reload & Hot Reload Tests — ⚙️ **REVISION IN PROGRESS**
-  - **Phase 7.1** (Holden, rejected): Component hot reload integration — ❌ **REJECTED** (focused gate passes; broader net: 5 new regressions, suite-order dependent)
-  - **Phase 7.1** (Fresh Specialist, assigned): Active-view cleanup + AreSameType null-check hardening
-  - **Phase 7.2** (Bobbie): Hot reload test gates — ⏳ **SHAPED, AWAITING PHASE 7.1 APPROVAL**
+- **Phase 7** (Holden, Bobbie, Fresh Specialist): Component Hot Reload & Hot Reload Tests — ✅ **APPROVED**
+  - **Phase 7.1** (Holden, rejected; Fresh Specialist, approved): Component hot reload integration — ✅ **APPROVED**
+  - **Phase 7.2** (Bobbie): Hot reload test gates — ✅ **APPROVED** (as part of Phase 7 closure)
+- **Phase 8** (Naomi, Amos, Bobbie): Control Expansion & Coverage Tests — ⚙️ **IN PROGRESS**
+  - **Phase 8.1** (Naomi): Additional IView-generated controls — ⏳ **ACTIVE**
+  - **Phase 8.2** (Amos): Handwritten complex controls — ⏳ **ACTIVE**
+  - **Phase 8.3** (Bobbie): Control coverage tests & reviewer gate — ⏳ **AWAITING PHASE 8.1/8.2 PROGRESS**
 
-**Cumulative Results (Phases 1–6):**
-- **Total Tests:** 640+ (623 passing, 2 pre-existing failures, 15+ skipped)
-- **Test Coverage:** 313+ new tests written across 6 phases
+**Cumulative Results (Phases 1–7):**
+- **Total Tests:** 640+ (625+ passing, 2 pre-existing failures, 13+ skipped)
+- **Test Coverage:** 313+ new tests written across 7 phases
 - **Build Status:** 0 errors, 0 warnings
 - **Regressions:** 0 ✅
 
-**Phase 6 Final Status:**
-- 12/12 NativeHostTests passing
-- 11/11 NativeHostInteropTests passing (4 unskipped from Phase 6.2 baseline)
-- 23/23 combined NativeHost/interop tests passing ✅
-- NativeHost bridge production-ready
-- Interop test baseline locked
+**Phase 7 Final Status (Fresh Specialist Revision Approved):**
+- Focused validation gate: 46/46 component + hot reload tests pass
+- Broader reviewer net: 28 tests, 25 passed, 3 skipped (all known), 0 failed
+- All 5 previously-rejected tests now pass
+- Bonus: `ReloadTransfersStateTest.StateTransfersOnlyChangedValues` (historical failure) now passes
+- Production fixes: `DatabindingExtensions.AreSameType` (handler-local context), `CometApp.MauiContext` (safe cast)
+- Hot reload integration stable; Holden lockout released
 
 ---
 
-**Phase 7 Rejection Details:**
+**Outstanding (Outside Phase 8):**
+1. SetEnvironment stack overflow — Framework-level issue, deferred to Phase 9+
+2. BuiltView type detection — Awaiting David Ortinau architectural decision, deferred to Phase 9+
 
-- **Focused validation gate:** ✅ PASS (46/46 component + hot reload tests)
-- **Broader reviewer net:** ❌ FAIL (6 total failures: 1 historical baseline + 5 NEW regressions)
-- **New failures (all same signature):** 5 tests crash with `NullReferenceException at CometApp.MauiContext` during `TriggerReload()`
-  - `MetadataUpdateHandlerTests.UpdateType_RegistersReplacedView`
-  - `MetadataUpdateHandlerTests.UpdateApplication_WithNull_DoesNotThrow`
-  - `ComponentHotReloadTests.HotReloadReplacesStatefulComponentAndPreservesState`
-  - `ComponentHotReloadTests.HotReloadReplacesPropsComponentAndPreservesPropsAndState`
-  - `ComponentHotReloadTests.HotReloadReplacesNestedComponentAndPreservesChildState`
-- **Root cause:** Suite-order dependent. `View.cs` registers all views with hot reload but doesn't clean them. Broader suite accumulates stale views; `TriggerReload()` walks them and hits unchecked null dereference in `DatabindingExtensions.AreSameType()`.
-- **Lockout:** Holden locked from revision per squad rule. Fresh specialist assigned.
-- **Required fixes:** (1) Contain hot reload registrations, (2) harden `AreSameType()`, (3) re-run broader net and confirm only historical baselines remain.
-
----
-
-**Outstanding (Outside Phase 7):**
-1. SetEnvironment stack overflow — Framework-level issue, deferred to Phase 7+
-2. BuiltView type detection — Awaiting David Ortinau architectural decision, deferred to Phase 7+
-
-Phase 7.1 rejected and assigned to fresh specialist for revision. Phase 6 approved and complete. No blockers for Phase 8+ planning.
+Phase 7 approved and closed. Phase 8 parallel work launched with no blockers.
 
 

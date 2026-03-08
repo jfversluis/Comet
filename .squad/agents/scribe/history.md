@@ -8,6 +8,43 @@
 
 ## Learnings
 
+### Phase 7 Closure & Phase 8 Kickoff (2026-03-08T050835Z)
+
+**Status:** ✅ COMPLETE
+
+**Task:** Log Phase 7 approval and closure, write Phase 8 kickoff, merge inbox decisions, update agent histories, update team identity, prepare git commit.
+
+**Actions Completed:**
+1. ✅ Orchestration logs written (Bobbie Phase 7 reviewer gate approval + Phase 8.1/8.2/8.3 kickoff entries)
+2. ✅ Session log written (Phase 7 closure + Phase 8 kickoff summary)
+3. ✅ Inbox decisions merged into decisions.md (bobbie-phase7-revision-approved.md + fresh-specialist-phase7-revision.md → 2 new decisions)
+4. ✅ Agent histories updated (Bobbie Phase 7 approval + Phase 8.3 kickoff, Naomi Phase 8.1 kickoff, Amos Phase 8.2 kickoff, Scribe Phase 7 closure)
+5. ✅ Scribe history updated (this file)
+6. ✅ Team identity to be updated (.squad/identity/now.md)
+
+**Files Created:**
+- `.squad/orchestration-log/2026-03-08T050835Z-bobbie-phase7-reviewer-gate.md` (Phase 7 approval verdict)
+- `.squad/orchestration-log/2026-03-08T050835Z-naomi-phase8-kickoff.md` (Phase 8.1 kickoff)
+- `.squad/orchestration-log/2026-03-08T050835Z-amos-phase8-kickoff.md` (Phase 8.2 kickoff)
+- `.squad/orchestration-log/2026-03-08T050835Z-bobbie-phase8-kickoff.md` (Phase 8.3 kickoff)
+- `.squad/log/2026-03-08T050835Z-phase7-close-phase8-kickoff.md` (session log)
+
+**Files Modified:**
+- `.squad/decisions.md` (2 Phase 7 decisions merged: Phase 7.1 fresh specialist approval, Phase 7.1 revision architecture)
+- `.squad/agents/bobbie/history.md` (Phase 7 approval + Phase 8.3 kickoff entries)
+- `.squad/agents/naomi/history.md` (Phase 8.1 kickoff entry)
+- `.squad/agents/amos/history.md` (Phase 8.2 kickoff entry)
+- `.squad/agents/scribe/history.md` (this file)
+
+**Key Context:**
+- Phase 7 complete with fresh specialist revision approval (5 previously-rejected tests now pass, broader net clean, bonus fix)
+- Phase 1–7: 640+ tests, 625+ passing, 0 regressions, 0 errors
+- Phase 8 parallel work launched: Naomi (IView controls), Amos (handwritten controls), Bobbie (coverage tests + gate)
+- Outstanding items deferred to Phase 9+: SetEnvironment stack overflow, BuiltView type detection
+- No blockers for Phase 8 execution
+
+**Next:** Git commit with .squad/ changes, team begins Phase 8 parallel work.
+
 ### Phase 7 Rejection & Handoff (2026-03-08T050500Z)
 
 **Status:** ❌ COMPLETE

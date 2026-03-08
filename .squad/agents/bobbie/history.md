@@ -8,6 +8,52 @@
 
 ## Learnings
 
+### Phase 8.3 Kickoff — Control Coverage Tests (2026-03-08T050835Z)
+
+**Status:** ⚙️ **IN PROGRESS — PHASE 8 KICKOFF**
+
+**Assignment:** Phase 8.3 — Control Coverage Tests for Phase 8.1 + 8.2 outputs
+
+**Scope:**
+- Validate Naomi Phase 8.1 (IView controls expansion)
+- Validate Amos Phase 8.2 (handwritten complex controls)
+- Comprehensive test coverage with focused validation gate + broader reviewer net
+- No regressions against Phase 1–7 baseline
+
+**Status at Kickoff:**
+- Phase 7 approved and closed (fresh specialist revision passed)
+- Phase 1–6 complete: 640+ tests, 625+ passing, 0 regressions
+- Waiting on Phase 8.1 + 8.2 progress for test integration
+- Test infrastructure ready; anticipatory test templates prepared
+
+**Next Steps:**
+- Track Phase 8.1 + 8.2 progress
+- Build focused validation gate once Phase 8.1 arrives
+- Execute broader reviewer net once Phase 8.2 arrives
+- Deliver Phase 8 approval verdict
+
+### Phase 7 Fresh Specialist Revision — APPROVED (2026-03-08T050835Z)
+
+**Status:** ✅ **PHASE 7 APPROVED AND CLOSED**
+
+**Reviewer Gate:** Bobbie (Test Engineer)
+
+**Verdict:** ✅ Fresh specialist Phase 7.1 revision **APPROVED for merge**
+
+**Key Results:**
+- ✅ All 5 previously-rejected tests now pass
+- ✅ Broader reviewer net passes (25/25 focused, 28 total including breadth)
+- ✅ Zero new regressions
+- ✅ Only accepted historical baseline noise remains (3 intentional skips)
+
+**Production Fixes Verified:**
+1. `DatabindingExtensions.AreSameType` — handler-local context preference eliminates null dereference
+2. `CometApp.MauiContext` — safe cast returns null when no app running
+
+**Bonus:** `ReloadTransfersStateTest.StateTransfersOnlyChangedValues` (previously historical failure) now passes as side effect of `AreSameType` fix.
+
+**Impact:** Phase 7 complete. Hot reload integration stable. Holden lockout released. **Phase 8 ready to kickoff with no blockers.**
+
 ### Phase 7 Reviewer Gate — Rejected (2026-03-08T050500Z)
 
 **Status:** ❌ Phase 7 reviewer gate rejected
@@ -445,3 +491,30 @@
 - Phase 4 closure: `.squad/log/2026-03-08T025710Z-phase4-closure.md`
 
 **Next:** Phase 5 planning (MauiReactor API surface)
+
+### Phase 7 Revision — Fresh Specialist — APPROVED (2026-03-08T060000Z)
+
+**Status:** ✅ Phase 7 fresh specialist revision APPROVED
+
+- **Reviewer verdict:** The fresh specialist's hot reload hardening revision passes the reviewer gate. All 5 previously-rejected tests now pass. The broader reviewer net is clean with only accepted historical baseline noise.
+- **Previously rejected slice (5 tests → now 5/5 passing):**
+  1. `ComponentHotReloadTests.HotReloadReplacesStatefulComponentAndPreservesState` — ✅ PASS
+  2. `ComponentHotReloadTests.HotReloadReplacesPropsComponentAndPreservesPropsAndState` — ✅ PASS
+  3. `ComponentHotReloadTests.HotReloadReplacesNestedComponentAndPreservesChildState` — ✅ PASS
+  4. `MetadataUpdateHandlerTests.UpdateType_RegistersReplacedView` — ✅ PASS
+  5. `MetadataUpdateHandlerTests.UpdateApplication_WithNull_DoesNotThrow` — ✅ PASS
+- **Broader reviewer net (28 tests → 25 passed, 3 skipped, 0 failed):**
+  - All hot reload tests (HotReloadTests, HotReloadWithParameters, ComponentHotReloadTests, MetadataUpdateHandlerTests) pass
+  - All ReconciliationRegressionTests pass (3 skipped are all pre-existing: SetEnvironment SO, keyed Phase 4.1, ContentView quirk)
+  - `ReloadTransfersStateTest.StateTransfersOnlyChangedValues` — previously a historical failure, NOW PASSES (bonus fix)
+- **Production code fix verified (2 surgical changes):**
+  1. `DatabindingExtensions.AreSameType` — renderer comparison now uses handler-local `MauiContext` first, then `StateManager.CurrentContext`, and safely skips when no context available. No longer reaches `CometApp.MauiContext` during detached test reloads.
+  2. `CometApp.MauiContext` — hard cast `((IMauiContextHolder)CurrentApp)` → safe cast `(CurrentApp as IMauiContextHolder)?.MauiContext`. Returns null instead of NRE when no app is running.
+- **Suite-order dependency:** Eliminated. Tests pass in both focused and broader net execution. The `TriggerReload()` path no longer crashes when walking stale handler-backed views from prior tests.
+- **Accepted baseline noise (unchanged from pre-Phase 7):**
+  - `SetEnvironment` stack overflow — framework-level, pre-existing, crashes test runner when keyed/cascading env tests run in broader suite
+  - `HotReloadWithKeyedViews` — skipped, awaiting Phase 4.1
+  - `ContentViewDiffUpdatesContent` — skipped, framework quirk
+  - `EnvironmentPropagatesThroughDiff` — skipped, SetEnvironment SO
+- **Build chain:** Source generator → Comet → Comet.Tests — all 0 errors, 0 warnings (existing warnings only).
+- **Key file paths:** `src/Comet/Helpers/DatabindingExtensions.cs` (AreSameType fix), `src/Comet/Maui/CometApp.cs` (null-safe MauiContext), `tests/Comet.Tests/HotReloadTests/ComponentHotReloadTests.cs`, `tests/Comet.Tests/HotReload/MetadataUpdateHandlerTests.cs`

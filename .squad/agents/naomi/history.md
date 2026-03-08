@@ -8,7 +8,37 @@
 
 ## Learnings
 
-<!-- Append learnings below -->
+### Phase 8.1 Kickoff — IView Controls Expansion (2026-03-08T050835Z)
+
+**Status:** ⚙️ **IN PROGRESS — PHASE 8 KICKOFF**
+
+**Assignment:** Phase 8.1 — Additional IView-generated controls
+
+**Scope:**
+- Implement missing/partial IView-generated controls
+- Use existing `CometViewSourceGenerator` + `[CometGenerate]` attribute framework
+- Focus on control inventory expansion (volume + API surface coverage)
+
+**Dependencies:**
+- ✅ Phase 7 approved and closed (hot reload integration stable)
+- ✅ Phase 1–6 complete (640+ tests, 625+ passing, 0 regressions)
+- ✅ Source generator production-ready (phases 1–3 built controls using this pipeline)
+
+**Parallel Work:**
+- Amos Phase 8.2 (handwritten complex controls)
+- Bobbie Phase 8.3 (coverage tests & reviewer gate)
+
+**Next Steps:**
+1. Build control inventory (identify missing/partial controls)
+2. Design additional IView surface expansion
+3. Implement with full test coverage
+4. Submit to Bobbie for Phase 8.3 integration
+
+**Key Context from Prior Phases:**
+- Source generator: `CometViewSourceGenerator.cs`, templates, `[CometGenerate]` attribute
+- Factory pattern: `CometControls` partial static class, `using static` import
+- Style builders: `{Control}StyleBuilder` classes in `Comet.Styles` namespace
+- Test convention: Control tests in subdirectory, flat namespace (existing pattern)
 
 ### Phase 2.1 & 2.2 — Factory Methods + Extension Enhancement (2026-03-08)
 
