@@ -8,6 +8,37 @@
 
 ## Learnings
 
+### Phase 5 Mid-Flight — Bobbie Phase 5.3 Complete (2026-03-08T034039Z)
+
+**Status:** ✅ Bobbie Phase 5.3 orchestration and session logging complete
+
+**Task:** Log Bobbie Phase 5.3 completion (navigation-focused anticipatory test suite).
+
+**Actions Completed:**
+1. ✅ Orchestration log written (Bobbie Phase 5.3 completion entry)
+2. ✅ Session log written (Phase 5 mid-flight progress snapshot)
+3. ✅ Inbox decision merged into decisions.md (bobbie-phase5-navigation-tests.md)
+4. ✅ Bobbie history updated (Phase 5.3 completion entry)
+5. ✅ Git changes staged (.squad/ modifications)
+
+**Files Created:**
+- `.squad/orchestration-log/2026-03-08T034039Z-bobbie-phase5-3-complete.md`
+- `.squad/log/2026-03-08T034039Z-phase5-midflight.md`
+
+**Files Modified:**
+- `.squad/decisions.md` (Phase 5.3 decision merged)
+- `.squad/agents/bobbie/history.md` (Phase 5.3 completion entry)
+- `.squad/agents/scribe/history.md` (this file)
+
+**Key Context:**
+- Phase 5.3 landed with 15 passing tests (navigation-focused slice)
+- 3 tests intentionally skipped (awaiting Amos Phase 5.1/5.2 typed-navigation API)
+- Test infrastructure ready for parallel Amos implementation
+- Phase 5 production-ready for existing CometShell wrapper API surface
+- Phase 5.1/5.2 (Amos) in parallel — no blockers on Bobbie side
+
+**Next:** Phase 5 closure orchestration once Amos Phase 5.1/5.2 complete.
+
 ### Phase 5 Kickoff — Session Orchestration (2026-03-08T033412Z)
 
 **Status:** ✅ Complete

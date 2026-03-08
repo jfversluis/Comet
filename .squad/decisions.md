@@ -53,6 +53,13 @@
 **Context:** Phase 4.1 implemented. Key-aware diffing preserves view instances across reorders, improving state and animation fidelity. Dictionary pre-builds amortize cost across all children (O(n) vs O(n²) worst-case). String keys chosen over object for simpler equality and debugging. 100% backward compatible — unkeyed lists diff identically to before.
 **Impact:** Dynamic lists (e.g., todo items, chat messages) reuse view instances when keyed, preserving handler state and animations. Non-component views and unkeyed lists see zero regression. Hot reload state transfer works transparently via environment mechanism.
 
+### 2026-03-08T034039Z: Phase 5.3 Navigation Test Shape
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Implemented  
+**Decision:** Phase 5.3 navigation tests live under `tests/Comet.Tests/NavigationApiTests/` while keeping the flat `Comet.Tests` namespace. Existing `CometShell` wrapper behavior is covered with active tests (15 passing), and the not-yet-landed typed navigation surface is captured with reflection-based skipped tests (3 skipped) so Amos can wire in the API without breaking the current suite.
+**Context:** Phase 5 implementation and testing run in parallel. The repository has pre-existing full-suite failures and a stack-overflowing keyed reconciliation test, so Bobbie validated the navigation-focused subset directly instead of relying on the full run. Phase 5.3 test infrastructure is ready to accept Amos Phase 5.1/5.2 implementations.
+**Impact:** The current suite validates shell lifetime, route parsing, modal fallback navigation (IfElse-based), query propagation, shell extension delegation, and back-button behavior. Once Amos lands generic route registration and typed navigation overloads, the 3 skipped tests become the review checklist to unskip first. Phase 5 is production-ready for the existing CometShell wrapper API surface.
+
 ### 2026-03-08T022000Z: Phase 4.2 Component Merge Logic — REJECTED (1st Review)
 **Owner:** Bobbie (Test Engineer)  
 **Status:** Rejected (Revision assigned to Amos)  

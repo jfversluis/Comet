@@ -8,6 +8,58 @@
 
 ## Learnings
 
+### Phase 5 Complete — Anticipatory Tests (2026-03-08T034039Z)
+
+**Status:** ✅ Phase 5.3 COMPLETE
+
+**Assignment:** Phase 5.3 complete — navigation-focused anticipatory test suite landed and validated.
+
+**Accomplishments:**
+
+- ✅ 15 tests passing, validating CometShell wrapper API
+- ✅ 3 tests intentionally skipped (reflection-based placeholders for Amos Phase 5.2 API)
+- ✅ Navigation test infrastructure ready to accept Amos Phase 5.1/5.2 implementations
+- ✅ Test suite structure finalized: `tests/Comet.Tests/NavigationApiTests/`
+
+**Test Coverage:**
+
+| Category | Count | Status |
+|----------|-------|--------|
+| Shell lifetime management | 3 | ✅ Passing |
+| Route string parsing | 2 | ✅ Passing |
+| Modal fallback navigation (IfElse) | 2 | ✅ Passing |
+| Query propagation | 2 | ✅ Passing |
+| Shell extension delegation | 3 | ✅ Passing |
+| Back-button behavior | 3 | ✅ Passing |
+| Typed route registration | 1 | ⏳ Skipped (Amos Phase 5.2) |
+| Typed navigation overload (no args) | 1 | ⏳ Skipped (Amos Phase 5.2) |
+| Typed navigation with args | 1 | ⏳ Skipped (Amos Phase 5.2) |
+
+**Test Files Created:**
+
+- `tests/Comet.Tests/NavigationApiTests/ShellLifetimeTests.cs` — Shell creation/disposal/reuse
+- `tests/Comet.Tests/NavigationApiTests/RouteParsingTests.cs` — Route string validation
+- `tests/Comet.Tests/NavigationApiTests/ModalFallbackNavigationTests.cs` — IfElse modal patterns
+- `tests/Comet.Tests/NavigationApiTests/QueryPropagationTests.cs` — Query parameter flow
+- `tests/Comet.Tests/NavigationApiTests/ShellExtensionDelegationTests.cs` — Custom shell delegation
+- `tests/Comet.Tests/NavigationApiTests/BackButtonBehaviorTests.cs` — Hardware/system back nav
+
+**Parallel Work Context:**
+
+- Amos Phase 5.1/5.2 (generic route registration, typed navigation) in parallel
+- Once Amos lands Phase 5.2 API, 3 skipped tests become the review checklist to unskip
+- Phase 5 production-ready for existing CometShell wrapper surface
+
+**Orchestration Logs:**
+
+- `.squad/orchestration-log/2026-03-08T034039Z-bobbie-phase5-3-complete.md` — Phase 5.3 completion
+
+**Session Log:**
+
+- `.squad/log/2026-03-08T034039Z-phase5-midflight.md` — Phase 5 progress snapshot
+
+**Next:** Await Amos Phase 5.1/5.2 completion, then unskip and validate Phase 5.2 tests.
+
 ### Phase 5 Kickoff — Anticipatory Tests (2026-03-08T033412Z)
 
 **Status:** ⚙️ Phase 5.3 ACTIVE
