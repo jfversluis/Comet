@@ -8,6 +8,41 @@
 
 ## Learnings
 
+### Phase 7 Rejection & Handoff (2026-03-08T050500Z)
+
+**Status:** ❌ COMPLETE
+
+**Task:** Log Phase 7 rejection, write orchestration + session logs, merge inbox decisions, update agent histories, update team identity, prepare git commit.
+
+**Actions Completed:**
+1. ✅ Orchestration log written (Phase 7 rejection verdict, Holden lockout, fresh specialist handoff)
+2. ✅ Session log written (Phase 7 rejection snapshot)
+3. ✅ Inbox decisions merged into decisions.md (bobbie-phase7-tests.md + bobbie-phase7-review.md + holden-phase7-hotreload.md → 2 new decisions: Phase 7.1 rejection, Phase 7.2 test shape)
+4. ✅ Agent histories updated (Holden rejection + lockout, Bobbie rejection verdict, Scribe rejection log)
+5. ✅ Scribe history updated (this file)
+6. ✅ Team identity to be updated (.squad/identity/now.md)
+
+**Files Created:**
+- `.squad/orchestration-log/2026-03-08T050500Z-phase7-rejected-holden-locked.md`
+- `.squad/log/2026-03-08T050500Z-phase7-rejection.md`
+
+**Files Modified:**
+- `.squad/decisions.md` (3 Phase 7 decisions merged: Phase 7.1 rejection, Phase 7.2 test shape, Phase 6 completion affirmed)
+- `.squad/agents/holden/history.md` (Phase 7.1 rejection + lockout entry prepended)
+- `.squad/agents/bobbie/history.md` (Phase 7 rejection verdict entry prepended)
+- `.squad/agents/scribe/history.md` (this file)
+
+**Key Context:**
+- Phase 6 remains ✅ COMPLETE (623 passing tests, 0 regressions)
+- Phase 7.1 (Holden) ❌ REJECTED — focused gate passes (46/46), broader net fails with 5 new regressions
+- All failures: `NullReferenceException at CometApp.MauiContext` during `TriggerReload()`
+- Root cause: Suite-order dependent registration cleanup; stale unrelated views registered with hot reload helper
+- Required fixes: (1) Contain registrations, (2) harden `AreSameType()` null-check, (3) prove broader net clean except historical baselines
+- Holden locked per squad reviewer rule; fresh specialist assigned for Phase 7.1 revision
+- Phase 7.2 (Bobbie test gates) shaped but pending Phase 7.1 approval; test infrastructure valuable for specialist's revision work
+
+**Next:** Git commit with .squad/ changes and inbox file cleanup.
+
 ### Phase 6 Closure & Phase 7 Kickoff (2026-03-08T041500Z)
 
 **Status:** ✅ COMPLETE

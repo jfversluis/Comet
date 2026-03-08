@@ -28,6 +28,11 @@ Use this when a feature landed behind anticipatory/skipped tests and you need a 
 - After that, run a broader filtered suite that excludes only well-documented pre-existing failures.
 - Compare the unfiltered failure signature with the historical baseline so new failures are obvious.
 
+### Catch order-dependent hot reload regressions
+- If the feature touches `TriggerReload()`, handler attachment, or active-view registration, do **not** trust an isolated hot reload slice by itself.
+- Run the focused slice first, then a broader filtered suite in the same build so stale/global hot reload registrations can surface.
+- Treat “passes alone, fails in the wider suite” as a blocker, not flaky noise. In Comet, watch for `CometApp.MauiContext` null crashes from `DatabindingExtensions.AreSameType(...)` during reload.
+
 ### Record the exact gate evidence
 - Capture which files were reviewed.
 - Record focused pass counts, filtered-suite status, and any historical failures that still reproduce.
@@ -36,6 +41,7 @@ Use this when a feature landed behind anticipatory/skipped tests and you need a 
 ## Examples
 
 - **Phase 6 NativeHost:** unskip the 4 `NativeHostInteropTests` placeholders, verify 23/23 NativeHost-focused tests pass, then run the broader suite with known keyed stack-overflow and historical hot-reload failures filtered out.
+- **Phase 7 Component hot reload:** isolated `ComponentHotReloadTests` may pass even when the broader suite still fails. Always widen the net after `TriggerReload()` work to catch active-view registry regressions.
 
 ## Anti-Patterns
 

@@ -8,7 +8,66 @@
 
 ## Learnings
 
-<!-- Append learnings below -->
+### Phase 7.1 — REJECTED (2026-03-08T050500Z)
+
+**Status:** ❌ REJECTED by Bobbie (Test Engineer)  
+**Lockout:** Locked from further revision work per squad rule
+
+**Verdict Summary:**
+- Focused validation gate passed cleanly: 46/46 component hot reload tests
+- Broader reviewer net exposed 5 new regressions (out of tolerance)
+- All 5 failures have identical signature: `NullReferenceException at CometApp.MauiContext` during `MauiHotReloadHelper.TriggerReload()`
+
+**Root Cause:**
+The implementation is suite-order dependent. `View.cs` registers all views with MAUI's hot reload tracking, but doesn't clean them up. When the broader test suite accumulates unrelated handler-backed views and `TriggerReload()` iterates them, the unchecked `CometApp.MauiContext` access in `DatabindingExtensions.AreSameType()` explodes.
+
+**New Regressions:**
+1. `MetadataUpdateHandlerTests.UpdateType_RegistersReplacedView`
+2. `MetadataUpdateHandlerTests.UpdateApplication_WithNull_DoesNotThrow`
+3. `ComponentHotReloadTests.HotReloadReplacesStatefulComponentAndPreservesState`
+4. `ComponentHotReloadTests.HotReloadReplacesPropsComponentAndPreservesPropsAndState`
+5. `ComponentHotReloadTests.HotReloadReplacesNestedComponentAndPreservesChildState`
+
+**Required Fixes (for fresh specialist):**
+1. Contain/clean active hot reload registrations so `TriggerReload()` doesn't walk stale views across suite
+2. Harden `AreSameType(..., checkRenderers: true)` against null `CometApp.MauiContext`
+3. Re-run broader reviewer net and confirm only historical baselines remain
+
+**Key Learning:**
+Hot reload registration / cleanup needs lifecycle awareness. Focused tests pass because they start clean. Broader suite fails because stale views accumulate. The registration side effect is not properly scoped.
+
+**Handed Off:** Fresh specialist assigned to fix active-view cleanup and null-check hardening. Holden locked until next revision cycle.
+
+### Phase 7.1 — Component Hot Reload Integration (2026-03-08)
+
+**Architecture decisions:**
+- Comet now owns a lightweight hot reload replacement registry (`CometHotReloadHelper`) instead of relying exclusively on `Microsoft.Maui.HotReload.MauiHotReloadHelper.RegisterReplacedView(...)`, because MAUI's registry is inert in the current test/runtime harness.
+- `View.GetRenderView()` resolves replacements through the Comet registry first, then MAUI, and `View.SetHotReloadReplacement(...)` centralizes handler/navigation/environment/state handoff for both root views and nested component replacements.
+- `CometMetadataUpdateHandler.UpdateType(...)` now feeds the Comet registry, so real metadata updates and synthetic test replacements share the same replacement path.
+- Component hot reload uses `TransferHotReloadStateToCore(...)` + `IComponentWithState.TransferStateFrom(...)` for typed state/props transfer across replacement component types.
+- Nested component replacements remain effectively lazy from the old instance's perspective, so Component dispose no longer clears `_state` / `_props`; that preserves transferable data when parent container disposal happens before the replacement instance is materialized.
+- `DatabindingExtensions` hot reload reconciliation now recognizes Comet-side replacement relationships and detaches retained old children from old containers before disposal-sensitive rebuilds.
+
+**Key files:**
+- `src/Comet/HotReload/CometHotReloadHelper.cs`
+- `src/Comet/Controls/View.cs`
+- `src/Comet/Component.cs`
+- `src/Comet/Helpers/DatabindingExtensions.cs`
+- `src/Comet/HotReload/CometMetadataUpdateHandler.cs`
+- `tests/Comet.Tests/HotReloadTests/ComponentHotReloadTests.cs`
+- `tests/Comet.Tests/HotReloadTestsNoParameters.cs`
+- `tests/Comet.Tests/HotReloadWithParameters.cs`
+- `tests/Comet.Tests/ReloadTransfersStateTest.cs`
+- `tests/Comet.Tests/TestBase.cs`
+
+**Verification:**
+- Focused validation passes:
+  - `ComponentHotReloadTests`
+  - `MetadataUpdateHandlerTests`
+  - `HotReloadTests.HotReloadRegisterReplacedViewReplacesView`
+  - `HotReloadWithParameters`
+  - `ReloadTransfersStateTest`
+- Full unfiltered suite still aborts on the pre-existing `SetEnvironment` stack overflow recursion (unchanged baseline, outside Phase 7.1).
 
 ### Phase 1.1 + 1.2 — Component Base Class & Reactive<T> (2026-03-08)
 

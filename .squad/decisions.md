@@ -112,6 +112,32 @@
 **Context:** Phase 6.1 implementation complete across API surface, handler registration, platform handlers (iOS, Android, Windows, macCatalyst), and README docs. Phase 6.2 validation used documented build order and comprehensive test suite. Unfiltered full-suite run reproduces 2 pre-existing failures only (ReloadTransfersStateTest.StateTransfersOnlyChangedValues, SetEnvironment stack overflow).
 **Impact:** NativeHost bridge is production-ready. Interop test baseline locked. No parallel work blockers. Phase 6 complete; Phase 7 launches immediately (parallel: Holden Component Hot Reload, Bobbie Hot Reload Tests).
 
+### 2026-03-08T050500Z: Phase 7.1 — Component Hot Reload Integration — REJECTED
+**Owner:** Holden (Lead Architect)  
+**Status:** Rejected (Fresh specialist required; Holden locked for next revision)  
+**Decision:** Holden's Phase 7.1 Component hot reload implementation is **REJECTED**. The focused validation gate passes cleanly (46/46 component + hot reload tests), but the broader reviewer net exposes 5 new regressions beyond allowed historical baseline noise.
+**Context:** Holden implemented a Comet-owned hot reload replacement registry to deterministically track component replacements and transfer state/props across replacement types. The architecture is sound for the focused scenario (component-only reload), but the implementation is suite-order dependent. When `TriggerReload()` is called in a broader test run with accumulated non-Comet views, the reload walker reaches stale handler-backed views and triggers an unchecked `CometApp.MauiContext` null dereference in `DatabindingExtensions.AreSameType()`.
+**New Regressions (5):**
+1. `MetadataUpdateHandlerTests.UpdateType_RegistersReplacedView` — `NullReferenceException` at `CometApp.MauiContext`
+2. `MetadataUpdateHandlerTests.UpdateApplication_WithNull_DoesNotThrow` — same signature
+3. `ComponentHotReloadTests.HotReloadReplacesStatefulComponentAndPreservesState` — same signature
+4. `ComponentHotReloadTests.HotReloadReplacesPropsComponentAndPreservesPropsAndState` — same signature
+5. `ComponentHotReloadTests.HotReloadReplacesNestedComponentAndPreservesChildState` — same signature
+**Required Fixes:**
+1. Contain or clean up active hot reload registrations so `TriggerReload()` does not walk stale unrelated views across the suite
+2. Harden the `AreSameType(..., checkRenderers: true)` path to handle missing `CometApp.MauiContext` gracefully
+3. Re-run the broader reviewer net and prove the only remaining tolerated baseline noise is: (a) the known `SetEnvironment` stack-overflow (framework-level, pre-existing), (b) the historical `ReloadTransfersStateTest.StateTransfersOnlyChangedValues` failure (pre-existing)
+**Lockout:** Holden locked from further revision work per reviewer rule. A fresh specialist must be assigned.
+**Key Files:** `src/Comet/Controls/View.cs` (registration), `src/Comet/Helpers/DatabindingExtensions.cs` (AreSameType null-check), `src/Comet/HotReload/CometMetadataUpdateHandler.cs`, `tests/Comet.Tests/HotReloadTests/ComponentHotReloadTests.cs`, `tests/Comet.Tests/HotReload/MetadataUpdateHandlerTests.cs`.
+**Impact:** Phase 7 blocked pending specialist revision. Phases 1–6 remain ✅ COMPLETE (623 passing tests, 0 regressions). Phase 6 approved; no blockers for future phase work. Phase 7 revision awaits fresh specialist assignment.
+
+### 2026-03-08T044500Z: Phase 7.2 — Component Hot Reload Test Shape
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Shaped (Pending Phase 7.1 approval)  
+**Decision:** Phase 7.2 test infrastructure in `tests/Comet.Tests/HotReloadTests/ComponentHotReloadTests.cs` uses a mixed gate strategy: (1) one runnable baseline test for state-only `IComponentWithState` transfer across replacement component types, (2) three explicit reviewer gates skipped until Phase 7.1 lands (stateful component replacement, props+state replacement, nested component replacement via `MauiHotReloadHelper`). Preserve long-standing plain-view hot reload failures as-is so historical noise signature remains visible during review.
+**Context:** While shaping anticipatory gates, Bobbie discovered that `Component<TState, TProps>.IComponentWithState.TransferStateFrom()` currently recurses into itself and stack-overflows, so the props-transfer path is kept as a skip gate rather than promoted to active failing test. Focused `ComponentHotReloadTests` slice passes with skips only. Broader filtered hot reload/component slice is green once the 2 known historical hot reload failures are excluded.
+**Impact:** Phase 7.2 gates define acceptance criteria for Phase 7.1 without destabilizing the suite. Holden's rejection invalidates Phase 7 approval, but test infrastructure scaffolding remains useful for the fresh specialist's revision work.
+
 ## Governance
 
 - All meaningful changes require team consensus

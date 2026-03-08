@@ -8,6 +8,41 @@
 
 ## Learnings
 
+### Phase 7 Reviewer Gate — Rejected (2026-03-08T050500Z)
+
+**Status:** ❌ Phase 7 reviewer gate rejected
+
+- **Reviewer verdict:** Holden's Component hot reload path is not ready for Phase 7 sign-off yet. The focused reviewer gate looks healthy in isolation, but the broader reviewer net exposes new hot reload regressions beyond the allowed historical baseline.
+- **Validation shape that mattered:** The documented build order still succeeds. Focused validation passed cleanly: 46/46 Component + hot reload tests, 10/10 `ComponentMergeTests` with the known keyed stack-overflow case excluded, and 11/14 `ReconciliationRegressionTests` with the existing 3 skips only.
+- **Why Bobbie rejected it:** A broader filtered suite that excluded only the known keyed baseline still failed **6 tests**. One is the accepted historical baseline (`ReloadTransfersStateTest.StateTransfersOnlyChangedValues`), but **5 failures are new for the reviewer gate**: `MetadataUpdateHandlerTests.UpdateType_RegistersReplacedView`, `MetadataUpdateHandlerTests.UpdateApplication_WithNull_DoesNotThrow`, and the three Component replacement tests in `ComponentHotReloadTests` that exercise `TriggerReload()`.
+- **Failure signature:** The new failures all crash with `NullReferenceException` at `CometApp.MauiContext` via `DatabindingExtensions.AreSameType(...)` during `MauiHotReloadHelper.TriggerReload()`. That means the new path is still order-dependent and not stable once other tests have created handler-backed views.
+- **Likely regression vector:** `src/Comet/Controls/View.cs` now registers every `View` with `MauiHotReloadHelper` in the constructor and adds handler-backed views to MAUI's active-view list in `SetViewHandler`. In the wider suite, `TriggerReload()` then walks stale/unrelated active views and reaches the unchecked `CometApp.MauiContext` path in `src/Comet/Helpers/DatabindingExtensions.cs`.
+- **Reviewer semantics:** For this rejection round, Holden should not self-revise. Request a **fresh specialist** to harden the active-view / reload path and re-run the broader reviewer net.
+- **Key file paths:** `src/Comet/Controls/View.cs`, `src/Comet/Helpers/DatabindingExtensions.cs`, `src/Comet/HotReload/CometMetadataUpdateHandler.cs`, `tests/Comet.Tests/HotReloadTests/ComponentHotReloadTests.cs`, `tests/Comet.Tests/HotReload/MetadataUpdateHandlerTests.cs`, `tests/Comet.Tests/ReloadTransfersStateTest.cs`.
+
+### Phase 7 Reviewer Gate — Rejected (2026-03-08T050500Z)
+
+**Status:** ❌ Phase 7 reviewer gate rejected
+
+- **Reviewer verdict:** Holden's Component hot reload path is not ready for Phase 7 sign-off yet. The focused reviewer gate looks healthy in isolation, but the broader reviewer net exposes new hot reload regressions beyond the allowed historical baseline.
+- **Validation shape that mattered:** The documented build order still succeeds. Focused validation passed cleanly: 46/46 Component + hot reload tests, 10/10 `ComponentMergeTests` with the known keyed stack-overflow case excluded, and 11/14 `ReconciliationRegressionTests` with the existing 3 skips only.
+- **Why Bobbie rejected it:** A broader filtered suite that excluded only the known keyed baseline still failed **6 tests**. One is the accepted historical baseline (`ReloadTransfersStateTest.StateTransfersOnlyChangedValues`), but **5 failures are new for the reviewer gate**: `MetadataUpdateHandlerTests.UpdateType_RegistersReplacedView`, `MetadataUpdateHandlerTests.UpdateApplication_WithNull_DoesNotThrow`, and the three Component replacement tests in `ComponentHotReloadTests` that exercise `TriggerReload()`.
+- **Failure signature:** The new failures all crash with `NullReferenceException` at `CometApp.MauiContext` via `DatabindingExtensions.AreSameType(...)` during `MauiHotReloadHelper.TriggerReload()`. That means the new path is still order-dependent and not stable once other tests have created handler-backed views.
+- **Likely regression vector:** `src/Comet/Controls/View.cs` now registers every `View` with `MauiHotReloadHelper` in the constructor and adds handler-backed views to MAUI's active-view list in `SetViewHandler`. In the wider suite, `TriggerReload()` then walks stale/unrelated active views and reaches the unchecked `CometApp.MauiContext` path in `src/Comet/Helpers/DatabindingExtensions.cs`.
+- **Reviewer semantics:** For this rejection round, Holden should not self-revise. Request a **fresh specialist** to harden the active-view / reload path and re-run the broader reviewer net.
+- **Key file paths:** `src/Comet/Controls/View.cs`, `src/Comet/Helpers/DatabindingExtensions.cs`, `src/Comet/HotReload/CometMetadataUpdateHandler.cs`, `tests/Comet.Tests/HotReloadTests/ComponentHotReloadTests.cs`, `tests/Comet.Tests/HotReload/MetadataUpdateHandlerTests.cs`, `tests/Comet.Tests/ReloadTransfersStateTest.cs`.
+
+### Phase 7.2 Complete — Component Hot Reload Test Gates (2026-03-08T044500Z)
+
+**Status:** ✅ Phase 7.2 test scaffolding landed for Holden
+
+- **Test shape:** Component hot reload coverage now lives in `tests/Comet.Tests/HotReloadTests/ComponentHotReloadTests.cs` and keeps the flat `Comet.Tests` namespace. The file mixes one runnable baseline test (manual `IComponentWithState` transfer for state-only components) with four explicit reviewer gates skipped until Phase 7.1 lands.
+- **Gates for Holden:** The skipped tests cover stateful component replacement, props+state component replacement, and nested component replacement through `MauiHotReloadHelper.RegisterReplacedView()` / `TriggerReload()`. They define the acceptance target without changing the existing plain-view hot reload failure baseline.
+- **Historical noise preserved:** The known hot reload failures still reproduce unchanged — `HotReloadTests.HotReloadRegisterReplacedViewReplacesView` and `ReloadTransfersStateTest.StateTransfersOnlyChangedValues`. Bobbie kept them as active baseline failures instead of papering over them with broader skips.
+- **New defect surfaced while shaping gates:** `Component<TState, TProps>.IComponentWithState.TransferStateFrom()` currently stack-overflows because the explicit interface implementation recursively calls itself. Bobbie captured that path as a Phase 7.1 skip (`TransferStateFromMovesPropsAndStateAcrossReplacementComponentTypes`) rather than turning the suite red before Holden can wire the real fix.
+- **Validation order:** Followed the documented repo order: `src/Comet.SourceGenerator` build → `src/Comet` build → `tests/Comet.Tests` build → targeted `dotnet test` slices. Serialized `/m:1` builds were needed once to avoid a transient maccatalyst ref-assembly file lock during validation.
+- **Validation results:** Focused ComponentHotReload slice = 1 passed / 4 skipped. Broader component + hot reload regression slice (excluding the 2 long-standing hot reload failures) = 40 passed / 5 skipped. Unfiltered hot reload-focused slice now shows 10 total with the same 2 historical failures, plus the 4 new skipped gates and 4 passing tests.
+
 ### Phase 6 Complete — Closure & Phase 7 Kickoff (2026-03-08T041500Z)
 
 **Status:** ✅ Phase 6 COMPLETE → Phase 7 ACTIVE
