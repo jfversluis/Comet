@@ -8,7 +8,31 @@
 
 ## Learnings
 
-<!-- Append learnings below -->
+### Phase 5 Kickoff — Navigation & IReactor (2026-03-08T033412Z)
+
+**Status:** ⚙️ Phase 5.1/5.2 ACTIVE
+
+**Assignment:**
+- Phase 5.1: IReactor engine baseline implementation
+- Phase 5.2: Navigation integration (IfElse, Switch, ForEach control flow)
+
+**Context:**
+- Locked out during Phase 4.2 revision (scope conflict)
+- Phase 4 complete: key-aware reconciliation + disposal-aware component merge
+- All 619 tests passing (599 pass, 2 pre-existing fail, 18 skipped)
+- Zero regressions across all 4 phases
+- Test parallelization disabled per squad convention
+
+**Collaboration:**
+- Bobbie launching Phase 5.3 (anticipatory tests) in parallel
+- Naomi available for control surface generation if needed
+- Holden released from Phase 4 lockout, available for architecture questions
+
+**Next Steps:**
+1. Read Phase 4 closure log (`.squad/log/2026-03-08T025710Z-phase4-closure.md`)
+2. Review outstanding framework issues (SetEnvironment stack overflow, BuiltView detection)
+3. Define IReactor baseline scope and Phase 5.1 deliverables
+4. Coordinate test infrastructure with Bobbie
 
 ### Phase 3.2 — Control Style Integration (2025-07-24)
 

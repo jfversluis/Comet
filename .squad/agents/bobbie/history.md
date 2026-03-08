@@ -8,7 +8,35 @@
 
 ## Learnings
 
-<!-- Append learnings below -->
+### Phase 5 Kickoff — Anticipatory Tests (2026-03-08T033412Z)
+
+**Status:** ⚙️ Phase 5.3 ACTIVE
+
+**Assignment:**
+- Phase 5.3: Build anticipatory test suite for Phase 5 (IReactor, IfElse, Switch, ForEach)
+
+**Context:**
+- Phase 4 complete: validation verified 619 tests (599 pass, 2 pre-existing fail, 18 skipped)
+- Phase 4 closure provided: disposal-aware merge logic, key-aware reconciliation, zero regressions
+- Test infrastructure stable, parallelization disabled per convention
+- All existing 394 + 272 new tests remain green
+
+**Collaboration:**
+- Amos launching Phase 5.1/5.2 (implementation) in parallel
+- Bobbie pairs on test infrastructure requirements with Amos
+- Test-first approach: anticipatory stubs written before implementation
+
+**Phase 5.3 Test Framework:**
+- ComponentReactorTests (IReactor baseline + integration)
+- NavigationControlTests (IfElse, Switch, ForEach)
+- Integration suite (end-to-end validation)
+- Same test patterns as Phase 4.3 (anticipatory, stub-heavy, await implementation)
+
+**Next Steps:**
+1. Review Phase 4 test architecture (ReconciliationRegressionTests, ComponentMergeTests patterns)
+2. Define Phase 5 test infrastructure and file structure
+3. Write test stubs and scaffolding for Phase 5.1/5.2
+4. Await Amos implementation for test completion
 
 ### Phase 4 Complete — Full Validation (2026-03-08T020345Z)
 

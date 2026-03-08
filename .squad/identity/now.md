@@ -1,16 +1,18 @@
 ---
-updated_at: 2026-03-08T025710Z
-focus_area: Phase 5 — MauiReactor API Surface (Planning)
+updated_at: 2026-03-08T033412Z
+focus_area: Phase 5 — MauiReactor API Surface (IReactor + Navigation)
 active_agents:
-  - (Phase 5 team TBD)
+  - Amos (Phase 5.1/5.2 — IReactor + Navigation)
+  - Bobbie (Phase 5.3 — Anticipatory Tests)
 active_issues: 
-  - "SetEnvironment stack overflow (framework-level, blocks keyed tests)"
-  - "BuiltView type detection (awaiting David clarification)"
+  - "SetEnvironment stack overflow (framework-level, deferred to Phase 6)"
+  - "BuiltView type detection (awaiting David clarification, deferred to Phase 6)"
 ---
 
 # What We're Focused On
 
-**Phase 4: ✅ COMPLETE**
+**Phase 4: ✅ COMPLETE**  
+**Phase 5: ⚙️ IN PROGRESS**
 
 - **Phase 1** (Holden, Bobbie): Component base classes, reactive state, test infrastructure — ✅ 69 tests
 - **Phase 2** (Naomi, Bobbie): Factory methods, control generation, style builders — ✅ 55 tests + Phase 2.3
