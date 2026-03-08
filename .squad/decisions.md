@@ -84,6 +84,20 @@
 **Context:** Full test suite: 619 tests, 599 passed, 2 pre-existing failures, 18 skipped, 0 regressions. All 10 runnable ComponentMerge tests pass. All 14 ReconciliationRegression tests pass. Lockout on Amos and Holden is released.
 **Remaining (outside Phase 4):** (1) Key() stack overflow in SetEnvironment cascade blocks 8 keyed tests. (2) BuiltView traversal ambiguity documented, awaiting David clarification.
 
+### 2026-03-08T033000Z: Phase 5 Navigation Surface — Additive API
+**Owner:** Amos (Controls & API Dev)  
+**Status:** Implemented  
+**Decision:** Phase 5 navigation stays additive on top of existing `CometShell` and `NavigationView` types. `CometShell.RegisterRoute<TView>(string route)` becomes the typed route registration entry point. Typed navigation uses generic overloads (`GoToAsync<TView>`, `Navigate<TView>`) and resolves route names from the registration table. When typed parameters are supplied, navigation first assigns a matching public `Props` property (for `Component<TState, TProps>` pages), then falls back to `IQueryAttributable` using a reflected query dictionary. Shell composition is exposed through fluent wrapper methods (`AddItem`, `AddSection`, `AddContent`, `WithRoute`, etc.) plus manual `CometControls` factories for shell types.
+**Context:** Phase 5 implementation complete with 17 passing navigation tests. All three Phase 5.3 anticipatory tests (typed route registration, typed navigation no-args, typed navigation with args) expanded to 6 concrete integration tests and now passing. This keeps the Phase 5 API coherent with the newer Component/factory surface without breaking existing string-based routes or direct View navigation.
+**Impact:** Components gain a typed path for navigation data while preserving query-string interoperability for existing Shell-style pages.
+
+### 2026-03-08T041000Z: Phase 5 Complete — All 17 Navigation Tests Passing
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Approved  
+**Decision:** Phase 5.1/5.2 (Amos) + Phase 5.3 (Bobbie) are **APPROVED**. All 17 navigation tests pass: 11 ShellWrapperTests (shell lifecycle, routing, modal fallback, query params, extensions, back-button, fluent API, factories) + 6 TypedNavigationApiTests (generic registration, generic navigation, props injection, NavigationView generics). Build: 0 errors, 0 warnings.
+**Context:** Typed route registration (`CometShell.RegisterRoute<TView>`), generic navigation overloads (`GoToAsync<TView>`, `Navigate<TView>`), parameter flow (Props injection for Component pages + IQueryAttributable fallback), NavigationParameterHelper (query building, URL encoding), shell fluent API (`AddItem`, `AddSection`, `WithRoute`), factory methods (`CometControls.Navigation.cs`).
+**Remaining (outside Phase 5):** SetEnvironment stack overflow (framework-level), BuiltView type detection (awaiting David clarification). Both deferred to Phase 6.
+
 ## Governance
 
 - All meaningful changes require team consensus

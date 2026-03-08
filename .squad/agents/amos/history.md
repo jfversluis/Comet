@@ -8,6 +8,38 @@
 
 ## Learnings
 
+### Phase 5 Complete — All 17 Navigation Tests Passing (2026-03-08T041000Z)
+
+**Status:** ✅ Phase 5 APPROVED
+
+**Deliverables (Phase 5.1/5.2):**
+- Typed route registration: `CometShell.RegisterRoute<TView>(string route)` — type-validated, bidirectional lookup
+- Generic navigation overloads: `GoToAsync<TView>`, `Navigate<TView>` on CometShell, ShellExtensions, NavigationView
+- Parameter flow: Props injection for `Component<TState, TProps>` pages + `IQueryAttributable` fallback
+- NavigationParameterHelper: Query string building, URL encoding, reflection-based property mapping
+- Shell fluent API: `AddItem`, `AddSection`, `AddContent`, `WithRoute` + factory methods
+- CometControls.Navigation.cs: Factory methods for shell hierarchy types
+
+**Test Coverage:**
+- 11 ShellWrapperTests (shell lifecycle, routing, modal fallback, query params, extensions, back-button, fluent API, factories)
+- 6 TypedNavigationApiTests (generic registration, generic navigation, props injection, NavigationView generics)
+- All 3 Phase 5.3 anticipatory tests unskipped and passing (expanded to 6 concrete tests)
+- Build: 0 errors, 0 warnings
+- **Total: 17/17 passing ✅**
+
+**Architecture Insights:**
+- Typed navigation stays additive on CometShell/NavigationView (no breaking changes)
+- Generic overloads auto-resolve route names from registration table
+- Parameter injection prioritizes Component Props over IQueryAttributable
+- Shell composition via fluent wrappers + manual factories for flexibility
+- Query-string interoperability preserved for existing Shell-style pages
+
+**Remaining (Deferred to Phase 6):**
+1. SetEnvironment stack overflow (framework-level)
+2. BuiltView type detection (awaiting David clarification)
+
+**Next:** Phase 6 kickoff (Phase 6.1 NativeHost, Phase 6.2 Interop Tests).
+
 ### Phase 5 Kickoff — Navigation & IReactor (2026-03-08T033412Z)
 
 **Status:** ⚙️ Phase 5.1/5.2 ACTIVE

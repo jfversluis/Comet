@@ -8,6 +8,42 @@
 
 ## Learnings
 
+### Phase 5 Closure & Phase 6 Kickoff — Inbox Merged (2026-03-08T041000Z)
+
+**Status:** ✅ COMPLETE
+
+**Task:** Merge Phase 5 approval inbox files into decisions.md, write orchestration + session logs, update agent histories, update team identity, prepare git commit.
+
+**Actions Completed:**
+1. ✅ Orchestration logs written (Phase 5 approval, Phase 6 kickoff)
+2. ✅ Session log written (Phase 5 closure + Phase 6 kickoff)
+3. ✅ Inbox decisions merged into decisions.md (amos-phase5-navigation-surface.md, bobbie-phase5-review-verdict.md)
+4. ✅ Agent histories updated (Amos + Bobbie + Scribe)
+5. ✅ Team identity updated (.squad/identity/now.md)
+6. ✅ Git changes staged (.squad/ modifications)
+
+**Files Created:**
+- `.squad/orchestration-log/2026-03-08T041000Z-phase5-approved.md`
+- `.squad/orchestration-log/2026-03-08T041100Z-phase6-kickoff.md`
+- `.squad/log/2026-03-08T041000Z-phase5-closure.md`
+
+**Files Modified:**
+- `.squad/decisions.md` (3 Phase 5 decisions merged)
+- `.squad/agents/amos/history.md` (Phase 5 completion entry)
+- `.squad/agents/bobbie/history.md` (Phase 5 closure entry)
+- `.squad/agents/scribe/history.md` (this file)
+- `.squad/identity/now.md` (Phase 6 status update)
+
+**Key Context:**
+- Phase 5 complete with 17/17 navigation tests passing
+- Phase 5.1/5.2 (Amos): Typed route registration, generic navigation, parameter flow, NavigationParameterHelper
+- Phase 5.3 (Bobbie): 15 existing tests + 3 anticipatory tests expanded to 6 concrete tests
+- Outstanding deferred to Phase 6: SetEnvironment stack overflow, BuiltView type detection
+- Phase 6 parallel work: Amos Phase 6.1 (NativeHost), Bobbie Phase 6.2 (Interop Tests)
+- No blockers on Phase 6 start
+
+**Next:** Git commit with .squad/ changes, team begins Phase 6 parallel work.
+
 ### Phase 5 Mid-Flight — Bobbie Phase 5.3 Complete (2026-03-08T034039Z)
 
 **Status:** ✅ Bobbie Phase 5.3 orchestration and session logging complete

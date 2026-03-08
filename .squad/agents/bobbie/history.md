@@ -8,6 +8,36 @@
 
 ## Learnings
 
+### Phase 5 Complete — All 17 Navigation Tests Passing (2026-03-08T041000Z)
+
+**Status:** ✅ Phase 5 APPROVED — CLOSURE
+
+**Verdict:** Phase 5.1/5.2 (Amos) + Phase 5.3 (Bobbie) APPROVED. All 17 navigation tests pass.
+
+**Phase 5.3 Final Deliverable:**
+- Original 15 passing tests from Phase 5.3 kickoff
+- 3 Phase 5.3 anticipatory tests expanded to 6 concrete integration tests (all passing)
+- 2 test files consolidated: ShellWrapperTests (11 tests), TypedNavigationApiTests (6 tests)
+- Build: 0 errors, 0 warnings
+
+**Test Coverage (17 Total):**
+- 11 ShellWrapperTests: shell lifecycle, routing, modal fallback, query params, extensions, back-button, fluent API, factories
+- 6 TypedNavigationApiTests: generic registration, generic navigation, props injection, NavigationView generics
+- All previously-skipped anticipatory tests now passing ✅
+
+**Phase 5.1/5.2 Summary (Amos):**
+- Typed route registration: `CometShell.RegisterRoute<TView>(string route)` — type-validated, bidirectional lookup
+- Generic navigation overloads: `GoToAsync<TView>`, `Navigate<TView>` on CometShell, ShellExtensions, NavigationView
+- Parameter flow: Props injection for Component<TState, TProps> pages + IQueryAttributable fallback
+- NavigationParameterHelper: Query string building, URL encoding, reflection-based property mapping
+- Shell fluent API: AddItem, AddSection, AddContent, WithRoute + factory methods
+
+**Remaining (Deferred to Phase 6):**
+1. SetEnvironment stack overflow (framework-level)
+2. BuiltView type detection (awaiting David clarification)
+
+**Next:** Phase 6 kickoff (Phase 6.1 NativeHost, Phase 6.2 Interop Tests).
+
 ### Phase 5 Complete — Anticipatory Tests (2026-03-08T034039Z)
 
 **Status:** ✅ Phase 5.3 COMPLETE
