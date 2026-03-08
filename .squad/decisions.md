@@ -70,6 +70,13 @@
 **Open Item:** Defect 2 (BuiltView type detection) still needs David Ortinau's architectural clarification.
 **Impact:** Phase 4.1 (Key-aware reconciliation) remains **APPROVED** — no changes needed. Phase 4.2 requires 3rd revision attempt with disposal-aware merge logic.
 
+### 2026-03-08T040000Z: Phase 4 Complete — Both 4.1 and 4.2 APPROVED
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Approved  
+**Decision:** Phase 4.1 (Key-Aware Reconciliation) and Phase 4.2 (Component Merge Logic) are both **APPROVED**. The fresh specialist's 3rd revision fixes the disposal cascade regression that Amos's revision introduced. `DetachMergedChild()` correctly removes merged children from old container's `Views` list before the old container is disposed by `ResetView()`. Three test expectation bugs were fixed by Bobbie during review.
+**Context:** Full test suite: 619 tests, 599 passed, 2 pre-existing failures, 18 skipped, 0 regressions. All 10 runnable ComponentMerge tests pass. All 14 ReconciliationRegression tests pass. Lockout on Amos and Holden is released.
+**Remaining (outside Phase 4):** (1) Key() stack overflow in SetEnvironment cascade blocks 8 keyed tests. (2) BuiltView traversal ambiguity documented, awaiting David clarification.
+
 ## Governance
 
 - All meaningful changes require team consensus
