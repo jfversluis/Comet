@@ -1,11 +1,15 @@
 ---
-updated_at: 2026-03-08T061500Z
-focus_area: Phase 9 ✅ COMPLETE & APPROVED — Roadmap through Phase 9 now closed. No active phase. Ready for Phase 10 planning.
+updated_at: 2026-03-08T165300Z
+focus_area: Phase 10 ⏳ ACTIVE — all-sample evolution and evidence-backed runtime verification is underway; P0 is reviewer-gated at render-progress, not end-to-end signoff.
 active_agents:
-  - All agents released (no active phase)
-active_issues: 
-  - "SetEnvironment stack overflow (framework-level, deferred to Phase 10+)"
-  - "BuiltView type detection (awaiting David clarification, deferred to Phase 10+)"
+  - "Holden — root-view DEBUG host/runtime-host revision for true interactive validation"
+  - "Amos — next sample migration wave outside the rejected P0 validation artifact"
+  - "Scribe — logging reviewer gates, decisions, and wave progress"
+active_issues:
+  - "P0 runtime validation only partially approved: launch/render evidence exists, but interactive flow proof is still blocked"
+  - "Shared DEBUG host still wraps CometApp roots in CometHost for MyApp/BaristaApp"
+  - "MauiDevFlow tap/interaction remains unreliable when the tree is hidden/disabled"
+  - "gh issue board checks are blocked until a default gh repo is configured in this checkout"
 ---
 
 # What We're Focused On
@@ -15,8 +19,8 @@ active_issues:
 **Phase 6: ✅ COMPLETE**  
 **Phase 7: ✅ COMPLETE (Fresh Specialist Revision Approved)**  
 **Phase 8: ✅ COMPLETE (All Lanes Approved)**  
-**Phase 9: ✅ COMPLETE & APPROVED (Samples & Validation Infrastructure)**
-**Phase 10: ⏳ Pending Planning**
+**Phase 9: ✅ COMPLETE & APPROVED (Samples & Validation Infrastructure)**  
+**Phase 10: ⏳ ACTIVE (All-Sample Evolution & Verification)**
 
 - **Phase 1** (Holden, Bobbie): Component base classes, reactive state, test infrastructure — ✅ 69 tests
 - **Phase 2** (Naomi, Bobbie): Factory methods, control generation, style builders — ✅ 55 tests
@@ -45,28 +49,37 @@ active_issues:
   - **Validation summary:** Migration guide updated with explicit MAUI 10 API coverage. Mixed-surface sample design validated. Phase 9 wrapper script passes. Build chain green.
   - **Patterns locked:** Mixed-surface samples with incremental adoption path. Validator rule tuning for multi-pattern migration. Control-type specificity for deprecated API checks.
 
-**Cumulative Results (Phases 1–9):**
+**Current Phase 10 State:**
+- The mission is now full runtime verification and modernization for **all 10 samples**, with retained evidence and side-by-side original vs evolved comparisons.
+- `CometMauiApp` and `CometBaristaNotes` are the P0 runtime lane.
+- Bobbie has issued a **PARTIAL APPROVAL** only: render/launch-progress evidence is acceptable, but interactive end-to-end flow validation is not yet approved.
+- Holden owns the next P0 revision because the rejected validation artifact cannot go back to Amos for the next revision cycle.
+- Amos is free to continue the next migration wave on other samples in parallel.
+- Baseline build output is green for the main framework/sample chain, but runtime interaction remains the gating problem.
+
+**Cumulative Results (Phases 1–9 + current Phase 10 progress):**
 - **Total Tests:** 640+ (625+ passing, 2 pre-existing failures, 13+ skipped)
 - **Test Coverage:** 313+ new tests written across 8 phases; Phase 9 validation harness complete
 - **Build Status:** 0 errors, 0 warnings
 - **Regressions:** 0 ✅
-- **Samples:** 2 reference samples (CometMauiApp, CometBaristaNotes) + migration guide complete
-- **Documentation:** Migration guide with explicit MAUI 10 API coverage
+- **Samples:** P0 runtime lane actively under review; broader all-sample wave in progress
+- **Documentation:** Migration guide plus template modernization work in place
 
-**Phase 9 Final Status (Dual Lanes Approved):**
-- Lane 1 (Amos): ✅ Sample coverage for Phase 8 controls expanded; documentation updated; verified on macCatalyst
-- Lane 2 (Bobbie): ✅ Validation infrastructure delivered; regression detection baseline documented; wrapper script passes
-- Closure gates: ✅ All passed; patterns locked for future phases
-- Production readiness: Samples and migration guide ready for Phase 10 planning
+**Phase 10 Working Rules:**
+- No sample is called verified without end-to-end exercised flows and retained evidence.
+- Preferred runtime path is `maui-ai-debugging` + MauiDevFlow; Appium is fallback only.
+- Hidden/disabled live roots and screenshot-only proof count as progress, not final approval.
+- Reviewer rejection lockout is active on the rejected P0 validation artifact.
 
 ---
 
-**Outstanding (Deferred to Phase 10+):**
-1. SetEnvironment stack overflow — Framework-level issue
-2. BuiltView type detection — Awaiting architectural decision
+**Outstanding (Active in Phase 10):**
+1. Root-view DEBUG hosting for Comet samples — needed for true interactive validation
+2. MauiDevFlow interaction parity — tree visibility/enabled state and reliable tap behavior
+3. P0 reviewer closure for `CometMauiApp` and `CometBaristaNotes`
+4. Remaining sample modernization/verification waves (`CometFeatureShowcase`, `CometTaskApp`, `CometAllTheLists`, and then broader sample set)
 
-**Roadmap Status:** Phase 1–9 complete and approved. No active phase. Ready for Phase 10 planning.
-
+**Roadmap Status:** Phase 1–9 complete and approved. Phase 10 is active and remains open until all-sample runtime verification is evidence-backed.
 
 
 

@@ -302,6 +302,44 @@ Component hot reload with MauiHotReloadHelper registration, TransferState() for 
 - **Files created**: `src/Comet/Styles/ThemeExtensions.cs`, `src/Comet/Styles/DefaultThemeStyles.cs`
 - **Files modified**: `src/Comet/Styles/Theme.cs` (added `DefaultThemeStyles.Register(this)` call in `Apply()`), un-skipped 13 Phase 3.1 test stubs across ThemeBaseTests/ThemeColorsTests/ControlStyleTests, added 21 new integration tests in `ThemeIntegrationTests.cs`
 
+### Legacy Sample Migration Wave — TaskApp + AllTheLists (2026-03-08T16:55:00Z)
+
+**Status:** ✅ **NEXT WAVE STARTED**
+
+**Chosen samples:**
+- `sample/CometTaskApp` for the deeper evolved-API pass
+- `sample/CometAllTheLists` for shell/list modernization with low churn
+
+**What changed:**
+- `CometTaskApp` now uses `CollectionView` for the main task surface, keeps typed navigation at the row level, and upgrades the add/detail flows toward the evolved surface:
+  - `AddTaskPage` moved to `Component<AddTaskPageState>`
+  - `TaskDetailPage` moved to `Component<TaskDetailState, TaskDetailProps>`
+  - detail navigation is now `Navigation.Navigate<TaskDetailPage>(new TaskDetailProps { TaskId = ... })`
+  - sample-only helper methods were added to `AppState` so create/update/delete/reset flows are explicit instead of page-local mutations
+- `CometAllTheLists` now boots as a direct `CometApp` with `TabView` + `NavigationView` tabs instead of MAUI Shell-hosted Comet pages, and the inbox sample moved from `ListView` to `CollectionView`.
+- Both touched samples dropped stale `Microsoft.Maui.Controls.Compatibility` package references.
+- Docs were updated in `docs/migration-guide.md` and `README.md` so the sample map now points readers at TaskApp for typed-props navigation and AllTheLists for current list/shell patterns.
+
+**Validation:**
+- `dotnet build src/Comet.SourceGenerator/Comet.SourceGenerator.csproj -c Release` ✅
+- `dotnet build src/Comet/Comet.csproj -c Release` ✅
+- `dotnet build tests/Comet.Tests/Comet.Tests.csproj -c Release` ✅
+- `COMET_PHASE9_MIGRATION_GUIDE=... dotnet test tests/Comet.Tests/Comet.Tests.csproj --no-build -c Release --filter "FullyQualifiedName=Comet.Tests.Phase9SampleDocumentationValidationTests.MigrationGuidePassesPhase9GateWhenConfigured"` ✅
+- `dotnet build sample/CometTaskApp/CometTaskApp.csproj -c Debug -f net10.0-maccatalyst` ✅
+- `dotnet build sample/CometAllTheLists/CometAllTheLists.csproj -c Debug -f net10.0-maccatalyst` ✅
+- Both samples launched on Mac Catalyst and registered live MauiDevFlow agents (`Comet Task Manager` on port `10226`, `CometAllTheLists` on port `10225`) ✅
+
+**Runtime findings:**
+- Live Mac Catalyst launch was confirmed for both samples via process start + MauiDevFlow agent connection + runtime tree inspection.
+- The live trees showed the expected post-migration structure:
+  - TaskApp root includes `CollectionView<TaskItem>` on the task page
+  - AllTheLists root is a `TabView` with `NavigationView` children instead of MAUI Shell content templates
+- Deeper UI interaction remained blocked in this session because the desktop-hosted Mac Catalyst windows stayed `[hidden] [disabled]` in MauiDevFlow even after activation, and Appium Mac2 could not complete attachment (`WebDriverAgentMac` never became proxy-ready for `/status`).
+
+**Reusable takeaways:**
+- For pure Comet samples, collapsing MAUI Shell host wrappers back to `CometApp` + `TabView` is a clean first migration move before touching individual pages.
+- For legacy list demos, `ListView` → `CollectionView` is the safest first contract upgrade; pair it with one typed-props detail page to make the sample teach both current list and current navigation patterns in one pass.
+
 ### Phase 3 Complete (2026-03-08T010500Z)
 
 **Status:** Phase 3 (Theme System) implementation complete. Theme system is fully wired with auto-registered control styling defaults. All 578 tests passing (2 pre-existing hot reload failures, 15 skipped, 595 total). Build clean.
@@ -537,3 +575,37 @@ Debug and fix CometBaristaNotes iOS runtime crash (CALayerInvalidGeometry with N
 **Timeline:** High priority. Unblocks Bobbie's remaining 9 sample validations.
 
 **Next:** Fix iOS layout crash, rerun validation, capture fresh evidence, notify Bobbie of completion.
+
+---
+
+## Phase 10 Wave 1 Review Gate — Partial Approval & Lockout (2026-03-08T16:44:48Z)
+
+**Status:** 🔒 LOCKED OUT — Cannot author next revision
+
+**Reviewer Decision:** Bobbie (Test Engineer) issued **PARTIAL APPROVAL ONLY** on P0 runtime-validation evidence.
+
+**What Passed:**
+- ✅ CometMauiApp launch baseline + visible render evidence approved
+- ✅ CometBaristaNotes macCatalyst screenshots show progress
+
+**What Failed:**
+- ❌ Interactive end-to-end flow evidence NOT captured on either sample
+- ❌ CometBaristaNotes iOS launch still crashes (CALayerInvalidGeometry)
+- ❌ Architectural mismatch in shared DEBUG host (CometApp in CometHost)
+
+**Reviewer Gate Applied:**
+Per squad rule: When reviewer issues partial approval, agent cannot author the next revision. Amos remains **in lockout until Holden completes the architecture fix**.
+
+**Why Lockout:**
+- Next revision requires fixing shared runtime-debug hosting infrastructure (CometApp vs CometHost architecture)
+- This is architecture work (Holden's domain), not sample-storytelling polish (Amos's domain)
+- Bobbie explicitly routed next revision to Holden
+
+**Impact:**
+- ✅ Amos's earlier P0 claim is not reviewer-approved (acknowledged)
+- ✅ Amos remains on hold during Wave 2 (Holden fixes architecture, Bobbie validates remaining 9 samples)
+- ⏳ Amos can resume sample work after Holden's fix lands and Bobbie revalidates
+
+**Reference:**
+- Reviewer verdict: `.squad/decisions.md` — "P0 Runtime Review — Partial Approval Only" (2026-03-08T164448Z)
+- Orchestration: `.squad/log/20260308T164448Z-bobbie-p0-runtime-review-gate.md`

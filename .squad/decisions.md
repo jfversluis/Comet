@@ -438,3 +438,27 @@ The remaining sample migration wave still needs a clean, shared reference for "w
 **Evidence:** iOS simulator launches reproduced both issues with stack traces and geometry error details.
 **Impact:** Future sample passes treat runtime-safe composition as part of the sample contract (not just compile correctness). Interop-heavy pages can still be demonstrated, but they should enter through explicit navigation so the stable sample shell stays launchable on real runtimes.
 
+### 2026-03-08T164448Z: P0 Runtime Review — Partial Approval Only
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Affirmed  
+**Decision:** The current P0 runtime-validation state of `sample/CometMauiApp` and `sample/CometBaristaNotes` is **PARTIAL APPROVAL ONLY**. Approve only the claims that are directly backed by retained launch/render evidence; do **not** approve interactive end-to-end flow verification.
+
+**Approved Claim Boundaries:**
+- **CometMauiApp:**
+  - ✅ Launch-only evidence: approved
+  - ✅ Visible render evidence: approved
+  - ❌ Interactive end-to-end flow evidence: NOT approved
+- **CometBaristaNotes:**
+  - ❌ Launch-only evidence: NOT approved (baseline iOS launch still crashes)
+  - ✅ Visible render evidence: approved ONLY as render-progress/screenshots (not as usable-flow proof)
+  - ❌ Interactive end-to-end flow evidence: NOT approved
+
+**Context:** The shared DEBUG host still uses `UseCometSampleDebugHost<TView>()` and wraps `new TView()` in `new CometHost(rootView)`. Both samples pass `MyApp` / `BaristaApp` (which are `CometApp` roots) as `TView`, creating an architectural mismatch: `CometApp` is the MAUI `IApplication` entry point, while `CometHost` is designed for embedding a Comet view inside an existing MAUI page. Retained failures align with this shape:
+- **CometMauiApp:** `Application.Current was null after 30 retries`
+- **CometBaristaNotes:** Live tree shows `Window [hidden] [disabled]` and root `TabView [hidden] [disabled]`
+
+**Impact:**
+- Raw Mac Catalyst screenshots are useful progress artifacts but do not replace retained flow evidence.
+- Amos's earlier P0 runtime-validation claim is **not reviewer-approved**. Per squad rule, Amos must **not** author the next revision.
+- Route the next revision to **Holden** (Lead Architect) — remaining blocker is shared runtime-debug hosting / visual-tree / interaction infrastructure, not sample-storytelling polish.
+

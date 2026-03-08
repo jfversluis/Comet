@@ -24,6 +24,7 @@ Use this when a Comet feature needs sample and documentation coverage, especiall
 ### Prefer runtime-proven tab shells in samples
 - Use `TabView` for sample tab layouts unless `TabbedPage` handler wiring is known to be active on the target runtime.
 - Wrap each tab root in `NavigationView` when you still need typed in-tab navigation flows.
+- If a legacy sample is still a pure Comet app but routes everything through a MAUI `Shell` + `CometHost` wrapper, collapse it back to `CometApp` + `TabView` before doing deeper page migrations. Keep the MAUI host wrapper only when the sample is explicitly teaching MAUI hosting or interop seams.
 - Keep interop-heavy pages off eagerly-created root tabs when they bring in native/third-party UI that is better entered through an explicit navigation flow.
 - For sample list rows inside `ScrollView`-driven pages, prefer simple `HStack`/`VStack` card rows over `Grid` if iOS runtime validation shows `CALayerInvalidGeometry` crashes during first layout.
 
@@ -37,8 +38,14 @@ Use this when a Comet feature needs sample and documentation coverage, especiall
 
 ### Preserve MAUI-current guidance in touched samples
 - Avoid `Compatibility` APIs in refreshed sample code.
+- Removing stale `Microsoft.Maui.Controls.Compatibility` package references is fair game when the refreshed sample no longer depends on MAUI compatibility hosting.
 - Prefer MAUI 10-safe controls (`Border`, async dialog APIs, `MainThread`, etc.).
 - If reused sample code emits warnings directly related to current-platform guidance, clean them while you are already in that sample.
+
+### Modernize list-heavy samples with the smallest contract change first
+- Replace `ListView` with `CollectionView` before attempting deeper list UX rewrites.
+- Preserve row actions with existing `.OnTap(...)` handlers or `ItemSelected` callbacks so the sample keeps its behavior while moving onto the current MAUI-safe control.
+- In richer samples, pair that list swap with one typed-props detail page so the sample teaches both current list primitives and current navigation contracts in the same pass.
 
 ### Validate in repository order
 - Build in the documented sequence:

@@ -38,6 +38,15 @@ Theme system validated with 34 tests. Confirmed concrete `Theme` base class, `Th
 
 ## Learnings
 
+### P0 Runtime Review — Render Progress Is Not Flow Approval (2026-03-08T164448Z)
+
+**Status:** ⚠️ PARTIAL APPROVAL ONLY
+
+- **Code/evidence alignment:** The shared DEBUG host still uses `UseCometSampleDebugHost<TView>() where TView : Comet.View, new()` and wraps `new TView()` in `new CometHost(rootView)`. Both `sample/CometMauiApp/MyApp.cs` and `sample/CometBaristaNotes/MauiProgram.cs` still pass `CometApp` types (`MyApp`, `BaristaApp`) as `TView`, so the runtime-debug lane is still hosting an app object as a child Comet view instead of as the actual MAUI `IApplication`.
+- **Why Bobbie will not approve full P0 runtime validation:** The retained evidence matches the broken hosting shape. `CometMauiApp` still carries the Mac Catalyst failure `Application.Current was null after 30 retries`, while the retained live BaristaNotes tree still shows `Window [hidden] [disabled]` and root `TabView [hidden] [disabled]`. That means the current state supports render progress, not end-to-end flow verification.
+- **Claims tightened:** The sample-validation report now explicitly marks the newer raw Mac Catalyst screenshots as render-progress artifacts only. They may support launch/render discussion, but they are not approval-grade interaction evidence until taps succeed and the flow checklist has rerun evidence.
+- **Reviewer routing:** Amos's earlier P0 runtime-validation claim/artifact is not reviewer-approved. Per squad rule, Amos must not author the next revision of that validation artifact. The next revision should go to Holden because the remaining blocker is shared runtime-debug hosting / visual-tree / interaction infrastructure.
+
 ### Live BaristaNotes Follow-up — Broker Bound, Root Still Hidden (2026-03-08T163155Z)
 
 **Status:** ✅ evidence corrected without overclaiming
@@ -891,3 +900,48 @@ Continue runtime validation on 9 remaining samples (CometMauiApp, CometFeatureSh
 **Wave 1 Status:** ✅ Complete — Infrastructure operational, first blocker identified and logged.  
 **Wave 2 Status:** 🟡 In Progress — Awaiting Amos' iOS fix; continuing validation on remaining 9 samples.  
 **Next:** Validate remaining 9 samples, await Amos' iOS fix and rerun CometBaristaNotes, consolidate evidence, generate closure report.
+
+---
+
+## Phase 10 Wave 1 Review & Lockout Enforcement (2026-03-08T16:44:48Z)
+
+**Status:** ✅ Review complete; Wave 2 ready
+
+**Role:** Reviewer — Evaluated Amos's P0 runtime-validation evidence and applied partial approval.
+
+**Decision Issued:** P0 Runtime Review — **PARTIAL APPROVAL ONLY**
+
+**Approved Claims:**
+- ✅ CometMauiApp launch baseline captured
+- ✅ CometMauiApp visible render evidence captured
+- ✅ CometBaristaNotes macCatalyst progress screenshots (render-only, not flow-proof)
+
+**Rejected Claims:**
+- ❌ Interactive end-to-end flow evidence NOT captured on either sample
+- ❌ CometBaristaNotes iOS launch still crashes (CALayerInvalidGeometry crash + logs retained)
+- ❌ Architectural mismatch in shared DEBUG host (CometApp in CometHost)
+
+**Lockout Applied:** ✅ Amos locked out (per squad rule); cannot author next revision
+
+**Router Decision:** Holden (Lead Architect) owns next revision — architecture fix required, not sample-storytelling polish
+
+**Wave 2 Status:** 🟡 In Progress
+- ⏳ Awaiting Holden's architecture fix
+- 🚀 Ready to revalidate CometMauiApp + CometBaristaNotes once fix lands
+- ⏭️ Queued to validate remaining 9 samples (CometFeatureShowcase, CometAllTheLists, CometTaskApp, CometProjectManager, CometWeather, CometStressTest, Comet.Sample, MauiReference, CometMauiApp continuation)
+
+**Evidence Retained:**
+- CometMauiApp: Launch logs, broker port checks, render baseline screenshot
+- CometBaristaNotes iOS: CALayerInvalidGeometry crash logs, failure screenshot, call stack
+- CometBaristaNotes macCatalyst: Progress screenshots, live tree snapshots (hidden/disabled root)
+
+**Key Learnings:**
+- Broker visibility alone is insufficient; requires full app session (Application.Current resolved)
+- Hidden/disabled root UI tree means flows remain unverified
+- Raw screenshots show progress but do not replace interactive flow evidence
+- Architectural mismatches between CometApp entry point and CometHost embedding surface manifest as visible runtime failures
+
+**Reference:**
+- Reviewer verdict: `.squad/decisions.md` — "P0 Runtime Review — Partial Approval Only" (2026-03-08T164448Z)
+- Orchestration: `.squad/log/20260308T164448Z-bobbie-p0-runtime-review-gate.md`
+- Session log: `.squad/log/20260308T164448Z-session-reviewer-gate-handoff.md`

@@ -43,6 +43,11 @@ Use this when validating Comet samples through real runtime launches and you nee
 - Retain both the screenshot and a short tree/status text artifact so later reruns know the app progressed past startup but still never exposed a usable UI.
 - Example: `CometBaristaNotes` reached broker port `10224`, but the retained tree only showed `Window [hidden] [disabled]` and root `TabView [hidden] [disabled]`; all end-user flows stayed blocked.
 
+### Headless Mac Catalyst launches need a separate interaction verdict
+- On desktop-hosted Mac Catalyst runs, you can see a healthy process plus a live MauiDevFlow agent and still get only hidden/disabled trees because the app never becomes an interactable foreground window in the current session.
+- Treat that as "launch confirmed, interaction blocked" rather than full runtime verification.
+- If Appium Mac2 also fails to attach (for example, WebDriverAgentMac crashes before `/status` is ready), record both blockers together instead of over-claiming the sample as exercised.
+
 ### Fixed bugs require rerun evidence
 - Discovery evidence alone is not enough.
 - If an issue is marked fixed, retain post-fix logs/screenshots and attach them to the same issue entry before promoting the sample to `runtime_verified`.

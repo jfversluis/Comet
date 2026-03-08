@@ -296,3 +296,44 @@ Hot reload registration / cleanup needs lifecycle awareness. Focused tests pass 
 
 **Next:** Monitor Amos's blocker fix; validate remaining 9 samples; report Wave 1 + Wave 2 closure to coordinator.
 
+
+---
+
+## Phase 10 Wave 1 Handoff — Next Debug-Host/Runtime-Host Revision (2026-03-08T16:44:48Z)
+
+**Status:** 🎯 Own next revision (Wave 2 focus)
+
+**From:** Bobbie (Test Engineer) — P0 runtime-validation reviewer gate
+
+**Assignment:** Implement the next revision of the shared DEBUG host / runtime-host architecture to fix the architectural mismatch between `CometApp` (MAUI `IApplication` entry point) and `CometHost` (designed for embedding Comet views inside existing MAUI pages).
+
+**Issue Summary:**
+- Both `sample/CometMauiApp` and `sample/CometBaristaNotes` pass `CometApp` roots (`MyApp` / `BaristaApp`) to `UseCometSampleDebugHost<TView>()`, which wraps them in `new CometHost(rootView)`.
+- This mismatch causes:
+  - CometMauiApp: `Application.Current was null after 30 retries`
+  - CometBaristaNotes: Live tree shows `Window [hidden] [disabled]` and root `TabView [hidden] [disabled]`
+
+**Architecture Design Required:**
+1. Either route `CometApp` roots through a different entry point (not `CometHost`)
+2. Or refactor `CometHost` to handle both `CometApp` and embedded-view use cases
+3. Or create a dedicated debug host for `CometApp` that doesn't wrap in `CometHost`
+
+**Acceptance Criteria:**
+- ✅ Architectural mismatch resolved (clear path for `CometApp` vs embedded Comet views)
+- ✅ Both samples use the correct entry point for their app type
+- ✅ Runtime-debug hosting works: `Application.Current` resolves, Windows visible & enabled
+- ✅ Evidence: Fresh screenshots showing visible/enabled root UI, runtime logs clean, UI tree valid
+- ✅ Bobbie can revalidate both samples and transition from `runtime_blocked` → `runtime_verified`
+
+**Related Decisions:**
+- P0 Runtime Review (Partial Approval Only) — Router explicitly assigned to Holden for architecture fix
+- Hidden/Disabled Live Root Means Runtime Blocked — Tracks root visibility/enabled state
+- Runtime Evidence Follow-up — Tracks Application.Current + agent session state
+
+**Timeline:** High priority. Unblocks Amos from lockout and Bobbie's remaining 9 sample validations.
+
+**Next:** Fix architecture, notify Bobbie when ready for revalidation.
+
+**Reference:**
+- Reviewer verdict: `.squad/decisions.md` — "P0 Runtime Review — Partial Approval Only" (2026-03-08T164448Z)
+- Orchestration: `.squad/log/20260308T164448Z-bobbie-p0-runtime-review-gate.md`
