@@ -176,3 +176,42 @@
 - **Orchestration entries created:** `.squad/orchestration-log/2026-03-08T022000Z-bobbie-rejection.md` and `.squad/orchestration-log/2026-03-08T022000Z-amos-handoff.md`
 - **Session log:** `.squad/log/2026-03-08T022000Z-phase4-rejection-handoff.md` documents approval, rejection, and revision path
 - **Cross-agent history updates:** Holden and Amos histories updated with rejection verdict and lockout context
+
+### Phase 4.2 Re-review — Amos Revision REJECTED (2026-03-08T023346Z)
+
+- **Amos's changes:** Uncommitted working tree modifications to `Component.cs` and `DatabindingExtensions.cs`
+- **What works:** Base Component implements IComponentWithState ✅, container child replacement logic ✅, instance reuse (Assert.Same passes) ✅
+- **What broke:** Old parent container disposal cascades to merged children, destroying their state/props
+  - `ResetView()` line 271: `oldView?.Dispose()` → `ContainerView.Dispose()` line 212 iterates children → merged Component gets `_props = default`, `_state = default`
+  - Two previously-passing tests regressed: `ComponentPropsUpdateDetected`, `ComponentDiffWithSameTypeButDifferentProps`
+- **Score change:** 8/13 → 7/13 (net -1 = regression)
+- **Lockout:** Both Amos (this revision) and Holden (original author) locked out. New specialist required.
+- **Key architecture learning:** When merged children move from old→new container, they must be detached from old container BEFORE old container is disposed. The simplest fix: after `mutableContainer[i] = merged`, remove `merged` from old container's Views list.
+- **Defect 2 (BuiltView):** Still needs David's clarification. Not changed by Amos.
+- **NestedComponentDiff:** Instance reuse now works (Assert.Same passes at line 228). Remaining failure is RenderCount assertion at line 230 — test expectation issue, not a code defect.
+
+### Phase 4.2 Second Rejection — Documentation Complete (2026-03-08T023346Z)
+
+**Status:** ❌ Phase 4.2 Amos revision REJECTED (2nd time). Amos + Holden locked out.
+
+**Review verdict finalized:**
+- Amos fixed Defect 1 (container child replacement logic) ✅
+- Amos introduced Defect 3 (disposal cascade regression) ❌ — 2 tests regressed
+- Both regressions traced to disposal timing: merged children must be detached from old container BEFORE old container disposes
+
+**Lockout enforced:**
+- Amos: Locked (rejected revision author per squad rules)
+- Holden: Locked (original Phase 4.2 author, locked from 1st rejection)
+
+**Handoff:**
+- Coordinator to assign fresh specialist for 3rd revision
+- Specialist scope: disposal-aware merge logic (detach before dispose pattern)
+- Phase 4.1 remains approved — no changes needed
+
+**Orchestration logs:**
+- `.squad/orchestration-log/2026-03-08T023346Z-bobbie-phase4-rereview.md`
+- `.squad/orchestration-log/2026-03-08T023346Z-specialist-assignment.md`
+
+**Session log:** `.squad/log/2026-03-08T023346Z-phase4-second-rejection-handoff.md`
+
+**Decision merged:** Phase 4.2 2nd rejection decision written to `.squad/decisions.md`

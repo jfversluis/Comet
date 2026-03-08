@@ -53,12 +53,22 @@
 **Context:** Phase 4.1 implemented. Key-aware diffing preserves view instances across reorders, improving state and animation fidelity. Dictionary pre-builds amortize cost across all children (O(n) vs O(n²) worst-case). String keys chosen over object for simpler equality and debugging. 100% backward compatible — unkeyed lists diff identically to before.
 **Impact:** Dynamic lists (e.g., todo items, chat messages) reuse view instances when keyed, preserving handler state and animations. Non-component views and unkeyed lists see zero regression. Hot reload state transfer works transparently via environment mechanism.
 
-### 2026-03-08T022000Z: Phase 4.2 Component Merge Logic — REJECTED
+### 2026-03-08T022000Z: Phase 4.2 Component Merge Logic — REJECTED (1st Review)
 **Owner:** Bobbie (Test Engineer)  
 **Status:** Rejected (Revision assigned to Amos)  
 **Decision:** Phase 4.2 (Component-to-Component merge logic) is **REJECTED** due to two critical defects: (1) Nested component instance preservation broken — merged component not written back to parent container children collection after merge, (2) Component vs BuiltView type detection broken — returns rendered output instead of Component wrapper. Phase 4.1 (key-aware reconciliation) is **APPROVED**.
 **Context:** Validation identified that TryMergeComponents() returns the merged (old) instance correctly, but the parent container's child list is never updated to reference the merged instance. The diff algorithm walks the tree but doesn't modify containers in-place. Root cause: missing logic to swap new instance for merged instance in container children collection. Defect severity: CRITICAL — breaks all nested Component scenarios.
 **Impact:** Nested components are recreated on every parent render instead of being reused. BuiltView type checking fails, breaking component-based diffing. Revision ownership to Amos; Holden locked per reviewer rules.
+
+### 2026-03-08T023346Z: Phase 4.2 Component Merge Logic — REJECTED (2nd Review)
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Rejected (Fresh specialist required; Amos + Holden locked)  
+**Decision:** Amos's Phase 4.2 revision is **REJECTED** (2nd rejection). The container child replacement logic is correct but introduces a disposal regression — old parent containers dispose merged children, destroying their state and props before handlers finish executing.
+**Context:** Amos fixed Defect 1 (container child replacement) correctly; merged component is now written to parent container. However, the old container is still disposed after being replaced, and `ContainerView.Dispose()` iterates remaining children (which includes the merged component). This causes the merged component to dispose prematurely, losing state (`_props = default`, `_state = default`). Two previously-passing tests regressed: `ComponentPropsUpdateDetected`, `ComponentDiffWithSameTypeButDifferentProps`.
+**Required Fix:** After `mutableContainer[i] = merged` in `DiffUpdate`, detach merged component from old container via `oldContainer.Views.Remove(merged)` to prevent disposal cascade. Simplest approach: modify the container child replacement logic to remove the merged child from the old container's Views list before the old container is disposed.
+**Lockout:** Both Amos (rejected revision author) and Holden (original Phase 4.2 author) are locked out per squad rules. Coordinator must assign a fresh specialist.
+**Open Item:** Defect 2 (BuiltView type detection) still needs David Ortinau's architectural clarification.
+**Impact:** Phase 4.1 (Key-aware reconciliation) remains **APPROVED** — no changes needed. Phase 4.2 requires 3rd revision attempt with disposal-aware merge logic.
 
 ## Governance
 

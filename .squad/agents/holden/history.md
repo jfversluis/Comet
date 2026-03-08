@@ -163,3 +163,26 @@
 - **Partial approval:** Phase 4.1 (key-aware reconciliation) fully approved and passing all tests.
 - **Test results**: ComponentMergeTests 10/13 pass (2 failures for target defects, 1 blocked), ReconciliationRegressionTests 11/13 pass (2 skipped pre-existing), KeyAwareReconciliationTests 1/13 pass (12 blocked pre-existing framework bug).
 - **Lesson learned**: Write-back pattern critical for instance reuse — diff walk must mutate containers when merging components.
+
+### Phase 4.2 — Amos Revision Rejected; Holden Remains Locked (2026-03-08T023346Z)
+
+**Status:** Holden remains locked per 1st rejection lockout rule.
+
+**Context:** Amos's Phase 4.2 revision (2nd attempt) was rejected by Bobbie:
+- Amos successfully fixed Defect 1 (container child replacement logic works) ✅
+- Amos introduced disposal cascade regression (merged children disposed before handler completes) ❌
+- 2 tests regressed: `ComponentPropsUpdateDetected`, `ComponentDiffWithSameTypeButDifferentProps`
+
+**Lockout status:** Both Amos (rejected revision author) and Holden (original author) locked out. Fresh specialist required.
+
+**Key learning from both rejection cycles:**
+- **1st rejection (Holden):** Write-back pattern missing — diff walk must mutate containers when merging
+- **2nd rejection (Amos):** Disposal timing issue — merged children must be detached BEFORE old container disposes
+
+**Architecture insight:** Component merge requires both:
+1. Write-back of merged instance to parent container (Amos got this right)
+2. Detach-before-dispose to prevent state loss (still needed)
+
+**Next phase:** Fresh specialist takes 3rd revision with both concerns addressed.
+
+**Phase 4.1 Status:** ✅ APPROVED — no changes needed. Key-aware reconciliation complete and stable.

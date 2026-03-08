@@ -46,3 +46,55 @@
 - **Phase 4.1 (key-aware reconciliation) APPROVED** — `.Key()` fluent API and keyed diffing logic pass all tests.
 - **Test results**: ComponentMergeTests 10/13 pass, ReconciliationRegressionTests 11/13 pass, KeyAwareReconciliationTests 1/13 pass (12 blocked by pre-existing framework bug).
 - **Artifact reference**: `src/Comet/Helpers/DatabindingExtensions.cs` lines 199-356 (DiffUpdate logic needing fix).
+
+### Phase 4.2 Revision — Component Merge Container Update Fix (2026-03-08)
+
+**Task:** Fix Bobbie-identified defect where component merge logic returned OLD component instance but parent container children never updated to reference it.
+
+**Root Issues Found:**
+1. Base `Component` class (parameterless) did NOT implement `IComponentWithState` - only generic variants did
+2. Container children references not updated after `DiffUpdate()` returned merged component
+3. View.GetRenderView() / builtView lifecycle interaction creates complexity in nested component scenarios
+
+**Solution Implemented:**
+1. Added `IComponentWithState` to base `Component` class with stub implementations
+2. Added container update logic: after `DiffUpdate(newChild, oldChild)`, if returned instance differs from newChild, update parent container via `mutableContainer[i] = mergedInstance`
+3. Applied fix to both key-aware and index-based reconciliation paths
+
+**Key Insight:** Container implements `IList<View>`, so can use indexer setter to replace children in-place during diff. The setter properly manages Parent/Navigation assignments.
+
+**Files Modified:**
+- `src/Comet/Component.cs` - Added IComponentWithState to base Component
+- `src/Comet/Helpers/DatabindingExtensions.cs` - Added TryMergeComponents, container update logic after DiffUpdate
+
+**Validation:** Component merge now working for simple cases. Some complex nested scenarios need additional investigation into View lifecycle.
+
+### Phase 4.2 Second Rejection — Amos Locked Out (2026-03-08T023346Z)
+
+**Status:** ❌ Phase 4.2 Amos revision REJECTED (2nd rejection overall)
+
+**What happened:**
+- Amos fixed Defect 1 (container child replacement) correctly — merged component is now written to parent container ✅
+- Amos introduced Defect 3 (disposal cascade) — old parent container disposal cascades to merged children, destroying state ❌
+- Two regressions: `ComponentPropsUpdateDetected`, `ComponentDiffWithSameTypeButDifferentProps` now fail
+
+**The disposal cascade:**
+1. Old container replaced by new container during diff
+2. Old container `Dispose()` called in `ResetView()` line 271
+3. `ContainerView.Dispose()` line 212 iterates `_views` and disposes each child
+4. Merged component (which was moved to new container) still in old container's Views list
+5. Merged component disposes → state/props lost → handler failure
+
+**Lockout status:** Amos locked out per squad rules (rejected revision author). **Holden also locked** (original Phase 4.2 author locked from 1st rejection).
+
+**Fix required:** Detach merged component from old container before old container is disposed.
+- After `mutableContainer[i] = merged` in DiffUpdate: `oldContainer.Views.Remove(merged)`
+- This prevents disposal cascade to transferred children
+
+**Next:** Fresh specialist required for 3rd revision attempt with disposal-aware merge logic.
+
+**Phase 4.1 Status:** ✅ APPROVED — key-aware reconciliation unchanged, no regression risk.
+
+**Defect 2 (BuiltView):** Still awaiting David Ortinau's architectural clarification on intended behavior.
+
+
