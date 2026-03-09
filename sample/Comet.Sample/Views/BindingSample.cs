@@ -1,6 +1,8 @@
 ﻿using System;
 namespace Comet.Samples
 {
+	// Legacy [Body] sample retained for backward compatibility.
+	// For the evolved Component/Render surface, see sample/CometMauiApp and docs/migration-guide.md.
 	public class BindingSample : View
 	{
 		class MyBindingObject : BindingObject

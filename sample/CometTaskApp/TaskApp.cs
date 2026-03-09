@@ -21,7 +21,16 @@ public static class MauiProgram
 	public static MauiApp CreateMauiApp()
 	{
 		var builder = MauiApp.CreateBuilder();
+
+#if DEBUG
+		builder.UseCometSampleDebugHost<TaskApp>();
+#else
 		builder.UseCometApp<TaskApp>();
+#endif
+
+#if DEBUG
+		builder.EnableSampleRuntimeDebugging();
+#endif
 		return builder.Build();
 	}
 }

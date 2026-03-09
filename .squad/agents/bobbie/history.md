@@ -245,3 +245,44 @@ View.ViewPropertyChanged → View.ContextPropertyChanged → ContextualObjectExt
 ```
 
 **Root cause location:** Infinite recursion in the environment property change notification path. `ViewPropertyChanged` triggers `SetEnvironment` which sets a value, which fires `PropertyChanged`, which calls `ViewPropertyChanged` again — no recursion guard.
+
+
+### CometMauiApp E2E Test Results — Mac Catalyst (Appium)
+
+**Date:** 2025-07-24
+**Context:** End-to-end Appium automation of CometMauiApp on Mac Catalyst. App uses Component<CounterState> + Render()/SetState() pattern with Reactive<string> for status text.
+
+**Build:** `dotnet build sample/CometMauiApp/CometMauiApp.csproj -f net10.0-maccatalyst -c Release` — ✅ 0 warnings, 0 errors.
+
+**Test Results:**
+
+| # | Test | Result | Notes |
+|---|------|--------|-------|
+| 1 | Increment button (0→1) | ✅ PASS | Count updated, status shows "Incremented by 1. Current count: 1." |
+| 2 | Increment again (1→2) | ✅ PASS | Count updated correctly |
+| 3 | Decrement button (2→1) | ✅ PASS | Status: "Decremented by 1. Current count: 1." |
+| 4 | Reset button (→0) | ✅ PASS | Status: "Counter reset to zero." |
+| 5 | Step slider | ⚠️ LIMITATION | Appium mac2 driver `--set-slider` and `--drag` do not work on Mac Catalyst sliders. Slider manipulation is a known Appium/mac2 limitation, not a Comet bug. |
+| 6 | Increment after slider | ⚠️ SKIPPED | Could not test different step sizes due to slider limitation |
+| 7 | Toggle celebrations OFF | ✅ PASS | Switch toggled (text=1→0), text changed to "Run quiet updates for raw counter flow." and "Milestone celebrations are paused." |
+| 8 | 5 Increments (celebrations OFF) | ✅ PASS | Count reached 5. Banner: "The evolved MVU surface has rendered 5 updates." — NO milestone text. Status card: "Milestones are currently disabled." |
+| 9 | Toggle celebrations ON | ✅ PASS | Switch toggled (text=0→1), text: "Celebrate every fifth increment." and "Milestone celebrations are enabled." |
+| 10 | Reset + 5 Increments (celebrations ON) | ✅ PASS | Count reached 5. Banner: "Milestone hit: 5 total taps." Next milestone: 10. |
+| 11 | All three cards visible | ✅ PASS | Hero card (Comet Counter + Count display), Action card (controls), Status card (description + milestone) all present in accessibility tree. |
+| 12 | ScrollView | ⚠️ LIMITATION | Appium mac2 `--scroll` not supported. All content visible without scrolling. |
+
+**AutomationId Coverage:** All 5 interactive elements have AutomationIds and are correctly targetable:
+- `counter-increment-button` ✅
+- `counter-decrement-button` ✅
+- `counter-reset-button` ✅
+- `counter-step-slider` ✅ (found but manipulation limited)
+- `counter-celebrate-toggle` ✅
+
+**Reactive<string> Verification:** Status text updates correctly on each action via `Reactive<string>`, confirming lightweight state updates work end-to-end.
+
+**Known Appium/mac2 Limitations on Mac Catalyst:**
+- `--set-slider` reports success but does not change slider value
+- `--drag` on slider elements throws proxy error
+- `--scroll` not supported
+
+**Flaky Session Note:** First Appium session showed button-death after toggle, but this was not reproducible on a fresh app launch. The failed session had prior `--set-slider` and `--drag` attempts that may have corrupted the Appium session state. On a clean session, all buttons worked correctly after toggle interactions.

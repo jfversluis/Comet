@@ -41,6 +41,17 @@ namespace Comet
 			return view;
 		}
 
+		public static T Key<T>(this T view, string key) where T : View
+		{
+			view.SetEnvironment(EnvironmentKeys.View.Key, key, cascades: false);
+			return view;
+		}
+
+		public static string GetKey(this View view)
+		{
+			return view?.GetEnvironment<string>(EnvironmentKeys.View.Key, cascades: false);
+		}
+
 		public static ListView<T> OnSelected<T>(this ListView<T> listview, Action<T> selected)
 		{
 			listview.ItemSelected = (o) => {
@@ -137,9 +148,18 @@ namespace Comet
 		}
 
 		public static string GetAutomationId(this View view)
-			=> view.GetEnvironment<string>(view, EnvironmentKeys.View.AutomationId,cascades:false);
+			=> view.GetEnvironment<string>(view, EnvironmentKeys.View.AutomationId, cascades: false) ?? view.AccessibilityId;
 		public static void SetAutomationId(this View view, string automationId)
-			=> view.SetEnvironment(EnvironmentKeys.View.AutomationId, automationId, cascades: false);
+		{
+			view.AccessibilityId = automationId;
+			view.SetEnvironment(EnvironmentKeys.View.AutomationId, automationId, cascades: false);
+		}
+
+		public static T AutomationId<T>(this T view, string automationId) where T : View
+		{
+			view.SetAutomationId(automationId);
+			return view;
+		}
 
 		/// <summary>
 		/// Hunts through the parents to find the current Context.

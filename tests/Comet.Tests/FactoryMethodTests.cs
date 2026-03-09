@@ -125,5 +125,58 @@ namespace Comet.Tests
 			Assert.NotNull(fv);
 			Assert.IsType<Comet.FlyoutView>(fv);
 		}
+
+		[Fact]
+		public void VStackFactoryCreatesVStack()
+		{
+			var child1 = Text("Child1");
+			var child2 = Text("Child2");
+			var stack = VStack(child1, child2);
+			Assert.NotNull(stack);
+			Assert.IsType<Comet.VStack>(stack);
+			Assert.Equal(2, stack.Count);
+		}
+
+		[Fact]
+		public void HStackFactoryCreatesHStack()
+		{
+			var child1 = Button("Button1");
+			var child2 = Button("Button2");
+			var stack = HStack(child1, child2);
+			Assert.NotNull(stack);
+			Assert.IsType<Comet.HStack>(stack);
+			Assert.Equal(2, stack.Count);
+		}
+
+		[Fact]
+		public void ZStackFactoryCreatesZStack()
+		{
+			var child1 = Text("Bottom");
+			var child2 = Text("Top");
+			var stack = ZStack(child1, child2);
+			Assert.NotNull(stack);
+			Assert.IsType<Comet.ZStack>(stack);
+			Assert.Equal(2, stack.Count);
+		}
+
+		[Fact]
+		public void GridFactoryCreatesGrid()
+		{
+			var child1 = Text("Cell1");
+			var child2 = Text("Cell2");
+			var grid = Grid(child1, child2);
+			Assert.NotNull(grid);
+			Assert.IsType<Comet.Grid>(grid);
+			Assert.Equal(2, grid.Count);
+		}
+
+		[Fact]
+		public void VStackFactoryWithNoChildrenWorks()
+		{
+			var stack = VStack();
+			Assert.NotNull(stack);
+			Assert.IsType<Comet.VStack>(stack);
+			Assert.Equal(0, stack.Count);
+		}
 	}
 }

@@ -1,226 +1,152 @@
-using System.Collections.ObjectModel;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Comet;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui;
-using Microsoft.Maui.Graphics;
+using CometBaristaNotes.Components;
 using CometBaristaNotes.Models;
 using CometBaristaNotes.Services;
-using CometBaristaNotes.Components;
-using UXDivers.Popups.Services;
-
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.ApplicationModel;
 using ScrollView = Comet.ScrollView;
+using View = Comet.View;
 
 namespace CometBaristaNotes.Pages;
 
-public class ActivityFeedPage : Comet.View
+public class ActivityFeedState
 {
-	const int _pageSize = 50;
-	int _currentPage;
-	int _totalShotCount;
-	int _filteredShotCount;
-	bool _hasMorePages = true;
-	readonly ObservableCollection<ShotRecord> _displayedShots = new();
-	readonly ShotFilterCriteria _filters = new();
+	public int RefreshVersion { get; set; }
+}
 
-	[State] readonly State<bool> _isLoading = new(false);
-	[State] readonly State<string> _errorMessage = new("");
-	[State] readonly State<int> _filterVersion = new(0);
+public class ActivityFeedPage : Component<ActivityFeedState>
+{
+	const int MaxShots = 25;
+
+	readonly IDataStore _store;
+	readonly IDataChangeNotifier? _notifier;
 
 	public ActivityFeedPage()
 	{
-		var notifier = IPlatformApplication.Current?.Services.GetService<IDataChangeNotifier>();
-		if (notifier is not null)
+		_store = IPlatformApplication.Current?.Services.GetService<IDataStore>() ?? (IDataStore)InMemoryDataStore.Instance;
+		_notifier = IPlatformApplication.Current?.Services.GetService<IDataChangeNotifier>();
+		if (_notifier != null)
 		{
-			notifier.DataChanged += OnDataChanged;
+			_notifier.DataChanged += OnDataChanged;
+		}
+	}
+
+	public override View Render()
+	{
+		_ = State.RefreshVersion;
+
+		var shots = _store.GetAllShots().Take(MaxShots).ToList();
+		if (shots.Count == 0)
+		{
+			return new VStack
+			{
+				FormHelpers.MakeEmptyState(Icons.Feed, "No shots yet", "Log a new shot to seed the activity feed.")
+			}
+			.Background(Theme.Background)
+			.FillHorizontal()
+			.Title("Activity");
 		}
 
-		// Load seed data immediately
-		LoadNextPage(reset: true);
-		Console.WriteLine($"[ActivityFeedPage] Constructor: store={InMemoryDataStore.Instance != null}, shots={_displayedShots.Count}, total={_totalShotCount}");
+		var content = new VStack(spacing: Theme.SpacingS)
+		{
+			BuildSummaryCard(shots),
+			FormHelpers.MakeSectionHeader("Latest shots"),
+		};
+
+		foreach (var shot in shots)
+		{
+			content.Add(BuildShotCard(shot));
+		}
+
+		return new ScrollView
+		{
+			content.Padding(new Thickness(Theme.SpacingM))
+		}
+		.Background(Theme.Background)
+		.Title("Activity");
+	}
+
+	protected override void OnWillUnmount()
+	{
+		if (_notifier != null)
+		{
+			_notifier.DataChanged -= OnDataChanged;
+		}
+
+		base.OnWillUnmount();
 	}
 
 	void OnDataChanged(string entityType, int entityId, DataChangeType changeType)
 	{
-		if (entityType == "Shot")
+		if (entityType != "Shot")
 		{
-			Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() => {
-				LoadNextPage(reset: true);
-				_filterVersion.Value++;
-			});
+			return;
 		}
+
+		MainThread.BeginInvokeOnMainThread(() =>
+			SetState(state => state.RefreshVersion++));
 	}
 
-	[Body]
-	Comet.View body()
+	View BuildSummaryCard(IReadOnlyList<ShotRecord> shots)
 	{
-		// Touch _filterVersion so body rebuilds when filters change
-		var _ = _filterVersion.Value;
+		var latestShot = shots[0];
+		var detail = $"{shots.Count} recent shots • latest {FormatTimestamp(latestShot.Timestamp)}";
 
-		var shotCount = _displayedShots.Count;
-
-		// Empty state
-		if (shotCount == 0 && !_filters.HasFilters)
-		{
-			return new VStack
+		return FormHelpers.MakeCard(
+			new VStack(spacing: Theme.SpacingS)
 			{
-				new Text("No Shots Yet")
-					.FontSize(20)
+				new Text("Activity feed")
+					.FontFamily(Theme.FontSemibold)
+					.FontSize(18)
+					.FontWeight(FontWeight.Bold)
 					.Color(Theme.TextPrimary),
-				new Text("Start logging your espresso shots to see them here.")
-					.FontSize(14)
+
+				new Text(detail)
+					.FontFamily(Theme.FontRegular)
+					.FontSize(13)
 					.Color(Theme.TextSecondary),
-			}.Background(Theme.Background).FillVertical().FillHorizontal();
-		}
-
-		// Main content
-		var countText = _filters.HasFilters
-			? $"{_filteredShotCount} of {_totalShotCount} shots"
-			: $"{_totalShotCount} shots logged";
-
-		var items = new List<Comet.View>
-		{
-			new Spacer().Frame(height: 20),
-			new Text(countText)
-				.FontFamily(Theme.FontSemibold)
-				.FontSize(14)
-				.FontWeight(FontWeight.Bold)
-				.Color(Theme.TextSecondary)
-				.Padding(new Thickness(Theme.SpacingM, Theme.SpacingS)),
-		};
-
-		foreach (var shot in _displayedShots)
-		{
-			items.Add(ShotRecordCardFactory.Create(shot, () => {
-				Navigation?.Navigate(new ShotLoggingPage(shot.Id));
-			}));
-		}
-
-		var stack = new VStack(spacing: 0);
-		foreach (var item in items)
-			stack.Add(item);
-
-		return new ScrollView { stack }.Background(Theme.Background);
-	}
-
-	async void OnFilterTapped(object? sender, EventArgs e)
-	{
-		var store = InMemoryDataStore.Instance;
-		if (store == null) return;
-
-		// Build bean options: only beans that have at least one shot
-		var allShots = store.GetAllShots();
-		var beanNames = allShots
-			.Where(s => s.BeanName != null)
-			.Select(s => s.BeanName!)
-			.Distinct()
-			.ToList();
-		var allBeans = store.GetAllBeans();
-		var beanOptions = allBeans
-			.Where(b => beanNames.Contains(b.Name))
-			.Select(b => (b.Id, b.Name))
-			.ToList();
-
-		// Build people options: profiles that appear as MadeFor
-		var madeForIds = allShots
-			.Where(s => s.MadeForId.HasValue)
-			.Select(s => s.MadeForId!.Value)
-			.Distinct()
-			.ToHashSet();
-		var allProfiles = store.GetAllProfiles();
-		var peopleOptions = allProfiles
-			.Where(p => madeForIds.Contains(p.Id))
-			.Select(p => (p.Id, p.Name))
-			.ToList();
-
-		var popup = new ShotFilterPopup(
-			_filters,
-			beanOptions,
-			peopleOptions,
-			onApply: applied => {
-				_filters.BeanIds = applied.BeanIds;
-				_filters.MadeForIds = applied.MadeForIds;
-				_filters.Ratings = applied.Ratings;
-				LoadNextPage(reset: true);
-				_filterVersion.Value++;
-			},
-			onClear: () => {
-				_filters.Clear();
-				LoadNextPage(reset: true);
-				_filterVersion.Value++;
 			});
-
-		await IPopupService.Current.PushAsync(popup);
 	}
 
-	void OnThresholdReached(object? sender, EventArgs e)
+	View BuildShotCard(ShotRecord shot)
 	{
-		if (_hasMorePages)
-		{
-			LoadNextPage(reset: false);
-		}
+		var title = shot.BeanName ?? shot.BagDisplayName ?? shot.DrinkType;
+		var subtitle = $"{shot.DrinkType} • {FormatTimestamp(shot.Timestamp)}";
+		var detail = $"{shot.DoseIn:0.#}g in • {(shot.ActualOutput ?? shot.ExpectedOutput):0.#}g out";
+
+		return FormHelpers.MakeListCard(
+			title,
+			subtitle,
+			detail,
+			() => Navigation?.Navigate(new ShotLoggingPage(shot.Id)));
 	}
 
-	void LoadNextPage(bool reset)
+	static string FormatTimestamp(DateTime timestamp)
 	{
-		var store = InMemoryDataStore.Instance;
-		if (store == null) return;
-
-		if (reset)
+		var diff = DateTime.Now - timestamp;
+		if (diff.TotalMinutes < 1)
 		{
-			_currentPage = 0;
-			_hasMorePages = true;
-			_displayedShots.Clear();
+			return "just now";
 		}
 
-		var allShots = store.GetAllShots();
-		_totalShotCount = allShots.Count;
-
-		// Apply filters
-		var filtered = ApplyFilters(allShots);
-		_filteredShotCount = filtered.Count;
-
-		var page = filtered.Skip(_currentPage * _pageSize).Take(_pageSize).ToList();
-
-		foreach (var shot in page)
+		if (diff.TotalMinutes < 60)
 		{
-			_displayedShots.Add(shot);
+			return $"{(int)diff.TotalMinutes}m ago";
 		}
 
-		_currentPage++;
-		_hasMorePages = page.Count == _pageSize;
-	}
+		if (diff.TotalHours < 24)
+		{
+			return $"{(int)diff.TotalHours}h ago";
+		}
 
-	List<ShotRecord> ApplyFilters(List<ShotRecord> shots)
-	{
-		if (!_filters.HasFilters)
-			return shots;
+		if (diff.TotalDays < 7)
+		{
+			return $"{(int)diff.TotalDays}d ago";
+		}
 
-		var store = InMemoryDataStore.Instance;
-
-		return shots.Where(s => {
-			// Bean filter: match by looking up the bag's bean ID
-			if (_filters.BeanIds.Count > 0)
-			{
-				var bag = store?.GetBag(s.BagId);
-				if (bag == null || !_filters.BeanIds.Contains(bag.BeanId))
-					return false;
-			}
-
-			// Made-for filter
-			if (_filters.MadeForIds.Count > 0)
-			{
-				if (!s.MadeForId.HasValue || !_filters.MadeForIds.Contains(s.MadeForId.Value))
-					return false;
-			}
-
-			// Rating filter
-			if (_filters.Ratings.Count > 0)
-			{
-				if (!s.Rating.HasValue || !_filters.Ratings.Contains(s.Rating.Value))
-					return false;
-			}
-
-			return true;
-		}).ToList();
+		return timestamp.ToString("MMM d");
 	}
 }

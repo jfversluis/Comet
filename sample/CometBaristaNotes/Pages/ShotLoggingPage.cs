@@ -417,7 +417,7 @@ catch (Exception ex)
 		var equipment = InMemoryDataStore.Instance?.GetAllEquipment() ?? new List<Models.Equipment>();
 		var names = equipment.OrderBy(e => e.Type).ThenBy(e => e.Name)
 			.Select(e => $"{e.Type}: {e.Name}").ToArray();
-		var result = await page.DisplayActionSheet("Select Equipment", "Cancel", null, names);
+		var result = await page.DisplayActionSheetAsync("Select Equipment", "Cancel", null, names);
 		if (result != null && result != "Cancel")
 		{
 			var selected = equipment.FirstOrDefault(e => $"{e.Type}: {e.Name}" == result);
@@ -649,7 +649,7 @@ catch
 	// Fallback to ActionSheet if UXDivers popup fails
 	var fallbackPage = Services.PageHelper.GetCurrentPage();
 	var result = fallbackPage != null
-		? await fallbackPage.DisplayActionSheet(title, "Cancel", null, items.ToArray())
+		? await fallbackPage.DisplayActionSheetAsync(title, "Cancel", null, items.ToArray())
 		: null;
 	if (result != null && result != "Cancel")
 	{

@@ -37,6 +37,21 @@ Component hot reload with MauiHotReloadHelper registration, TransferState() for 
 
 ## Learnings
 
+### Fluent AutomationId extension — eliminates intermediate variables (2026-03-09)
+
+**What:** Added `AutomationId<T>(this T view, string automationId) where T : View` to `ViewExtensions.cs`. Returns `T` so it chains. Kept `SetAutomationId` (void) for backward compat.
+
+**Why:** `SetAutomationId()` is void — breaks fluent chains, forcing intermediate variables in sample code. David wants pure inline construction like MauiReactor.
+
+**Pattern:** Same generic `T where T : View` return pattern used by `Tag<T>`, `Key<T>`, `SemanticHint<T>`, etc. The new method delegates to `SetAutomationId` internally.
+
+**Key files:**
+- `src/Comet/Helpers/ViewExtensions.cs` — fluent method at line ~157
+- `sample/CometMauiApp/MainPage.cs` — refactored to zero intermediate control variables
+- `tests/Comet.Tests/ViewExtensionTests.cs` — 4 new tests (identity, value, chaining, type preservation)
+
+**Decision:** New fluent method lives alongside the existing void setter. No breaking changes.
+
 ### P0 Sample Runtime Pass — Barista Notes launch path stabilized (2026-03-08T11:30:00Z)
 
 **Status:** ✅ **P0 SAMPLE RUNTIME PASS COMPLETE**
@@ -678,3 +693,32 @@ After N state changes, the native `UITextField` (Picker's platform view) has N `
 **Fix 2 — Key-aware reconciliation identity preservation in DatabindingExtensions.cs:** The keyed reconciliation was calling `DiffUpdate(newChild, matchedOld)` which returns the NEW instance for non-Components (transferring handler from old to new via `UpdateFromOldView`). Tests expected `Assert.Same()` on old instances. Fixed by splitting keyed match logic: Components still go through `DiffUpdate` (which returns old via `TryMergeComponents`); non-Component views skip `DiffUpdate` and directly swap the old instance into the new container, preserving handler and identity.
 
 **Result:** 739 total tests — 720 passed, 19 skipped, 0 failed. All KeyAwareReconciliation (9/9 + 1 skipped) and ComponentMerge (11/11) tests pass.
+
+### Factory API Gaps + CometMauiApp Migration to Factory Syntax (2026-03-09)
+
+**Status:** ✅ COMPLETE
+
+**Assignment:** Fill missing factory method gaps in CometControls and migrate CometMauiApp/MainPage.cs from `new` keyword syntax to factory method syntax.
+
+**Part 1 — Factory method additions to CometControls.Containers.cs:**
+- Added `VStack(float? spacing, params View[] children)` overload — most common pattern in samples
+- Added `HStack(float? spacing, params View[] children)` overload — same pattern
+- Added `ScrollView(View content)` and `ScrollView(Orientation, View content)` factories
+- Added `NavigationView(View content)` factory
+- Added `Border(View content)` factory
+
+**Part 2 — CometMauiApp/MainPage.cs migration:**
+- Added `using static Comet.CometControls;` import
+- Replaced ALL `new NavigationView { }`, `new ScrollView { }`, `new VStack(spacing: N) { }`, `new HStack(spacing: N) { }`, `new Border { }`, `new Text(...)`, `new Button(...)`, `new Slider(...)`, `new Toggle(...)` with factory method equivalents
+- Collection initializer `{ child1, child2 }` replaced with method params `(child1, child2)`
+- Zero `new` keywords for UI controls in any Render/Build method (only `new Thickness(...)` remains — value type, not a control)
+- `SetAutomationId()` calls preserved on variable references (void method, not fluent)
+
+**Part 3 — MyApp.cs:** No migration needed — only `new MainPage()` which is a user-defined class, not a Comet control.
+
+**Validation:**
+- `dotnet build src/Comet/Comet.csproj -c Release` ✅ (0 errors)
+- `dotnet build sample/CometMauiApp/CometMauiApp.csproj -c Release -f net10.0-maccatalyst` ✅ (0 errors, 0 warnings)
+- `dotnet test tests/Comet.Tests/Comet.Tests.csproj --no-build -c Release` ✅ (725 passed, 0 failed, 19 skipped)
+
+**Key pattern:** `VStack(20, child1, child2)` — the int `20` implicitly converts to `float?` for the spacing parameter. No ambiguity with other overloads since `int` is not `View` or `LayoutAlignment`.

@@ -40,6 +40,20 @@ namespace Comet
 					((IStackNavigationView)this).RequestNavigation(new NavigationRequest(_views, true));
 			}
 		}
+
+		public void Navigate<TView>() where TView : View, new()
+			=> Navigate(new TView());
+
+		public void Navigate<TView>(object parameters) where TView : View, new()
+		{
+			var view = new TView();
+			NavigationParameterHelper.Apply(view, parameters);
+			Navigate(view);
+		}
+
+		public void Navigate<TView, TParameters>(TParameters parameters) where TView : View, new()
+			=> Navigate<TView>((object)parameters);
+
 		public void SetPerformPop(Action action) => PerformPop = action;
 		public void SetPerformPop(NavigationView navView)
 			=> PerformPop = navView.PerformPop;

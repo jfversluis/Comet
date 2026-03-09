@@ -16,12 +16,19 @@ namespace Comet.Samples
 		public static MauiApp CreateMauiApp()
 		{
 			var builder = MauiApp.CreateBuilder();
-			builder.UseCometApp<MyApp>()
-				.ConfigureFonts(fonts => {
-					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-				});
+
+#if DEBUG
+			builder.UseCometSampleDebugHost<MyApp>();
+#else
+			builder.UseCometApp<MyApp>();
+#endif
+
+			builder.ConfigureFonts(fonts => {
+				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+			});
 #if DEBUG
 			builder.EnableHotReload();
+			builder.EnableSampleRuntimeDebugging();
 #endif
 
 			return builder.Build();

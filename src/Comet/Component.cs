@@ -9,7 +9,7 @@ namespace Comet
 	/// instead of the [Body] attribute. Extends View so it participates in the
 	/// existing Comet lifecycle (handlers, hot reload, diffing, etc.).
 	/// </summary>
-	public abstract class Component : View
+	public abstract class Component : View, IComponentWithState
 	{
 		bool _mounted;
 
@@ -54,6 +54,25 @@ namespace Comet
 				OnWillUnmount();
 			}
 			base.Dispose(disposing);
+		}
+
+		// -- IComponentWithState (no state, just marker interface for diffing) --
+
+		public virtual object GetStateObject() => null;
+
+		public virtual void TransferStateFrom(IComponentWithState source)
+		{
+			// Base Component has no state to transfer
+		}
+
+		protected override void TransferHotReloadStateToCore(View newView)
+		{
+			base.TransferHotReloadStateToCore(newView);
+			if (newView is IComponentWithState newComponent &&
+				this is IComponentWithState currentComponent)
+			{
+				newComponent.TransferStateFrom(currentComponent);
+			}
 		}
 	}
 
@@ -102,11 +121,23 @@ namespace Comet
 			ThreadHelper.RunOnMainThread(() => Reload());
 		}
 
+		/// <summary>
+		/// Merge state from an old Component instance during reconciliation.
+		/// Called when parent re-renders and the old and new instances are the same Component type.
+		/// </summary>
+		internal void MergeStateFrom(Component<TState> oldComponent)
+		{
+			if (oldComponent?._state != null)
+			{
+				_state = oldComponent._state;
+			}
+		}
+
 		// -- IComponentWithState --
 
-		object IComponentWithState.GetStateObject() => _state;
+		public override object GetStateObject() => _state;
 
-		void IComponentWithState.TransferStateFrom(IComponentWithState source)
+		public override void TransferStateFrom(IComponentWithState source)
 		{
 			if (source is Component<TState> typed && typed._state != null)
 			{
@@ -118,10 +149,6 @@ namespace Comet
 
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing)
-			{
-				_state = default;
-			}
 			base.Dispose(disposing);
 		}
 	}
@@ -154,14 +181,41 @@ namespace Comet
 			}
 		}
 
+		/// <summary>
+		/// Update props from a new Component instance during reconciliation.
+		/// Called internally by the diff algorithm when merging same-type Components.
+		/// The Component will re-render naturally as part of the diff cycle.
+		/// </summary>
+		internal void UpdatePropsFromDiff(TProps newProps)
+		{
+			if (newProps == null)
+				newProps = new TProps();
+
+			// Just update the props reference — don't trigger Reload here
+			// The diff cycle is already handling the re-render
+			_props = newProps;
+		}
+
+		/// <summary>
+		/// Determines if the component should re-render when props change.
+		/// Override to implement custom prop comparison logic for performance optimization.
+		/// Default: always returns true (re-render on any props update).
+		/// </summary>
+		/// <param name="oldProps">Previous props (may be null if not initialized).</param>
+		/// <param name="newProps">New props being applied.</param>
+		/// <returns>True if component should re-render, false to skip re-render.</returns>
+		protected virtual bool ShouldUpdate(TProps oldProps, TProps newProps)
+		{
+			// Default: always re-render when props change
+			// Subclasses can override for fine-grained control
+			return true;
+		}
+
 		// -- IComponentWithState (extend base to also transfer props) --
 
-		object IComponentWithState.GetStateObject() =>
-			((IComponentWithState)(Component<TState>)this).GetStateObject();
-
-		void IComponentWithState.TransferStateFrom(IComponentWithState source)
+		public override void TransferStateFrom(IComponentWithState source)
 		{
-			((IComponentWithState)(Component<TState>)this).TransferStateFrom(source);
+			base.TransferStateFrom(source);
 			if (source is Component<TState, TProps> typed && typed._props != null)
 			{
 				_props = typed._props;
@@ -170,10 +224,6 @@ namespace Comet
 
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing)
-			{
-				_props = default;
-			}
 			base.Dispose(disposing);
 		}
 	}

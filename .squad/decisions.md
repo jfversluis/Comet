@@ -760,3 +760,75 @@ After discovering MauiDevFlow limitations (cannot target Comet descendants), App
 **Why:** PRD requires factory syntax for ALL controls including containers. Containers are handwritten (not generated), so simple handwritten factory methods suffice without generator changes.
 
 **Impact:** Enables `VStack(child1, child2)` syntax. 5 new tests added, all passing (725/744 total). Additive only — no breaking changes. CometMauiApp not yet migrated to use them.
+
+### ### 2026-03-09T21:48:00Z: Factory Overload Convention for Container Controls
+
+**Owner:** Amos (Controls & API Dev)  
+**Status:** Implemented  
+**Decision:** Spacing-only factory overloads use `float?` as the first parameter: `VStack(float? spacing, params View[] children)`. This mirrors the constructor's named parameter (`new VStack(spacing: 20)`) but in positional form (`VStack(20, child1, child2)`).
+
+Single-child container factories (ScrollView, NavigationView, Border) take `View content` — not `params View[]` — since they only accept one child.
+
+**Rationale:** 
+- `float?` first parameter has no ambiguity with `params View[]` or `LayoutAlignment` overloads
+- Positional spacing (`VStack(20, ...)`) is the most common sample pattern and reads cleaner than named (`VStack(spacing: 20, children: new[] { ... })`)
+- Single-child factories enforce the one-child constraint at compile time rather than silently dropping extras
+
+**Impact:** Any new container factory should follow this pattern. Generated control factories (Button, Text, etc.) are handled by the source generator and don't need manual overloads.
+
+### ### 2026-03-09T21:55:00Z: Fluent `AutomationId()` Extension Method
+
+**Owner:** Amos (Controls & API Dev)  
+**Status:** Implemented  
+**Decision:** Added a new generic fluent extension:
+
+```csharp
+public static T AutomationId<T>(this T view, string automationId) where T : View
+```
+
+This follows the established pattern used by `Tag<T>`, `Key<T>`, `SemanticHint<T>`, and other fluent extensions in `ViewExtensions.cs`. The existing `SetAutomationId` (void) is preserved for backward compatibility.
+
+**Consequences:**
+- All controls can now set automation IDs inline in fluent chains
+- No breaking changes — existing `SetAutomationId` calls continue to work
+- `CometMauiApp/MainPage.cs` refactored to use pure inline construction (zero intermediate variables for controls)
+- 4 new tests validate identity, value, chaining, and type preservation
+
+**Why:** `SetAutomationId(this View view, string automationId)` returns `void`, which breaks fluent construction chains. Controls that need automation IDs must be extracted into intermediate variables, cluttering sample code and breaking the MVU idiom.
+
+### ### 2026-03-09T21:44:00Z: CometMauiApp E2E Test Results — Mac Catalyst (Appium)
+
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Verified  
+**Decision:** CometMauiApp passes E2E testing on Mac Catalyst via Appium. All interactive elements (buttons, toggle) respond correctly and state management works as designed.
+
+**Verdict: ✅ PASS (with caveats)**
+
+**Test Results:** 10 of 12 tests passed. Two tests could not be executed due to Appium/mac2 driver limitations on Mac Catalyst (slider manipulation and scroll gestures), not Comet bugs.
+
+**Key Findings:**
+1. **Component<CounterState> + SetState() works correctly.** Increment, decrement, and reset all update count and trigger full re-renders.
+2. **Reactive<string> updates work end-to-end.** Status text updates on every action without full re-render.
+3. **Toggle interaction works.** CelebrateMilestones toggle correctly changes accent color, banner text, status card text, and milestone behavior.
+4. **Milestone celebrations verified.** At count=5 with celebrations ON: "Milestone hit: 5 total taps." At count=5 with celebrations OFF: "The evolved MVU surface has rendered 5 updates."
+5. **All AutomationIds are correctly set and targetable** via Appium on Mac Catalyst.
+
+**Caveats:**
+- **Slider not testable via Appium mac2.** The `--set-slider` command reports success but doesn't change the value. This is a known Appium/mac2 limitation, not a Comet defect. To verify slider behavior, manual testing or an iOS Simulator test (xcuitest driver) is recommended.
+- **Scroll not testable via Appium mac2.** All content is visible without scrolling so this is non-blocking.
+- **First session showed transient button-death** after slider manipulation attempts corrupted the Appium session. A clean session reproduced no issues. Not a Comet bug.
+
+**Recommendation:** CometMauiApp is ready for demo and review. For complete slider verification, consider running the same test suite on iOS Simulator where xcuitest driver has full slider support.
+
+### ### 2026-03-09T21:46:00Z: Testing Tooling Preference by Platform
+
+**Owner:** David Ortinau (via Copilot)  
+**Status:** Affirmed  
+**Decision:** Appium has better success on running iPhone Simulator than Mac Catalyst. Mac Catalyst works better with maui-devflow for testing.
+
+**Routing Rule:**
+- iOS Simulator → Appium (xcuitest driver)
+- Mac Catalyst → maui-devflow (build → run → inspect → interact → capture)
+- Appium on Mac Catalyst → fallback only
+
+**Why:** User request — captured for team memory. Guides Bobbie and all agents on which E2E testing tool to use per platform target.

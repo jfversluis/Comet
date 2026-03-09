@@ -43,12 +43,18 @@ public class InboxPage : View
 				.Color(Colors.Gray)
 				.Padding(8),
 			
-			new ListView<Message>(() => inbox.Value)
+			new CollectionView<Message>(() => inbox.Value)
 			{
 				ViewFor = msg => RenderMessageItem(msg),
 				ItemSelected = selection =>
 				{
-					selectedMessage.Value = ((Message)selection.item).From;
+					var tappedMessage = (Message)selection.item;
+					selectedMessage.Value = tappedMessage.From;
+					if (tappedMessage.IsUnread)
+					{
+						tappedMessage.IsUnread = false;
+						inbox.Value = new List<Message>(inbox.Value);
+					}
 				},
 				Header = new Text($"Messages ({inbox.Value.Count})")
 					.FontSize(14)
@@ -90,7 +96,16 @@ public class InboxPage : View
 			},
 		}
 		.Padding(12)
-		.Background(new SolidPaint(msg.IsUnread ? Color.FromArgb("#F0F8FF") : Colors.White));
+		.Background(new SolidPaint(msg.IsUnread ? Color.FromArgb("#F0F8FF") : Colors.White))
+		.OnTap(_ =>
+		{
+			selectedMessage.Value = msg.From;
+			if (msg.IsUnread)
+			{
+				msg.IsUnread = false;
+				inbox.Value = new List<Message>(inbox.Value);
+			}
+		});
 	}
 
 	string FormatDate(DateTime date)

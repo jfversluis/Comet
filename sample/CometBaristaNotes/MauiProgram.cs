@@ -13,7 +13,12 @@ public static class MauiProgram
 	public static MauiApp CreateMauiApp()
 	{
 		var builder = MauiApp.CreateBuilder();
+
+#if DEBUG
+		builder.UseCometSampleDebugHost(BaristaApp.CreateRootView);
+#else
 		builder.UseCometApp<BaristaApp>();
+#endif
 		builder.ConfigureSyncfusionCore();
 		builder.UseUXDiversPopups();
 
@@ -33,6 +38,10 @@ public static class MauiProgram
 		builder.ConfigureMauiHandlers(handlers => {
 			ModifyEntrys();
 		});
+
+#if DEBUG
+		builder.EnableSampleRuntimeDebugging();
+#endif
 
 		builder.ConfigureFonts(fonts => {
 			fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

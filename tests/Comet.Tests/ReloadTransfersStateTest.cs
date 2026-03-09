@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using Comet.HotReload;
 using Comet.Internal;
 using Microsoft.Maui.HotReload;
 using Xunit;
@@ -20,7 +21,7 @@ namespace Comet.Tests
 
 
 
-			MauiHotReloadHelper.RegisterReplacedView(typeof(MyOrgView).FullName, typeof(MyNewView));
+			CometHotReloadHelper.RegisterReplacedView(typeof(MyOrgView).FullName, typeof(MyNewView));
 			var newText = orgView.GetView() as Text;
 
 			Assert.Equal(textValue, newText.Value);
@@ -41,7 +42,7 @@ namespace Comet.Tests
 			//IsEnabled is defaulted to true.
 			Assert.True(orgView.bindingObject.IsEnabled);
 
-			MauiHotReloadHelper.RegisterReplacedView(typeof(MyOrgView).FullName, typeof(MyNewView));
+			CometHotReloadHelper.RegisterReplacedView(typeof(MyOrgView).FullName, typeof(MyNewView));
 			MauiHotReloadHelper.TriggerReload();
 
 			var newText = orgView.GetView() as Text;

@@ -6,22 +6,32 @@ namespace CometMauiApp
 {
 	public class MyApp : CometApp
 	{
-		[Body]
-		View view() => new MainPage();
+		public MyApp()
+		{
+			Body = CreateRootView;
+		}
+
+		public static View CreateRootView() => new MainPage();
 
 		public static MauiApp CreateMauiApp()
 		{
 			var builder = MauiApp.CreateBuilder();
-			builder.UseCometApp<MyApp>()
-				.ConfigureFonts(fonts =>
-				{
-					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-					fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-				});
 
 #if DEBUG
-			builder.Logging.AddDebug();
+			builder.UseCometSampleDebugHost(CreateRootView);
+#else
+			builder.UseCometApp<MyApp>();
 #endif
+
+			builder.ConfigureFonts(fonts =>
+			{
+				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+			});
+
+	#if DEBUG
+			builder.EnableSampleRuntimeDebugging();
+	#endif
 
 			return builder.Build();
 		}
