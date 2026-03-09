@@ -1383,3 +1383,34 @@ Extension points documented in new Section 14. Not silent about gaps.
 
 **Impact:** Tests using `theme with { ... }` must use `new Theme { Name = ..., Colors = baseTheme.Colors, ... }` instead. Backward compatibility maintained for all existing code.  
 **Who should know:** Bobbie (test patterns), Amos (control style API consumers)
+# Decision: Style Resolution Uses Type-Scoped Global Environment for Priority
+
+**Owner:** Holden (Lead Architect)  
+**Date:** 2026-07-24  
+**Status:** Implemented
+
+## Decision
+
+When an `IControlStyle<TControl, TConfiguration>` is resolved in a handler mapper, the resulting `ViewModifier` values are pushed to the **type-scoped global environment** (via `View.SetGlobalEnvironment(controlType, key, value)`), NOT applied directly to the view's local environment. This preserves the priority chain:
+
+1. **Explicit user property** (view's local/cascading context) — highest
+2. **Style-resolved property** (global typed environment) — fallback
+3. **Theme token default** (global environment) — lowest
+
+## Context
+
+The `ViewModifier.Apply()` method calls fluent methods like `.Background(color)` which write to the view's cascading context. If applied directly during handler mapping, these would overwrite explicit user properties set during `Body()` evaluation.
+
+The `MonitorChanges/StopMonitoringChanges` mechanism on `ContextualObject` captures what properties the modifier WOULD set without actually persisting them. The captured values are then redirected to the type-scoped global path — the same mechanism the existing `ControlStyle<T>` / `DefaultThemeStyles` system uses.
+
+## Impact
+
+- All 4 styleable controls (Button, Toggle, TextField, Slider) now support `IControlStyle` resolution in their handler mappers
+- Explicit `.Background(Colors.Red)` on a button will NOT be overridden by `FilledButtonStyle`
+- `.ButtonStyle(new OutlinedButtonStyle())` on a parent container applies scoped styles to child buttons
+- `ThemeManager.Current()` returns a fully-populated Material 3 theme from any View context after app startup
+
+## Limitations
+
+- State-dependent style resolution (pressed/hovered/focused) captures values per handler-map invocation but does NOT dynamically update as control state changes (future work: wire control state tracking)
+- The `MonitorChanges` mechanism uses a thread-local lock; style resolution must happen on the same thread as the handler mapper (which is the main thread, so this is safe)

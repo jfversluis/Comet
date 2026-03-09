@@ -895,3 +895,40 @@ Amos's API contributions (GetControlStyle, DefaultThemeStyles, control styling, 
 
 **Wave 2 outcome:** All control API surface stable and integrated. Amos's work cohesive with theme system and control generation. Ready for Wave 3.
 
+
+### Wave 3A: CometMauiApp Style System Showcase (2026-07-25)
+
+**Status:** ✅ **COMPLETE**
+
+**Assignment:** Update `sample/CometMauiApp/` to demonstrate the new style/theme system (Wave 3A).
+
+**What changed:**
+- Rewrote `MainPage.cs` from the counter sample to a style system showcase using `Component<StyleDemoState>`.
+- `MyApp.cs` now sets `Theme.Current = Defaults.Light` at startup to activate Material 3 tokens.
+- Five showcase sections: Token Usage, Built-in Button Styles, ViewModifier, Control State, and Info.
+- Custom `CardModifier` (ViewModifier) reused across all sections via `.Modifier(Card)`.
+- `HighlightModifier` composed with `CardModifier` via `.Then()` to show modifier composition.
+- `ButtonStyles.Filled`, `.Outlined`, `.Text`, `.Elevated` applied via `.ButtonStyle()` extension.
+- `ColorTokens.Primary/Secondary/Error/etc.` used directly on views for token-driven coloring.
+- `TypographyTokens.TitleLarge/BodyMedium/etc.` applied via `.Typography()` extension for font resolution.
+- Toggle + `.IsEnabled()` demonstrates disabled button state rendering.
+- Updated README.md with API entry point table.
+
+**Build note:**
+- `CornerRadius()` is constrained to `Button` and `Border` types. ViewModifiers operating on generic `View` must use `.ClipShape(new RoundedRectangle(radius))` instead.
+
+**Validation:**
+- `dotnet build sample/CometMauiApp/CometMauiApp.csproj -c Release` ✅ (0 errors)
+- `dotnet test tests/Comet.Tests/Comet.Tests.csproj --no-build -c Release` ✅ (846 passed, 0 failed, 19 skipped — unchanged baseline)
+
+## Wave 3 — Sample Adoption (2026-03-09T21:48:00Z)
+
+**Outcome:** ✅ COMPLETE
+
+- CometMauiApp rewritten as comprehensive Material 3 style system showcase
+- 5 demonstration sections: token usage, all 4 button styles, CardModifier composition, toggle-driven disabled state, advanced patterns
+- Build clean, 846 tests passed, 0 regressions
+
+**Key Accomplishment:** CometMauiApp now serves as reference for adopting the full style/theme system in real apps.
+
+**Status:** Ready for merge to main.

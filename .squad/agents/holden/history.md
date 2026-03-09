@@ -1061,3 +1061,36 @@ Architected core style primitives:
 **Test execution:** 846 total, 846 passed, 0 failed, 19 skipped (pre-existing)
 
 **Wave 2 outcome:** Framework-level integration validated. All Phase 1-7 artifacts (Components, controls, styles, theme, reconciliation, navigation, hot reload) cohesive and ready for Wave 3.
+
+### Wave 3B+3C — Default Theme Wiring + Handler Integration
+
+**Status:** ✅ COMPLETE  
+**Date:** 2026-07-24
+
+**What changed:**
+- Wired `ThemeManager.SetTheme(Defaults.Light)` into `UseCometHandlers()` startup, after legacy `style.Apply()`. The token-based theme system now has a Material 3 default theme active from app launch.
+- Registered `FilledButtonStyle` as the default `IControlStyle<Button, ButtonConfiguration>` on the default theme via `Theme.SetControlStyle<TControl, TConfig>()`.
+- Added `RegisterStyleResolutionMappers()` with 4 handler mapper registrations (Button, Toggle, TextField, Slider). Each resolves `IControlStyle` from the scoped environment (via `StyleToken<T>.Key`) or falls back to the theme's new control style.
+- Implemented `ApplyModifierAsTypeScopedDefaults()` which uses `MonitorChanges/StopMonitoringChanges` to capture what a `ViewModifier.Apply()` would write, then pushes those values to the type-scoped global environment instead. This preserves the priority chain: explicit user properties (local context) > style defaults (global typed).
+- Added `ResolveCurrentStyle()` extension methods for Toggle, TextField, Slider. Updated Button's existing method to fall back to theme new control styles.
+
+**Key design decision:**
+Style resolution uses the existing `MonitorChanges` mechanism to intercept `ViewModifier.Apply()` effects without persisting them to the view's local environment. Values are redirected to `View.SetGlobalEnvironment(controlType, key, value)` — the same type-scoped global path used by the existing `ControlStyle<T>` / `DefaultThemeStyles` system. This means:
+- Explicit `.Background(Colors.Red)` on a view → sets in view's context (local priority) → wins
+- Style-resolved background from `FilledButtonStyle` → sets in global typed env → fallback only
+- The cascading lookup chain in `ContextualObject.GetValue()` naturally handles priority
+
+**Validation:** 846 passed, 0 failed, 19 skipped — identical to baseline.
+
+## Wave 3 — Theme Wiring & Handler Integration (2026-03-09T21:48:00Z)
+
+**Outcome:** ✅ COMPLETE
+
+- Material 3 default theme initialized at startup (`Defaults.Light` + `FilledButtonStyle`)
+- Handler mappers for Button, Toggle, TextField, Slider now resolve `IControlStyle` from environment/theme
+- Explicit > style > token priority chain fully preserved
+- **Tests:** 846 passed, 0 failed, 0 regressions
+
+**Key Accomplishment:** Type-scoped global environment mechanism ensures explicit user properties are never overridden by style-resolved values. Decision D11 documented and implemented.
+
+**Status:** Ready for merge to main.
