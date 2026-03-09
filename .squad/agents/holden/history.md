@@ -957,3 +957,30 @@ Most fluent extensions already have `Binding<T>` overloads (`Color`, `Background
 
 **Decision file:** `.squad/decisions/inbox/holden-final-revision.md`
 **Response log:** `docs/reviews/REVIEW_RESPONSE.md` (Round 2 appended)
+
+### Style System Core Primitives — Implementation (2026-03-10)
+
+**Status:** ✅ Implemented  
+**Commit:** `feat(styles): implement core style system primitives (spec §3-8)`
+
+**What was built:**
+- `Token<T>` class with `Resolve(Theme)`, `Resolve(View)`, implicit `Binding<T>`, `Map<TResult>()`
+- 4 token identifier classes: `ColorTokens` (27 fields), `TypographyTokens` (15), `SpacingTokens` (6), `ShapeTokens` (7)
+- 4 token set records: `ColorTokenSet`, `TypographyTokenSet`, `SpacingTokenSet`, `ShapeTokenSet`, plus `FontSpec`
+- Theme enhanced with `Colors`, `Typography`, `Spacing`, `Shapes` properties + `ImmutableDictionary`-backed new control style storage
+- `Defaults.Light` and `Defaults.Dark` with full Material 3 values
+- `ThemeManager` with global/scoped resolution, `SetTheme()`, `UseTheme()` extension
+- `ViewModifier` base + `ViewModifier<T>` typed + `ComposedModifier` + `Then()` composition
+- `TryGetEnvironment<T>()` presence-detection on environment (prerequisite for value-type token overrides)
+- `OverrideToken()` extensions for `Color`, `double`, `FontSpec`
+- `Typography(Token<FontSpec>)` convenience extension
+
+**Key decisions during implementation:**
+1. **Colors property naming conflict:** Adding `Colors` property to Theme shadows `Microsoft.Maui.Graphics.Colors` in field initializers. Fixed with `using MauiColors = Microsoft.Maui.Graphics.Colors;` alias in Theme.cs and ThemeDefaults.cs.
+2. **Theme<T> → UseTheme<T>:** Renamed scoped override extension from `.Theme()` to `.UseTheme()` because C# cannot distinguish extension method `Theme<T>()` from the type `Theme` within `Comet.Styles` namespace.
+3. **Additive on existing Theme class:** Rather than creating a new `record Theme` (which would conflict with existing `class Theme`), added token set properties directly to the existing class. This preserves backward compat with 640+ tests and legacy `Theme.Current` API.
+4. **Token.Resolve(View) overload:** Added because `BuiltInStyles.cs` (Amos's file) already calls `ColorTokens.Primary.Resolve(config.TargetView)` expecting view-aware resolution.
+
+**Pre-existing issue found:** `BuiltInStyles.cs` references `Comet.Graphics.RoundedRectangle` which doesn't exist (the class is in `Comet` namespace). This is Amos's file — 6 build errors across 3 TFMs. Not introduced by this work.
+
+**Build result:** 0 new errors. 6 pre-existing errors in BuiltInStyles.cs (Amos's domain).
