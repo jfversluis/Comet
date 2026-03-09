@@ -934,3 +934,26 @@ Most fluent extensions already have `Binding<T>` overloads (`Color`, `Background
 
 **Decision file:** `.squad/decisions/inbox/holden-review-response.md`
 **Response log:** `docs/reviews/REVIEW_RESPONSE.md`
+
+### 2026-03-10 — Style/Theme Spec Final Focused Revision
+
+**Status:** ✅ Complete  
+**Reviewer context:** GPT-5.4 final review scored 7/9 resolved, 2 partially resolved, 1 new concern.
+
+**What changed (3 fixes + 1 bonus):**
+
+1. **Control-style state path now view-aware.** Added `View TargetView` to all four config structs (`ButtonConfiguration`, `ToggleConfiguration`, `TextFieldConfiguration`, `SliderConfiguration`). §4.8 passes `TargetView = this`. §9.4 `FilledButtonStyle.Resolve()` now calls `ThemeManager.Current(config.TargetView)` instead of the global `ThemeManager.Current()`. This closes the scoped-theme gap for interactive styles.
+
+2. **Non-compiling examples fixed.** `view.Font(...)` → `view.FontFamily(...)` in §8.7 (matching actual `FontExtensions.cs`). All `ActiveThemeToken` direct usage in environment methods replaced with `ActiveThemeToken.Key` (environment API is string-keyed, no token-aware overloads).
+
+3. **Theme aliasing from `record with` eliminated.** `_controlStyles` changed from mutable `Dictionary` to `ImmutableDictionary`. `SetControlStyle()` replaces the reference via `.SetItem()`, so `with`-derived themes are independent. §10.2 updated to explain.
+
+4. **Control-style token strategy unified.** §15.2 rewritten from `Binding<Color>` + implicit conversions to eager resolution via `ThemeManager.Current(config.TargetView)`, matching §9.4.
+
+**Key learnings:**
+- Config structs are the natural vehicle for passing context into control styles. Adding `View TargetView` is a small surface change that cascades view-awareness through the entire style resolution path without changing the `IControlStyle<T,TConfig>` interface.
+- `ImmutableDictionary` is the right default for record-owned collections. `Dictionary` on a record is a trap — `with` always shallow-copies references.
+- When the environment API is string-keyed, specs must use `.Key` consistently. Passing typed tokens to string-keyed methods looks clean but doesn't compile.
+
+**Decision file:** `.squad/decisions/inbox/holden-final-revision.md`
+**Response log:** `docs/reviews/REVIEW_RESPONSE.md` (Round 2 appended)

@@ -1,9 +1,10 @@
 # Comet Style & Theme System — Technical Specification
 
-> **Status:** Proposal (greenfield)
+> **Status:** Proposal — revised after independent review (2026-03-10)
 > **Author:** Holden (Lead Architect)
-> **Date:** 2026-03-09
+> **Date:** 2026-03-10 (revised), 2026-03-09 (original)
 > **Requested by:** David Ortinau
+> **Review history:** Independently reviewed by GPT-5.4 and Gemini (2026-03-09). Revisions address all critical findings. See `docs/reviews/REVIEW_RESPONSE.md` for the full disposition log.
 
 ---
 
@@ -22,8 +23,9 @@
 11. [Performance Model](#11-performance-model)
 12. [Integration Points](#12-integration-points)
 13. [End-to-End Code Examples](#13-end-to-end-code-examples)
-14. [SwiftUI Comparison](#14-swiftui-comparison)
-15. [Open Questions](#15-open-questions)
+14. [Accessibility, Adaptation, and Known Gaps](#14-accessibility-adaptation-and-known-gaps)
+15. [SwiftUI Comparison](#15-swiftui-comparison)
+16. [Design Decisions](#16-design-decisions)
 
 ---
 
@@ -128,7 +130,7 @@ public abstract class ViewModifier<T> : ViewModifier where T : View
 public class CardStyle : ViewModifier
 {
 	public override View Apply(View view) => view
-		.Background(Theme.Token(ColorTokens.SurfaceContainer))
+		.Background(ColorTokens.SurfaceContainer)
 		.ClipShape(new RoundedRectangle(12))
 		.Padding(16)
 		.Shadow(new Shadow(2, 2, 4, Colors.Black.WithAlpha(0.15f)));
@@ -137,9 +139,9 @@ public class CardStyle : ViewModifier
 public class HeaderTextStyle : ViewModifier<Text>
 {
 	public override Text Apply(Text view) => view
-		.FontSize(Theme.Token(TypographyTokens.TitleLarge.Size))
+		.Typography(TypographyTokens.TitleLarge)
 		.FontWeight(FontWeight.Bold)
-		.Color(Theme.Token(ColorTokens.OnSurface));
+		.Color(ColorTokens.OnSurface);
 }
 ```
 
@@ -261,8 +263,11 @@ Each styleable control defines a configuration struct carrying its interactive s
 
 ```csharp
 /// Configuration provided to ButtonStyle implementations.
+/// TargetView carries the view reference so styles can resolve tokens
+/// against the nearest scoped theme via view.GetToken(token).
 public readonly struct ButtonConfiguration
 {
+	public View TargetView { get; init; }
 	public bool IsPressed { get; init; }
 	public bool IsHovered { get; init; }
 	public bool IsEnabled { get; init; }
@@ -273,6 +278,7 @@ public readonly struct ButtonConfiguration
 /// Configuration provided to ToggleStyle implementations.
 public readonly struct ToggleConfiguration
 {
+	public View TargetView { get; init; }
 	public bool IsOn { get; init; }
 	public bool IsEnabled { get; init; }
 	public bool IsFocused { get; init; }
@@ -281,6 +287,7 @@ public readonly struct ToggleConfiguration
 /// Configuration provided to TextFieldStyle implementations.
 public readonly struct TextFieldConfiguration
 {
+	public View TargetView { get; init; }
 	public bool IsEditing { get; init; }
 	public bool IsEnabled { get; init; }
 	public bool IsFocused { get; init; }
@@ -290,6 +297,7 @@ public readonly struct TextFieldConfiguration
 /// Configuration provided to SliderStyle implementations.
 public readonly struct SliderConfiguration
 {
+	public View TargetView { get; init; }
 	public double Value { get; init; }
 	public double Minimum { get; init; }
 	public double Maximum { get; init; }
@@ -332,8 +340,8 @@ sealed class ButtonAppearance : ViewModifier<Button>
 	}
 
 	public override Button Apply(Button view) => view
-		.Background(Theme.Token(_bg))
-		.Color(Theme.Token(_fg))
+		.Background(_bg)
+		.Color(_fg)
 		.Opacity(_opacity)
 		.ClipShape(new RoundedRectangle(20))
 		.Padding(new Thickness(24, 12));
@@ -416,14 +424,23 @@ Inside the generated Button class (or hand-written equivalent), the handler quer
 // Inside Button's handler mapping or ViewPropertyChanged:
 internal ViewModifier ResolveCurrentStyle()
 {
+	// 1. Check scoped or local environment first
 	var style = this.GetEnvironment<IControlStyle<Button, ButtonConfiguration>>(
 		StyleToken<Button>.Key);
+
+	// 2. Fall back to the active theme's control style defaults
+	if (style == null)
+	{
+		var theme = ThemeManager.Current(this);
+		style = theme.GetControlStyle<Button, ButtonConfiguration>();
+	}
 
 	if (style == null)
 		return ViewModifier.Empty;
 
 	var config = new ButtonConfiguration
 	{
+		TargetView = this,
 		IsPressed = _isPressed,
 		IsHovered = _isHovered,
 		IsEnabled = this.GetEnvironment<bool?>(nameof(IView.IsEnabled)) ?? true,
@@ -434,6 +451,8 @@ internal ViewModifier ResolveCurrentStyle()
 	return style.Resolve(config);
 }
 ```
+
+> **Revision note:** The original spec did not include the fallback to `ThemeManager.Current(this).GetControlStyle()`. This meant theme-level control style defaults were stored but never consumed. Both reviewers flagged this as a major consistency gap between Pillar 2 and Pillar 3.
 
 ---
 
@@ -448,33 +467,39 @@ Today `Theme` is a grab-bag: legacy color properties, a `ThemeColors` object wit
 A theme is a named, self-contained collection of **design tokens** organized into typed token sets, plus **per-control style defaults**.
 
 ```csharp
-public class Theme
+public record Theme
 {
 	/// Identifies this theme (e.g., "Light", "Dark", "BrandOcean").
-	public string Name { get; init; }
+	public required string Name { get; init; }
 
 	/// Color tokens — primary, secondary, surface, error, etc.
-	public ColorTokenSet Colors { get; init; }
+	public required ColorTokenSet Colors { get; init; }
 
 	/// Typography tokens — display, headline, title, body, label sizes/weights.
-	public TypographyTokenSet Typography { get; init; }
+	public required TypographyTokenSet Typography { get; init; }
 
 	/// Spacing tokens — compact, standard, comfortable.
-	public SpacingTokenSet Spacing { get; init; }
+	public required SpacingTokenSet Spacing { get; init; }
 
 	/// Shape tokens — corner radii for small, medium, large containers.
-	public ShapeTokenSet Shapes { get; init; }
+	public required ShapeTokenSet Shapes { get; init; }
 
 	/// Per-control type style defaults.
-	readonly Dictionary<Type, object> _controlStyles = new();
+	/// Stored as an ImmutableDictionary so that `with` expressions produce
+	/// independent copies — mutating a derived theme's control styles
+	/// cannot alias or corrupt the base theme's styles.
+	ImmutableDictionary<Type, object> _controlStyles =
+		ImmutableDictionary<Type, object>.Empty;
 
 	/// Sets the default style for a control type within this theme.
+	/// Returns `this` for fluent chaining. Internally replaces the
+	/// immutable dictionary, so this is safe on `with`-derived themes.
 	public Theme SetControlStyle<TControl, TConfig>(
 		IControlStyle<TControl, TConfig> style)
 		where TControl : View
 		where TConfig : struct
 	{
-		_controlStyles[typeof(TControl)] = style;
+		_controlStyles = _controlStyles.SetItem(typeof(TControl), style);
 		return this;
 	}
 
@@ -694,23 +719,24 @@ public static class ThemeManager
 	static readonly Token<Theme> ActiveThemeToken = new("Comet.Theme");
 
 	/// Gets the current theme. Reads from the nearest environment scope.
+	/// Uses ActiveThemeToken.Key because the environment is string-keyed.
 	public static Theme Current(View view)
-		=> view.GetEnvironment<Theme>(ActiveThemeToken) ?? Defaults.Light;
+		=> view.GetEnvironment<Theme>(ActiveThemeToken.Key) ?? Defaults.Light;
 
 	/// Gets the current theme from the global environment.
 	public static Theme Current()
-		=> View.GetGlobalEnvironment<Theme>(ActiveThemeToken) ?? Defaults.Light;
+		=> View.GetGlobalEnvironment<Theme>(ActiveThemeToken.Key) ?? Defaults.Light;
 
 	/// Sets the active theme globally. Reactive — views that read tokens update.
 	public static void SetTheme(Theme theme)
 	{
-		View.SetGlobalEnvironment(ActiveThemeToken, theme);
+		View.SetGlobalEnvironment(ActiveThemeToken.Key, theme);
 	}
 
 	/// Sets a scoped theme override on a subtree.
 	public static T Theme<T>(this T view, Theme theme) where T : View
 	{
-		view.SetEnvironment(ActiveThemeToken, theme, cascades: true);
+		view.SetEnvironment(ActiveThemeToken.Key, theme, cascades: true);
 		return view;
 	}
 }
@@ -718,29 +744,30 @@ public static class ThemeManager
 
 ### 6.3 Reactive Token Resolution
 
-When a view reads `Theme.Token(ColorTokens.Primary)`, it doesn't get a static color. It gets a `Binding<Color>` that resolves lazily from the active theme:
+When a view uses `ColorTokens.Primary` in a property like `.Color()`, the implicit conversion from `Token<T>` to `Binding<T>` creates a lazy binding that resolves from the active theme:
 
 ```csharp
-public static class Theme
+// These helper methods are on ThemeManager (not a separate "Theme" static class,
+// which would conflict with the Theme record defined in Section 5.2).
+public static class ThemeManager
 {
+	// ... existing members from Section 6.2 ...
+
 	/// Returns a binding that lazily resolves a color from the active theme.
 	/// When the theme changes, the binding re-evaluates and the view updates.
-	public static Binding<Color> Token(Token<Color> token)
+	/// Note: Token<T>'s implicit operator calls this internally.
+	public static Binding<Color> TokenBinding(Token<Color> token)
 		=> new Binding<Color>(() =>
 		{
-			var theme = ThemeManager.Current();
+			var theme = Current();
 			return token.Resolve(theme);
 		});
 
-	/// Resolve a token value from a specific theme directly (non-reactive).
-	public static Color Resolve(Token<Color> token, Theme theme)
-		=> token.Resolve(theme);
-
 	/// Resolve from the nearest scoped theme for a specific view.
-	public static Binding<Color> Token(View view, Token<Color> token)
+	public static Binding<Color> TokenBinding(View view, Token<Color> token)
 		=> new Binding<Color>(() =>
 		{
-			var theme = ThemeManager.Current(view);
+			var theme = Current(view);
 			return token.Resolve(theme);
 		});
 }
@@ -807,7 +834,7 @@ Instead of pushing N individual token values into the environment, push **one** 
 ```
 View reads ColorTokens.Primary
   → Binding evaluates: ThemeManager.Current(this)
-    → this.GetEnvironment<Theme>(ActiveThemeToken)
+    → this.GetEnvironment<Theme>(ActiveThemeToken.Key)
       → LocalContext? → Context? → Parent.Context? → ... → Global Environment
     → Finds nearest Theme object
     → Calls token.Resolve(theme) → returns theme.Colors.Primary
@@ -820,16 +847,16 @@ VStack {
 	// This card renders in dark mode even when the app is light
 	VStack {
 		Text("Dark Card Title")
-			.Color(Theme.Token(ColorTokens.OnSurface)),
+			.Color(ColorTokens.OnSurface),
 		Text("Content on a dark surface")
-			.Color(Theme.Token(ColorTokens.OnSurfaceVariant)),
+			.Color(ColorTokens.OnSurfaceVariant),
 	}
-	.Background(Theme.Token(ColorTokens.Surface))
+	.Background(ColorTokens.Surface)
 	.Theme(AppThemes.Dark),  // <-- scoped override
 
 	// Everything below here uses the app's active theme
 	Text("This follows the global theme")
-		.Color(Theme.Token(ColorTokens.OnBackground)),
+		.Color(ColorTokens.OnBackground),
 }
 ```
 
@@ -895,6 +922,27 @@ public sealed class Token<T>
 		Name = name ?? key;
 		DefaultValue = defaultValue;
 	}
+
+	/// Implicit conversion: Token<T> → Binding<T>.
+	/// Creates a reactive binding that resolves this token from the active theme.
+	///
+	/// IMPORTANT: This conversion resolves against the GLOBAL theme. It works
+	/// correctly for the common case (app-wide theme), but does NOT honor
+	/// scoped `.Theme()` overrides on ancestor views. For scoped resolution,
+	/// use the view-aware fluent extension overloads (Section 8.8) which
+	/// capture the target view and walk the parent chain.
+	///
+	/// The implicit conversion exists for ergonomics — it keeps
+	/// `Text("Hello").Color(ColorTokens.Primary)` readable. The generated
+	/// view-aware overloads (Section 12.2) call `view.GetToken(token)` instead,
+	/// which correctly resolves scoped themes.
+	public static implicit operator Binding<T>(Token<T> token)
+		=> new Binding<T>(() => token.Resolve(ThemeManager.Current()));
+
+	/// Projects this token through a transform, returning a reactive Binding<TResult>.
+	/// Useful for extracting individual properties from composite tokens.
+	public Binding<TResult> Map<TResult>(Func<T, TResult> transform)
+		=> new Binding<TResult>(() => transform(Resolve(ThemeManager.Current())));
 }
 ```
 
@@ -1078,34 +1126,144 @@ public static class ColorTokens
 
 ```csharp
 /// Extension method on View for reading typed tokens.
+/// Uses presence detection (not null/default probing) to handle
+/// value-type tokens like Token<double> correctly.
 public static T GetToken<T>(this View view, Token<T> token)
 {
 	// First check: is there a direct token override in the environment?
-	var directOverride = view.GetEnvironment<T>(token.Key);
-	if (directOverride != null)
+	// TryGetEnvironment is required because GetEnvironment returns default(T)
+	// on miss, which is indistinguishable from a real override of 0.0 or false.
+	if (view.TryGetEnvironment<T>(token.Key, out var directOverride))
 		return directOverride;
 
-	// Second check: resolve from the active theme
+	// Second check: resolve from the nearest scoped theme (walks parent chain)
 	var theme = ThemeManager.Current(view);
 	return token.Resolve(theme);
 }
+
+/// Presence-detecting environment lookup. Required for value-type tokens.
+/// If TryGetEnvironment does not exist in EnvironmentData today, it must be
+/// added before this system ships. The implementation wraps the existing
+/// dictionary lookup with a bool return indicating presence.
+public static bool TryGetEnvironment<T>(this View view, string key, out T value)
+{
+	var raw = view.GetEnvironmentObject(key);  // returns null on miss
+	if (raw is T typed)
+	{
+		value = typed;
+		return true;
+	}
+	value = default;
+	return false;
+}
 ```
+
+> **Revision note:** The original `GetToken` used `if (directOverride != null)` which fails for value types like `Token<double>`: a real override of `0.0` is indistinguishable from a missing key. The revised version uses presence detection via `TryGetEnvironment`. This method does not exist in the codebase today (`src/Comet/EnvironmentData.cs` only has `GetValue<T>` which returns `default` on miss); it must be added to the environment layer as a prerequisite.
 
 ### 8.6 Compile-Time Safety
 
 ```csharp
-// ✅ Compiles — Token<Color> goes into a Color parameter
-Text("Hello").Color(Theme.Token(ColorTokens.Primary))
+// ✅ Compiles — Token<Color> implicit → Binding<Color>
+Text("Hello").Color(ColorTokens.Primary)
 
 // ❌ Does not compile — Token<FontSpec> is not Color
-Text("Hello").Color(Theme.Token(TypographyTokens.BodyLarge))
+Text("Hello").Color(TypographyTokens.BodyLarge)
 
-// ✅ Compiles — Token<double> goes into a double parameter
-VStack { ... }.Padding(Theme.Token(SpacingTokens.Medium))
+// ✅ Compiles — Token<double> implicit → Binding<double>
+VStack { ... }.Padding(SpacingTokens.Medium)
 
 // ❌ Does not compile — Token<Color> is not double
-VStack { ... }.Padding(Theme.Token(ColorTokens.Primary))
+VStack { ... }.Padding(ColorTokens.Primary)
+
+// ✅ Compiles — .Map() projects Token<FontSpec> → Binding<double>
+Text("Hello").FontSize(TypographyTokens.BodyLarge.Map(f => f.Size))
+
+// ✅ Compiles — .Typography() convenience applies all font properties
+Text("Hello").Typography(TypographyTokens.BodyLarge)
 ```
+
+### 8.7 Typography Convenience Extension
+
+The `.Typography()` extension applies all font properties from a `FontSpec` token in a single call:
+
+```csharp
+public static class TypographyExtensions
+{
+	/// Applies size, weight, family, and line height from a FontSpec token.
+	public static T Typography<T>(this T view, Token<FontSpec> token) where T : View
+	{
+		view.FontSize(new Binding<double>(() => view.GetToken(token).Size));
+		view.FontWeight(new Binding<FontWeight>(() => view.GetToken(token).Weight));
+
+		// Apply family only when the FontSpec specifies one.
+		// Uses a binding so the check happens at evaluation time, not construction time.
+		view.FontFamily(new Binding<string>(() =>
+		{
+			var spec = view.GetToken(token);
+			return spec.Family; // null family = use platform default
+		}));
+
+		return view;
+	}
+}
+
+// Usage:
+Text("Headline").Typography(TypographyTokens.HeadlineMedium)
+Text("Body text").Typography(TypographyTokens.BodyLarge)
+Text("Caption").Typography(TypographyTokens.LabelSmall)
+```
+
+### 8.8 View-Aware Token Resolution (Scoped Theme Support)
+
+The implicit `Token<T> → Binding<T>` conversion (Section 8.2) resolves against the **global** theme. This is correct for apps with one active theme, but it does NOT honor scoped `.Theme()` overrides (Section 7.3).
+
+For scoped theme resolution to work, the fluent extension that receives the token must capture the target view and resolve through it. The source generator (Section 12.2) emits **view-aware overloads** for every themeable property:
+
+```csharp
+// Generated view-aware overloads for token-accepting properties.
+// These capture the view reference so token resolution walks the
+// parent chain and finds scoped .Theme() overrides.
+public static class ThemeAwareExtensions
+{
+	public static T Color<T>(this T view, Token<Color> token) where T : View
+		=> view.Color(new Binding<Color>(() => view.GetToken(token)));
+
+	public static T Background<T>(this T view, Token<Color> token) where T : View
+		=> view.Background(new Binding<Color>(() => view.GetToken(token)));
+
+	public static T Opacity<T>(this T view, Token<double> token) where T : View
+		=> view.Opacity(new Binding<double>(() => view.GetToken(token)));
+
+	public static T Padding<T>(this T view, Token<double> token) where T : View
+		=> view.Padding(new Binding<Thickness>(() =>
+			new Thickness(view.GetToken(token))));
+
+	public static T FontSize<T>(this T view, Token<double> token) where T : View
+		=> view.FontSize(new Binding<double>(() => view.GetToken(token)));
+
+	// ... generated for every Token<T>-accepting property
+}
+```
+
+**Resolution algorithm** (pseudocode for `view.GetToken(token)`):
+
+```
+GetToken(view, token):
+  1. Check view's local environment for token.Key override
+     → if found: return override value
+  2. Walk parent chain via GetEnvironment (cascading lookup)
+     → if ancestor has token.Key override: return it
+  3. Get nearest scoped Theme: ThemeManager.Current(view)
+     → walks parent chain for ActiveThemeToken
+     → finds nearest .Theme() override, or falls back to global
+  4. Return token.Resolve(nearestTheme)
+```
+
+**Why this matters:** Without view-aware overloads, `Text("Hello").Color(ColorTokens.Primary)` inside a `.Theme(AppThemes.Dark)` subtree would resolve against the global theme, not the scoped dark theme. The view-aware overloads make the implicit conversion a convenience for the common case while the generated overloads handle scoping correctly.
+
+**Existing Binding\<T\> overload coverage:** The current codebase already has `Binding<T>` overloads for most fluent extensions (`Color`, `Background`, `Opacity`, `FontSize`, `FontWeight`, `FontFamily`, `FontSlant`, `Title`, `Enabled`, text alignment, etc.). The view-aware `Token<T>` overloads created by the source generator call through to these existing `Binding<T>` overloads. Any fluent extension that lacks a `Binding<T>` overload (e.g., `Padding(Thickness)`) must have one added. The source generator can detect and emit these where they are missing.
+
+> **Revision note:** This section was added to address the critical scoped-resolution gap identified by both GPT-5.4 (Concern #1) and Gemini (Concern #1). The original spec alternated between `ThemeManager.Current()` and `ThemeManager.Current(view)` without making the distinction explicit or specifying how token bindings know which view's scope to resolve against.
 
 ---
 
@@ -1116,17 +1274,18 @@ VStack { ... }.Padding(Theme.Token(ColorTokens.Primary))
 The existing `ControlState` enum is adequate:
 
 ```csharp
+[Flags]
 public enum ControlState
 {
-	Default,
-	Disabled,
-	Pressed,
-	Hovered,
-	Focused,
+	Default  = 0,
+	Disabled = 1 << 0,
+	Pressed  = 1 << 1,
+	Hovered  = 1 << 2,
+	Focused  = 1 << 3,
 }
 ```
 
-Add `Focused` (not present today) — needed for text fields, buttons with keyboard navigation.
+This is a `[Flags]` enum with power-of-two values so that multiple states can be active simultaneously (e.g., `Hovered | Focused`). The existing `ControlState` in the codebase (`src/Comet/Styles/ControlState.cs`) does not use `[Flags]`; it must be updated to match this definition.
 
 ### 9.2 State Tracking
 
@@ -1170,10 +1329,19 @@ internal void UpdateControlState(ControlState state, bool active)
 
 void OnControlStateChanged()
 {
-	// The control's style protocol is re-resolved with the new configuration.
-	// This triggers the handler to update the native view.
-	ViewPropertyChanged(StyleToken<View>.Key, null);
+	// Notify using the CONCRETE control type's style key, not StyleToken<View>.Key.
+	// The style key must match what was registered via .ButtonStyle(), .ToggleStyle(), etc.
+	// In practice, generated controls use their own type:
+	//   ViewPropertyChanged(StyleToken<Button>.Key, null);    // for Button
+	//   ViewPropertyChanged(StyleToken<Toggle>.Key, null);    // for Toggle
+	// The base class cannot know the concrete key, so each generated control
+	// overrides OnControlStateChanged to notify with the correct key.
+	OnControlStateStyleChanged();
 }
+
+/// Override in each generated control to notify with the correct style key.
+/// Example for Button: ViewPropertyChanged(StyleToken<Button>.Key, null);
+protected virtual void OnControlStateStyleChanged() { }
 ```
 
 ### 9.4 Using Control State in Styles
@@ -1183,38 +1351,201 @@ public class FilledButtonStyle : IControlStyle<Button, ButtonConfiguration>
 {
 	public ViewModifier Resolve(ButtonConfiguration config)
 	{
-		// State-aware color selection
-		Color bg, fg;
+		// State-aware color selection.
+		// Note: Control styles resolve tokens eagerly (not via Binding<T>) because
+		// they re-evaluate on every state change via OnControlStateChanged().
+		// Use config.TargetView to resolve from the nearest scoped theme.
 		if (!config.IsEnabled)
 		{
-			bg = Colors.Gray.WithAlpha(0.12f);
-			fg = Colors.Gray.WithAlpha(0.38f);
+			return new StatefulButtonAppearance(
+				Colors.Gray.WithAlpha(0.12f),
+				Colors.Gray.WithAlpha(0.38f),
+				enabled: false);
 		}
-		else if (config.IsPressed)
+
+		// Resolve from the nearest scoped theme via the view reference.
+		// This ensures that a button inside `.Theme(AppThemes.Dark)` uses
+		// dark theme tokens, not the global theme.
+		var theme = ThemeManager.Current(config.TargetView);
+		Color bg, fg;
+		if (config.IsPressed)
 		{
-			bg = Theme.Resolve(ColorTokens.Primary).WithAlpha(0.88f);
-			fg = Theme.Resolve(ColorTokens.OnPrimary);
+			bg = ColorTokens.Primary.Resolve(theme).WithAlpha(0.88f);
+			fg = ColorTokens.OnPrimary.Resolve(theme);
 		}
 		else if (config.IsHovered)
 		{
-			bg = Theme.Resolve(ColorTokens.Primary).WithAlpha(0.92f);
-			fg = Theme.Resolve(ColorTokens.OnPrimary);
+			bg = ColorTokens.Primary.Resolve(theme).WithAlpha(0.92f);
+			fg = ColorTokens.OnPrimary.Resolve(theme);
 		}
 		else
 		{
-			bg = Theme.Resolve(ColorTokens.Primary);
-			fg = Theme.Resolve(ColorTokens.OnPrimary);
+			bg = ColorTokens.Primary.Resolve(theme);
+			fg = ColorTokens.OnPrimary.Resolve(theme);
 		}
 
-		return new InlineModifier(v => v
-			.Background(new SolidPaint(bg))
-			.Color(fg)
-			.Opacity(config.IsEnabled ? 1.0 : 0.38)
+		return new StatefulButtonAppearance(bg, fg, config.IsEnabled);
+	}
+}
+
+sealed class StatefulButtonAppearance : ViewModifier<Button>
+{
+	readonly Color _bg;
+	readonly Color _fg;
+	readonly bool _enabled;
+
+	public StatefulButtonAppearance(Color bg, Color fg, bool enabled)
+	{
+		_bg = bg;
+		_fg = fg;
+		_enabled = enabled;
+	}
+
+	public override Button Apply(Button view) => view
+		.Background(new SolidPaint(_bg))
+		.Color(_fg)
+		.Opacity(_enabled ? 1.0 : 0.38)
+		.ClipShape(new RoundedRectangle(20))
+		.Padding(new Thickness(24, 12));
+}
+```
+
+### 9.5 Animation Transitions on State Changes
+
+When control state changes (e.g., pressed → default, hovered → default), properties should animate smoothly rather than snap. The `WithTransition` pattern specifies duration and easing for style-driven property changes.
+
+#### 9.5.1 Transition Specification
+
+```csharp
+/// Describes how a property change should animate.
+public readonly record struct Transition(
+	TimeSpan Duration,
+	Easing Easing = null
+)
+{
+	public static readonly Transition Fast = new(TimeSpan.FromMilliseconds(100), Easing.CubicOut);
+	public static readonly Transition Normal = new(TimeSpan.FromMilliseconds(200), Easing.CubicInOut);
+	public static readonly Transition Slow = new(TimeSpan.FromMilliseconds(350), Easing.CubicInOut);
+}
+
+/// A ViewModifier that wraps another modifier and animates property changes.
+public sealed class TransitionModifier : ViewModifier
+{
+	readonly ViewModifier _inner;
+	readonly Transition _transition;
+
+	public TransitionModifier(ViewModifier inner, Transition transition)
+	{
+		_inner = inner;
+		_transition = transition;
+	}
+
+	public override View Apply(View view)
+	{
+		// Store the transition spec in the view's environment.
+		// The handler reads this when applying property changes.
+		view.SetEnvironment(EnvironmentKeys.Transition, _transition, cascades: false);
+		return _inner.Apply(view);
+	}
+}
+
+public static class TransitionExtensions
+{
+	/// Wraps a ViewModifier so its property changes animate with the given transition.
+	public static ViewModifier WithTransition(
+		this ViewModifier modifier,
+		Transition transition)
+		=> new TransitionModifier(modifier, transition);
+
+	/// Shorthand: animate with duration and optional easing.
+	public static ViewModifier WithTransition(
+		this ViewModifier modifier,
+		int durationMs,
+		Easing easing = null)
+		=> new TransitionModifier(modifier, new Transition(
+			TimeSpan.FromMilliseconds(durationMs),
+			easing ?? Easing.CubicOut));
+}
+```
+
+#### 9.5.2 Usage in Control Styles
+
+Control styles return modifiers with transition specs. The handler interpolates property values when a transition is active:
+
+```csharp
+public class AnimatedButtonStyle : IControlStyle<Button, ButtonConfiguration>
+{
+	public ViewModifier Resolve(ButtonConfiguration config)
+	{
+		if (config.IsPressed)
+			return PressedAppearance.Instance
+				.WithTransition(Transition.Fast);
+
+		if (config.IsHovered)
+			return HoveredAppearance.Instance
+				.WithTransition(Transition.Normal);
+
+		return DefaultAppearance.Instance
+			.WithTransition(Transition.Normal);
+	}
+
+	sealed class DefaultAppearance : ViewModifier<Button>
+	{
+		public static readonly DefaultAppearance Instance = new();
+		public override Button Apply(Button view) => view
+			.Background(ColorTokens.Primary)
+			.Color(ColorTokens.OnPrimary)
 			.ClipShape(new RoundedRectangle(20))
-			.Padding(new Thickness(24, 12)));
+			.Padding(new Thickness(24, 12));
+	}
+
+	sealed class PressedAppearance : ViewModifier<Button>
+	{
+		public static readonly PressedAppearance Instance = new();
+		public override Button Apply(Button view) => view
+			.Background(ColorTokens.PrimaryContainer)
+			.Color(ColorTokens.OnPrimaryContainer)
+			.ClipShape(new RoundedRectangle(20))
+			.Padding(new Thickness(24, 12));
+	}
+
+	sealed class HoveredAppearance : ViewModifier<Button>
+	{
+		public static readonly HoveredAppearance Instance = new();
+		public override Button Apply(Button view) => view
+			.Background(ColorTokens.Primary.Map(c => c.WithAlpha(0.92f)))
+			.Color(ColorTokens.OnPrimary)
+			.ClipShape(new RoundedRectangle(20))
+			.Padding(new Thickness(24, 12));
 	}
 }
 ```
+
+#### 9.5.3 How Transitions Work Internally
+
+1. When `OnControlStateChanged()` fires, the control calls `ResolveCurrentStyle()`.
+2. The returned modifier includes a `TransitionModifier` wrapper.
+3. `TransitionModifier.Apply()` stores the `Transition` spec and applies the inner modifier.
+4. The platform handler reads the `Transition` from the environment:
+   - **iOS/Mac Catalyst:** Wraps property changes in `UIView.Animate(duration, () => { ... })`.
+   - **Android:** Uses `ObjectAnimator` or `ViewPropertyAnimator` on the native view.
+   - **Windows:** Uses `Storyboard` or composition animations.
+5. If no `Transition` is present, property changes apply immediately (current behavior).
+
+#### 9.5.4 Animatable Properties
+
+Not all properties can animate. The handler determines which properties are animatable based on platform capabilities:
+
+| Property | iOS | Android | Windows |
+|----------|-----|---------|---------|
+| Background color | ✅ | ✅ | ✅ |
+| Text color | ✅ | ✅ | ✅ |
+| Opacity | ✅ | ✅ | ✅ |
+| Corner radius | ✅ | ✅ | ✅ |
+| Shadow | ✅ | Partial | ✅ |
+| Padding | ❌ (layout) | ❌ (layout) | ❌ (layout) |
+
+Non-animatable properties snap to their new value even when a transition is specified.
 
 ---
 
@@ -1232,7 +1563,7 @@ var combined = baseCard.Then(danger);        // Background=ErrorContainer, Corne
 
 ### 10.2 Theme Composition (Record `with`)
 
-Themes compose via C# record `with` syntax:
+Themes compose via C# record `with` syntax. Because `_controlStyles` uses `ImmutableDictionary`, the `with` expression produces a derived theme that shares the base's token sets but has an independent control-style dictionary. Calling `SetControlStyle()` on the derived theme replaces its own immutable reference without mutating the base:
 
 ```csharp
 // Start from a base, override just what you need
@@ -1243,6 +1574,9 @@ var brand = AppThemes.Light with
 		Primary = Color.FromArgb("#FF6200"),
 	},
 };
+
+// Safe: only 'brand' gets this style; AppThemes.Light is unaffected.
+brand.SetControlStyle(new BrandFilledButtonStyle());
 ```
 
 ### 10.3 Style Precedence (Highest to Lowest)
@@ -1251,12 +1585,36 @@ var brand = AppThemes.Light with
 2. **ViewModifier** applied to the view: `.Modifier(new CardStyle())` — writes to local context
 3. **Per-control style protocol** (scoped): `.ButtonStyle(new OutlinedButtonStyle())` — cascading context
 4. **Per-control style protocol** (theme-level): theme default button style — global environment
-5. **Theme token** default: `theme.Colors.Primary` — resolved via `Theme.Token()`
+5. **Theme token** default: `theme.Colors.Primary` — resolved via implicit `Token<T>` → `Binding<T>` conversion
 6. **Token.DefaultValue**: fallback when no theme provides the token
 
 ### 10.4 No Implicit Styles
 
 The current `Style<T>.RegisterImplicit()` mechanism (global side-effect registration) is removed. Per-control defaults go through the theme's control style dictionary. This is explicit, discoverable, and debuggable.
+
+### 10.5 Control Style Modifier Restrictions (v1)
+
+Control styles (returned by `IControlStyle<T, TConfig>.Resolve()`) re-evaluate on every control state change (Section 9.3). To prevent accidental structure mutation or side-effect accumulation, **v1 restricts control-style modifiers to appearance-only property writes**:
+
+```csharp
+// ✅ Allowed in control-style modifiers (property writes via environment)
+.Background(...)
+.Color(...)
+.Opacity(...)
+.ClipShape(...)
+.Shadow(...)
+.FontSize(...)
+.FontWeight(...)
+
+// ❌ NOT allowed in control-style modifiers without further design work
+.Modifier(new WrapperModifier())   // Wrapping creates new containers
+.Resources(...)                     // Resource injection accumulates
+.Gestures.Add(...)                 // Gesture accumulation across re-resolves
+```
+
+**Why:** If `ViewModifier.Apply()` returns a wrapper container (per D4), a control style that wraps would create a new container on every state change. This fights the diff algorithm and causes layout thrashing. Wrapper modifiers are fine in `ViewModifier` instances applied once during `Body()`, but not in control styles that re-resolve on press/hover/focus.
+
+**Future:** If wrapper semantics are needed in control styles (e.g., animated overlays), they require an explicit lifecycle: create once, update properties on state change, dispose on style removal.
 
 ---
 
@@ -1266,14 +1624,16 @@ The current `Style<T>.RegisterImplicit()` mechanism (global side-effect registra
 
 **Current system:** O(tokens × views) — pushes every token into global environment, notifies every view.
 
-**New system:** O(1) for the switch + O(V) for invalidation where V = views that read theme tokens.
+**New system:** O(1) mutation + O(K) propagation, where K is the number of bindings that consumed the active theme token.
 
 How:
 
-1. `ThemeManager.SetTheme(newTheme)` writes ONE value to the global environment: the `Theme` reference under `ActiveThemeToken`.
+1. `ThemeManager.SetTheme(newTheme)` writes ONE value to the global environment: the `Theme` reference under `ActiveThemeToken`. **This write is O(1).**
 2. `StateManager.OnPropertyChanged()` fires for `ActiveThemeToken.Key`.
-3. Only views whose `Body()` function (or whose `Binding<T>` lambdas) read from `ThemeManager.Current()` — i.e., views that called `Theme.Token(...)` during their last render — are invalidated.
-4. On re-render, `Theme.Token(ColorTokens.Primary)` now resolves to the new theme's primary color.
+3. Only views whose `Body()` function (or whose `Binding<T>` lambdas) read from `ThemeManager.Current()` — i.e., views that used token bindings (via implicit conversion or `Token.Map()`) during their last render — are invalidated. **This notification is O(K) where K = active bindings that depend on the theme.**
+4. On re-render, `ColorTokens.Primary` (via its `Binding<Color>`) now resolves to the new theme's primary color.
+
+**This is NOT O(1) end-to-end.** The environment write is O(1), but the observable effect of switching the theme is proportional to the number of active bindings that consume theme tokens. For an app with 50 visible views each using 3 theme tokens, K ≈ 150. This is still dramatically better than the current system which pushes all ~30 token values into the global environment and notifies every active view regardless of whether it reads any tokens.
 
 **No tree walk.** The reactive binding system already tracks which views depend on which environment keys. Changing the theme reference triggers rebuilds only for views that actually consumed it.
 
@@ -1282,10 +1642,10 @@ How:
 **Hot path:** A view reading a theme token during render.
 
 ```
-Theme.Token(ColorTokens.Primary)
-  → Binding<Color> lambda evaluates:
+ColorTokens.Primary                            // Token<Color> used in .Color()
+  → implicit operator Binding<Color> evaluates:
     → ThemeManager.Current()
-      → View.GetGlobalEnvironment<Theme>(ActiveThemeToken)  // dictionary lookup
+      → View.GetGlobalEnvironment<Theme>(ActiveThemeToken.Key)  // dictionary lookup
     → token.Resolve(theme)
       → theme.Colors.Primary  // property access, no allocation
   → returns Color value
@@ -1323,9 +1683,9 @@ Button state changes (Pressed → Default)
 | `Theme` | 1 object + 4 token set records | App lifetime (static) |
 | `Token<T>` | 1 object per token definition | Static (never collected) |
 | `ViewModifier` (cached) | 1 object | App lifetime |
-| `ViewModifier` (inline) | 1 object per call | Short-lived |
+| `ViewModifier` (per-call) | 1 object per call | Short-lived |
 | `ButtonConfiguration` | 0 (struct, stack) | Method scope |
-| `Binding<Color>` from `Theme.Token()` | 1 closure | View lifetime |
+| `Binding<Color>` from token implicit conversion | 1 closure | View lifetime |
 
 ### 11.6 Dirty Flagging
 
@@ -1350,13 +1710,78 @@ Microsoft.Maui.Graphics.Color Microsoft.Maui.ITextStyle.TextColor
 	=> this.GetEnvironment<Microsoft.Maui.Graphics.Color>("Color") ?? default;
 ```
 
-**Migration path:** The generated code continues to use string keys internally (these are implementation details, not public API). The `Token<T>` system adds a type-safe public layer on top. Eventually, the source generator can be updated to emit `Token<T>` references directly.
+**Integration:** The source generator is updated to emit **all** style infrastructure for every `[CometGenerate]` control from day one (see Design Decision D6, Section 16.6). For each generated control, the generator emits:
+
+1. **`StyleToken<TControl>`** — The environment key for the control's style protocol.
+2. **`{Control}Configuration`** — A `readonly struct` carrying the control's interactive state (pressed, hovered, focused, enabled, plus control-specific properties like `IsOn` for Toggle).
+3. **`{Control}StyleExtensions`** — A static class with the scoped `.{Control}Style()` extension method that writes the style to the cascading environment.
+
+```csharp
+// Example: generated for Button from [CometGenerate(typeof(IButton))]
+
+// StyleToken<T> is a generic static class — one per control type.
+// The source generator does NOT specialize the generic; it uses the
+// generic class with the control's type argument.
+public static class StyleToken<TControl> where TControl : View
+{
+	public static readonly string Key = $"Comet.Style.{typeof(TControl).Name}";
+}
+
+// Usage: StyleToken<Button>.Key returns "Comet.Style.Button"
+
+public readonly struct ButtonConfiguration
+{
+	public bool IsPressed { get; init; }
+	public bool IsHovered { get; init; }
+	public bool IsEnabled { get; init; }
+	public bool IsFocused { get; init; }
+	public string Label { get; init; }
+}
+
+public static class ButtonStyleExtensions
+{
+	public static T ButtonStyle<T>(
+		this T view,
+		IControlStyle<Button, ButtonConfiguration> style) where T : View
+	{
+		view.SetEnvironment(StyleToken<Button>.Key, style, cascades: true);
+		return view;
+	}
+}
+```
+
+The existing string-keyed `GetEnvironment()` calls in generated interface implementations remain as internal plumbing — `Token<T>` provides the type-safe public layer on top.
 
 ### 12.3 Handler System
 
-Handlers read view properties through MAUI interfaces (`IButton.TextColor`, `ITextStyle.Font`, etc.). The control style system writes values through the same environment keys that these interfaces read. No handler changes required.
+Handlers read view properties through MAUI interfaces (`IButton.TextColor`, `ITextStyle.Font`, etc.). The control style system writes values through the same environment keys that these interfaces read. **For property reads and writes, no handler changes are required** — the environment-to-interface bridge works as-is.
 
-**New integration:** Handlers push control state changes (pressed, hovered, focused) back to the Comet view via `UpdateControlState()`. This requires adding state-change callbacks to platform handlers.
+**Required handler changes:** The following changes ARE required and represent non-trivial work across all platform handlers (iOS, Android, Windows, Mac Catalyst):
+
+1. **Control state callbacks.** Handlers must push interactive state changes (pressed, hovered, focused, dragging, editing) back to the Comet view via `UpdateControlState()`. This requires:
+   - Event hookup for pointer enter/exit, press/release, focus/blur on each platform
+   - Each platform handler (`ButtonHandler.iOS.cs`, `ButtonHandler.Android.cs`, etc.) needs state-change wiring
+   - Estimated scope: ~4 event hookups per styleable control × 4 platforms × ~5 control types = ~80 hookup points
+
+2. **Transition-aware property application** (Section 9.5). When a `Transition` is present in the environment, handlers must:
+   - Read the `Transition` spec before applying property changes
+   - Wrap animatable property changes in platform animation APIs:
+     - **iOS/Mac Catalyst:** `UIView.Animate(duration, () => { ... })`
+     - **Android:** `ViewPropertyAnimator` or `ObjectAnimator`
+     - **Windows:** `Storyboard` or composition animations
+   - Apply non-animatable properties (layout, padding) immediately regardless of transition spec
+   - Diff old vs. new property values to determine what needs animation
+
+3. **Handler contract summary:**
+   | Responsibility | Existing | New |
+   |---------------|----------|-----|
+   | Read IView properties from environment | ✅ No change | — |
+   | Push control state via `UpdateControlState()` | — | ⚠️ Required |
+   | Read `Transition` from environment | — | ⚠️ Required |
+   | Animate property changes when transition present | — | ⚠️ Required |
+   | Instant apply when no transition | ✅ Current behavior | — |
+
+> **Revision note:** The original spec said "no handler changes required" while simultaneously requiring state callbacks and animated transitions. That was contradictory. This revision enumerates the actual handler work required.
 
 ### 12.4 Hot Reload
 
@@ -1493,40 +1918,41 @@ public static class AppStyles
 sealed class CardModifier : ViewModifier
 {
 	public override View Apply(View view) => view
-		.Background(Theme.Token(ColorTokens.SurfaceContainer))
-		.ClipShape(new RoundedRectangle(Theme.Resolve(ShapeTokens.Medium)))
-		.Padding(Theme.Token(SpacingTokens.Medium))
+		.Background(ColorTokens.SurfaceContainer)
+		.ClipShape(new Binding<RoundedRectangle>(() =>
+			new RoundedRectangle(view.GetToken(ShapeTokens.Medium))))
+		.Padding(SpacingTokens.Medium)
 		.Shadow(new Shadow(0, 1, 3, Colors.Black.WithAlpha(0.12f)));
 }
 
 sealed class PageTitleModifier : ViewModifier<Text>
 {
 	public override Text Apply(Text view) => view
-		.FontSize(Theme.Token(TypographyTokens.HeadlineMedium).Map(f => f.Size))
+		.Typography(TypographyTokens.HeadlineMedium)
 		.FontWeight(FontWeight.Bold)
-		.Color(Theme.Token(ColorTokens.OnBackground));
+		.Color(ColorTokens.OnBackground);
 }
 
 sealed class SectionHeaderModifier : ViewModifier<Text>
 {
 	public override Text Apply(Text view) => view
-		.FontSize(Theme.Token(TypographyTokens.TitleMedium).Map(f => f.Size))
+		.Typography(TypographyTokens.TitleMedium)
 		.FontWeight(FontWeight.SemiBold)
-		.Color(Theme.Token(ColorTokens.OnSurface));
+		.Color(ColorTokens.OnSurface);
 }
 
 sealed class BodyTextModifier : ViewModifier<Text>
 {
 	public override Text Apply(Text view) => view
-		.FontSize(Theme.Token(TypographyTokens.BodyLarge).Map(f => f.Size))
-		.Color(Theme.Token(ColorTokens.OnSurface));
+		.Typography(TypographyTokens.BodyLarge)
+		.Color(ColorTokens.OnSurface);
 }
 
 sealed class CaptionModifier : ViewModifier<Text>
 {
 	public override Text Apply(Text view) => view
-		.FontSize(Theme.Token(TypographyTokens.LabelSmall).Map(f => f.Size))
-		.Color(Theme.Token(ColorTokens.OnSurfaceVariant));
+		.Typography(TypographyTokens.LabelSmall)
+		.Color(ColorTokens.OnSurfaceVariant);
 }
 
 sealed class ElevationModifier : ViewModifier
@@ -1567,8 +1993,8 @@ public class BrandFilledButtonStyle : IControlStyle<Button, ButtonConfiguration>
 	{
 		public static readonly DefaultAppearance Instance = new();
 		public override Button Apply(Button view) => view
-			.Background(Theme.Token(ColorTokens.Primary))
-			.Color(Theme.Token(ColorTokens.OnPrimary))
+			.Background(ColorTokens.Primary)
+			.Color(ColorTokens.OnPrimary)
 			.ClipShape(new RoundedRectangle(20))
 			.Padding(new Thickness(24, 12));
 	}
@@ -1577,8 +2003,8 @@ public class BrandFilledButtonStyle : IControlStyle<Button, ButtonConfiguration>
 	{
 		public static readonly PressedAppearance Instance = new();
 		public override Button Apply(Button view) => view
-			.Background(Theme.Token(ColorTokens.PrimaryContainer))
-			.Color(Theme.Token(ColorTokens.OnPrimaryContainer))
+			.Background(ColorTokens.PrimaryContainer)
+			.Color(ColorTokens.OnPrimaryContainer)
 			.ClipShape(new RoundedRectangle(20))
 			.Padding(new Thickness(24, 12));
 	}
@@ -1587,8 +2013,8 @@ public class BrandFilledButtonStyle : IControlStyle<Button, ButtonConfiguration>
 	{
 		public static readonly HoveredAppearance Instance = new();
 		public override Button Apply(Button view) => view
-			.Background(Theme.Token(ColorTokens.Primary).Map(c => c.WithAlpha(0.92f)))
-			.Color(Theme.Token(ColorTokens.OnPrimary))
+			.Background(ColorTokens.Primary.Map(c => c.WithAlpha(0.92f)))
+			.Color(ColorTokens.OnPrimary)
 			.ClipShape(new RoundedRectangle(20))
 			.Padding(new Thickness(24, 12));
 	}
@@ -1620,7 +2046,7 @@ public class SettingsPage : View
 
 	[Body]
 	View Body() => ScrollView(
-		VStack(spacing: Theme.Token(SpacingTokens.Medium)) {
+		VStack(spacing: SpacingTokens.Medium) {
 			Text("Settings")
 				.Modifier(AppStyles.PageTitle),
 
@@ -1650,8 +2076,8 @@ public class SettingsPage : View
 				TextField("Name", userName),
 			}.Modifier(AppStyles.Card),
 		}
-		.Padding(Theme.Token(SpacingTokens.Medium))
-	).Background(Theme.Token(ColorTokens.Background));
+		.Padding(SpacingTokens.Medium)
+	).Background(ColorTokens.Background);
 }
 ```
 
@@ -1679,7 +2105,7 @@ public class DashboardPage : View
 				Text("$42,500")
 					.FontSize(32)
 					.FontWeight(FontWeight.Bold)
-					.Color(Theme.Token(ColorTokens.Primary)),
+					.Color(ColorTokens.Primary),
 			}.Modifier(AppStyles.Card),
 
 			// This card is ALWAYS dark, regardless of the app theme
@@ -1702,15 +2128,129 @@ public class DashboardPage : View
 			}.Modifier(AppStyles.Card),
 		}
 		.Padding(16)
-	).Background(Theme.Token(ColorTokens.Background));
+	).Background(ColorTokens.Background);
 }
 ```
 
 ---
 
-## 14. SwiftUI Comparison
+## 14. Accessibility, Adaptation, and Known Gaps
 
-### 14.1 Reusable Styles
+This section addresses concerns that both independent reviewers flagged as absent from the original spec. Some are intentionally out of v1 scope; others need extension points specified now.
+
+### 14.1 Accessibility & High Contrast
+
+**v1 scope:** The token system is structurally ready for accessibility themes. A high-contrast theme is just another `Theme` with higher-contrast `ColorTokenSet` values:
+
+```csharp
+public static readonly Theme HighContrast = AppThemes.Light with
+{
+	Name = "HighContrast",
+	Colors = new ColorTokenSet
+	{
+		Primary = Colors.Black,
+		OnPrimary = Colors.White,
+		Surface = Colors.White,
+		OnSurface = Colors.Black,
+		Outline = Colors.Black,
+		// ... high contrast values for all tokens
+	},
+};
+
+// Platform high-contrast mode triggers theme switch
+if (accessibilitySettings.HighContrastEnabled)
+	ThemeManager.SetTheme(AppThemes.HighContrast);
+```
+
+**Not in v1:** Automatic high-contrast detection and theme switching is platform-specific and deferred. The extension point is `ThemeManager.SetTheme()` — platform code can call it in response to `UIAccessibility` / `AccessibilitySettings` changes.
+
+### 14.2 RTL / Flow Direction
+
+**v1 scope:** RTL is handled by MAUI's existing `FlowDirection` system, which Comet inherits through the handler layer. The current codebase already has explicit `FlowDirection` and alignment behavior.
+
+**Extension point for tokens:** Spacing tokens can support RTL-aware values via a directional variant:
+
+```csharp
+// Future: directional spacing tokens
+public static class SpacingTokens
+{
+	// Existing (non-directional)
+	public static readonly Token<double> Medium = new("theme.spacing.md", "Medium", 16);
+
+	// Future: start/end tokens that flip in RTL contexts
+	public static readonly Token<double> LeadingMedium = new("theme.spacing.leading.md", "Leading Medium", 16);
+	public static readonly Token<double> TrailingMedium = new("theme.spacing.trailing.md", "Trailing Medium", 16);
+}
+```
+
+**Not in v1:** Directional spacing tokens. RTL layout relies on MAUI's existing `FlowDirection` infrastructure.
+
+### 14.3 Dynamic Type / Font Scaling
+
+**v1 scope:** `FontSpec` carries size, weight, and family. Platform font scaling (iOS Dynamic Type, Android font scale) is applied by the MAUI handler layer below Comet. The `FontSpec.Size` value is the base size; platform scaling multipliers apply at the native view level.
+
+**Not in v1:** Token-level scaling awareness (e.g., clamping text to a maximum scaled size). This would require the token resolver to access platform state, which adds complexity without clear demand.
+
+### 14.4 Responsive Layout Tokens
+
+**v1 scope:** Not included. Responsive tokens (different values for phone vs. tablet, portrait vs. landscape, size classes) require access to device/window state during resolution.
+
+**Extension point:** The `Token<T>.Resolver` function currently takes only a `Theme`. A future v2 could accept a `ResolutionContext` that includes device idiom, window size class, and accessibility state:
+
+```csharp
+// Future: context-aware resolver
+public sealed class Token<T>
+{
+	// v1: Theme-only resolver
+	internal Func<Theme, T> Resolver { get; init; }
+
+	// v2: Context-aware resolver (additive, non-breaking)
+	internal Func<Theme, ResolutionContext, T> ContextualResolver { get; init; }
+}
+
+public readonly record struct ResolutionContext(
+	DeviceIdiom Idiom,
+	SizeClass HorizontalSizeClass,
+	SizeClass VerticalSizeClass,
+	double FontScale
+);
+```
+
+**Not in v1:** Responsive token resolution. The current system supports one set of token values per theme. Per-idiom or per-size-class variations require multiple themes or manual conditional logic in `Body()`.
+
+### 14.5 ListView / Collection Item Styling
+
+**v1 scope:** The spec does not address how styles interact with `ListView` item templates. Key open questions:
+
+- Does `ListView.Modifier(...)` apply to the container or the cells?
+- How does the selected-cell state interact with button-pressed state inside a cell?
+- Can `IControlStyle<T, TConfig>` be used for list item appearance?
+
+**Deferred:** Collection styling is complex enough to warrant a separate design note once the base theming system is implemented. The token system works inside item templates (each cell resolves tokens from the environment normally), but there is no `ItemStyle` equivalent yet.
+
+### 14.6 Image / Resource Tokens
+
+**v1 scope:** `Token<T>` is generic and can hold `Token<ImageSource>`, but no built-in image token set is provided. Themed image assets (e.g., light/dark logo variants) can be implemented as:
+
+```csharp
+public static class ImageTokens
+{
+	public static readonly Token<ImageSource> Logo = new("theme.image.logo", "Logo")
+	{
+		Resolver = theme => theme.Name.Contains("Dark")
+			? ImageSource.FromFile("logo_dark.png")
+			: ImageSource.FromFile("logo_light.png")
+	};
+}
+```
+
+**Not in v1:** A built-in `ImageTokenSet` on `Theme`. Image theming is app-specific enough that providing a standard set isn't warranted yet.
+
+---
+
+## 15. SwiftUI Comparison
+
+### 15.1 Reusable Styles
 
 | Concern | SwiftUI | Comet (Proposed) |
 |---------|---------|------------------|
@@ -1739,13 +2279,13 @@ class CardModifier : ViewModifier
 {
 	public override View Apply(View view) => view
 		.Padding(16)
-		.Background(Theme.Token(ColorTokens.SurfaceContainer))
+		.Background(ColorTokens.SurfaceContainer)
 		.ClipShape(new RoundedRectangle(12));
 }
 Text("Hello").Modifier(new CardModifier())
 ```
 
-### 14.2 Per-Control Styling
+### 15.2 Per-Control Styling
 
 | Concern | SwiftUI | Comet (Proposed) |
 |---------|---------|------------------|
@@ -1769,25 +2309,38 @@ Button("Tap") { }.buttonStyle(MyButtonStyle())
 ```
 
 ```csharp
-// Comet
+// Comet — control styles resolve tokens eagerly (not via Binding<T>)
+// because they re-evaluate on every state change. The config carries
+// the TargetView so resolution honors scoped .Theme() overrides.
 class MyButtonStyle : IControlStyle<Button, ButtonConfiguration>
 {
 	public ViewModifier Resolve(ButtonConfiguration config)
 	{
+		var theme = ThemeManager.Current(config.TargetView);
 		var bg = config.IsPressed
-			? Theme.Token(ColorTokens.Primary).Map(c => c.WithAlpha(0.8f))
-			: Theme.Token(ColorTokens.Primary);
-		return new InlineModifier(v => v
-			.Padding(new Thickness(24, 0))
-			.Background(bg)
-			.Color(Theme.Token(ColorTokens.OnPrimary))
-			.ClipShape(new RoundedRectangle(9999)));
+			? ColorTokens.Primary.Resolve(theme).WithAlpha(0.8f)
+			: ColorTokens.Primary.Resolve(theme);
+		var fg = ColorTokens.OnPrimary.Resolve(theme);
+		return new CapsuleButtonAppearance(bg, fg);
 	}
+}
+
+sealed class CapsuleButtonAppearance : ViewModifier<Button>
+{
+	readonly Color _bg;
+	readonly Color _fg;
+	public CapsuleButtonAppearance(Color bg, Color fg) { _bg = bg; _fg = fg; }
+
+	public override Button Apply(Button view) => view
+		.Padding(new Thickness(24, 0))
+		.Background(new SolidPaint(_bg))
+		.Color(_fg)
+		.ClipShape(new RoundedRectangle(9999));
 }
 Button("Tap", OnClick).ButtonStyle(new MyButtonStyle())
 ```
 
-### 14.3 Theme Definition
+### 15.3 Theme Definition
 
 | Concern | SwiftUI | Comet (Proposed) |
 |---------|---------|------------------|
@@ -1796,7 +2349,7 @@ Button("Tap", OnClick).ButtonStyle(new MyButtonStyle())
 | Define | System provided, custom via assets | `new Theme { Colors = ..., Typography = ... }` |
 | Compose | N/A (system themes only) | `theme with { Colors = ... }` (record `with`) |
 
-### 14.4 Theme Switching
+### 15.4 Theme Switching
 
 | Concern | SwiftUI | Comet (Proposed) |
 |---------|---------|------------------|
@@ -1820,112 +2373,131 @@ VStack {
 .Theme(AppThemes.Dark)
 ```
 
-### 14.5 Token Access
+### 15.5 Token Access
 
 | Concern | SwiftUI | Comet (Proposed) |
 |---------|---------|------------------|
-| Color | `Color.primary`, `.tint(.blue)` | `Theme.Token(ColorTokens.Primary)` |
-| Font | `.font(.headline)` | `.FontSize(Theme.Token(TypographyTokens.HeadlineMedium).Map(f => f.Size))` |
-| Spacing | No built-in tokens | `Theme.Token(SpacingTokens.Medium)` |
+| Color | `Color.primary`, `.tint(.blue)` | `ColorTokens.Primary` (implicit → `Binding<Color>`) |
+| Font | `.font(.headline)` | `.Typography(TypographyTokens.HeadlineMedium)` |
+| Spacing | No built-in tokens | `SpacingTokens.Medium` (implicit → `Binding<double>`) |
 | Shape | `.clipShape(.rect(cornerRadius: 12))` | `.ClipShape(new RoundedRectangle(12))` |
 
 ---
 
-## 15. Open Questions
+## 16. Design Decisions
 
-### 15.1 Architecture Decisions for David
+The following decisions were finalized by David Ortinau on 2026-03-09 during spec review. Each resolves an architectural question raised during initial drafting.
 
-**Q1: Inline modifier sugar?**
+### 16.1 D1: No Inline Modifier Sugar
 
-Should there be a lightweight inline modifier for one-off cases?
+**Decision:** `InlineModifier` is **removed**. There is no lambda-accepting `.Modifier()` overload.
+
+**Rationale:** `ViewModifier` exists exclusively for **named, reusable** style classes. One-off styling uses direct fluent chaining — this is already concise and discoverable:
 
 ```csharp
-// Option A: Always require a class
+// One-off styling — just chain fluent methods directly
+Text("Hello").FontSize(24).FontWeight(FontWeight.Bold)
+
+// Reusable styling — define a named ViewModifier class
 Text("Hello").Modifier(new HeaderTextStyle())
-
-// Option B: Also support inline lambdas
-Text("Hello").Modifier(v => v.FontSize(24).FontWeight(FontWeight.Bold))
 ```
 
-**Recommendation:** Support both. The `InlineModifier` class wraps a lambda:
+Having two ways to do the same thing (lambda vs. class) violates the "one way to do each thing" principle (Section 1.2). The lambda form also defeats caching since every call allocates a new closure.
+
+### 16.2 D2: Token\<T\> Implicit Conversion to Binding\<T\>
+
+**Decision:** `Token<T>` supports `implicit operator` to `Binding<T>`. **However**, the implicit conversion resolves against the global theme only. Scoped theme resolution requires the view-aware extension overloads described in Section 8.8.
+
+**Rationale:** Tokens are the primary currency for themed property values. Requiring a `Theme.Token()` wrapper on every usage adds noise without adding clarity. With the implicit conversion, token usage is direct and reads naturally:
 
 ```csharp
-public sealed class InlineModifier : ViewModifier
-{
-	readonly Func<View, View> _apply;
-	public InlineModifier(Func<View, View> apply) => _apply = apply;
-	public override View Apply(View view) => _apply(view);
-}
+// Direct token usage — implicit conversion handles the binding (global resolution)
+Text("Hello").Color(ColorTokens.Primary)
+VStack { ... }.Padding(SpacingTokens.Medium)
+Button("Go", OnClick).Background(ColorTokens.PrimaryContainer)
 
-public static T Modifier<T>(this T view, Func<View, View> apply) where T : View
-	=> view.Modifier(new InlineModifier(apply));
+// The implicit operator on Token<T> (see Section 8.2):
+public static implicit operator Binding<T>(Token<T> token)
+	=> new Binding<T>(() => token.Resolve(ThemeManager.Current()));
 ```
 
-**Q2: Should `Token<T>` have a direct implicit conversion to `Binding<T>`?**
+**Scoping tradeoff:** The implicit conversion creates a binding that calls `ThemeManager.Current()` (global). Inside a `.Theme(AppThemes.Dark)` subtree, the implicit conversion will NOT honor the scoped theme. The source generator emits view-aware `Token<T>` overloads (Section 8.8) that call `view.GetToken(token)` to resolve through the parent chain. When both an implicit conversion and a view-aware overload exist, C# overload resolution prefers the more specific `Token<T>` overload, so scoped resolution wins automatically.
 
-This would make token usage more concise but less explicit:
+**Key insight:** The existing codebase already has `Binding<T>` overloads for most fluent extensions (`Color`, `Background`, `Opacity`, `FontSize`, `FontWeight`, `FontFamily`, `FontSlant`, `Title`, `Enabled`). The view-aware `Token<T>` overloads chain through these. Any fluent extension that lacks a `Binding<T>` overload must have one added (the source generator can detect and emit these).
+
+### 16.3 D3: Typography — Composite FontSpec + Convenience Extension
+
+**Decision:** Keep composite `FontSpec` token (Option A) as the underlying model. Add `.Typography(TypographyTokens.BodyLarge)` convenience extension (Option C) as sugar.
+
+**Rationale:** `FontSpec` is the right storage model — it keeps size, weight, family, and line height together as a single design decision. But applying it should be a one-liner, not four separate calls:
 
 ```csharp
-// Explicit (proposed):
-Text("Hello").Color(Theme.Token(ColorTokens.Primary))
+// Convenience extension applies all font properties at once
+Text("Hello").Typography(TypographyTokens.BodyLarge)
 
-// Implicit (alternative):
-Text("Hello").Color(ColorTokens.Primary)  // implicit Token<Color> → Binding<Color>
+// Individual property access still available via .Map()
+Text("Hello").FontSize(TypographyTokens.BodyLarge.Map(f => f.Size))
 ```
 
-**Recommendation:** Start explicit. Add implicit conversion later if ergonomics demand it.
+See Section 8.7 for the `.Typography()` extension implementation.
 
-**Q3: Typography tokens — FontSpec or separate Size/Weight/Family tokens?**
+### 16.4 D4: ViewModifier.Apply() Returns View
+
+**Decision:** `ViewModifier.Apply()` returns `View`.
+
+**Rationale:** Returning `View` enables wrapping composition patterns — modifiers that add decoration (borders, shadows via container wrapping) can return a new container view. The fluent chain already handles the common mutation case. This matches the existing API design in Section 3.2.
+
+### 16.5 D5: Animation Transitions Included in This Spec
+
+**Decision:** Animation/transition support for control state changes is specified directly in this document. See Section 9.5 for the full design.
+
+**Rationale:** Control state transitions (pressed → default, hovered → default) are a core part of the styling system, not an orthogonal concern. Deferring them to a separate spec would force re-architecture later. The `WithTransition` pattern layers cleanly on the control state model (Section 9) and the `ViewModifier` return type (D4).
+
+### 16.6 D6: Source Generator Emits All Style Infrastructure Immediately
+
+**Decision:** The source generator emits **all** style infrastructure from day one for every `[CometGenerate]` control:
+- `StyleToken<T>` environment key
+- `{Control}Configuration` struct (carrying interactive state)
+- `{Control}StyleExtensions` with scoped `.{Control}Style()` methods
+
+**Rationale:** A phased approach (hand-write 5 controls, then generate the rest) doubles the work — every hand-written type must eventually be replaced by the generated version. The source generator already has **most** of the metadata it needs from the MAUI interfaces, but it cannot infer interactive semantics:
+
+**What the generator CAN infer from MAUI interfaces:**
+- Control type and properties
+- Existing fluent property surface
+- Property types for `Binding<T>` overloads
+- Environment key names
+
+**What the generator CANNOT infer (requires explicit metadata):**
+- Interactive state fields: `IsPressed`, `IsHovered`, `IsDragging`, `IsEditing`
+- Which states apply to which controls (e.g., `IsDragging` applies to Slider but not Button)
+- State transition behaviors
+
+**Solution:** A small metadata descriptor per control, checked into source alongside the `[CometGenerate]` attributes:
 
 ```csharp
-// Option A: Composite FontSpec token (proposed)
-.FontSize(Theme.Token(TypographyTokens.BodyLarge).Map(f => f.Size))
-
-// Option B: Separate tokens for each property
-.FontSize(Theme.Token(TypographyTokens.BodyLargeSize))
-.FontWeight(Theme.Token(TypographyTokens.BodyLargeWeight))
-
-// Option C: A convenience extension that applies all font properties at once
-.Typography(TypographyTokens.BodyLarge)
+// In ControlsGenerator.cs, alongside existing [CometGenerate] attributes:
+[assembly: CometControlState(typeof(IButton),
+	States = new[] { "IsPressed", "IsHovered", "IsFocused" })]
+[assembly: CometControlState(typeof(ISlider),
+	States = new[] { "IsDragging", "IsFocused" })]
+[assembly: CometControlState(typeof(ITextInput),
+	States = new[] { "IsEditing", "IsFocused" })]
+[assembly: CometControlState(typeof(ISwitch),
+	States = new[] { "IsFocused" })]
 ```
 
-**Recommendation:** Option C as sugar on top of Option A. The `.Typography()` extension applies size, weight, family, and line height in one call.
+This is ~20 lines of metadata for the initial set of styleable controls. The generator reads these attributes to produce the correct `{Control}Configuration` structs.
 
-**Q4: Should `ViewModifier.Apply()` return `View` or `void`?**
+> **Revision note:** The original D6 claimed the generator "already has all the metadata it needs from the MAUI interfaces." That was overclaimed. Interactive semantics (pressed, hovered, dragging, editing) come from handler behavior, not interface shape. The metadata descriptor approach is explicit and maintainable.
 
-Returning `View` enables chaining composition patterns but allows the modifier to return a different view (wrapping). Returning `void` means modifiers can only mutate the given view.
+See Section 12.2 for source generator integration details.
 
-**Recommendation:** Return `View` (as proposed). The wrapping capability is useful for modifiers that add decoration (borders, shadows via container wrapping). The fluent chain already handles the common case.
-
-**Q5: Animation integration?**
-
-Should control styles support declarative transitions when state changes?
-
-```csharp
-// Hypothetical:
-public ViewModifier Resolve(ButtonConfiguration config)
-{
-	return new ButtonAppearance(bg, fg)
-		.WithTransition(duration: 150, easing: Easing.CubicOut);
-}
-```
-
-**Recommendation:** Defer to a separate animation spec. The control state model (Section 9) provides the foundation. Animation can layer on top by observing state changes and interpolating property values.
-
-**Q6: Source generator integration timeline?**
-
-Should the source generator be updated to emit:
-- `StyleToken<T>` for each generated control?
-- `{Control}Configuration` structs?
-- `{Control}StyleExtensions` with scoped `.{Control}Style()` methods?
-
-**Recommendation:** Phase 1 is hand-written for 5 core controls (Button, Toggle, Slider, TextField, Text). Phase 2 updates the source generator to emit these for all `[CometGenerate]` controls.
-
-### 15.2 Migration Strategy
+### 16.7 Migration Strategy
 
 Since this is greenfield, the old `Style`, `ControlStyle<T>`, `Style<T>`, and `Theme` classes remain in the codebase during the transition but are marked `[Obsolete]`. New code uses the new system exclusively. The old classes can be removed in a subsequent major version.
 
-### 15.3 Naming
+### 16.8 Naming
 
 | Proposed Name | Alternative | Notes |
 |---------------|-------------|-------|
@@ -1956,21 +2528,26 @@ src/Comet/Styles/
 ├── Modifiers/
 │   ├── ViewModifier.cs             // Base class + generic variant
 │   ├── ComposedModifier.cs         // a.Then(b) composition
-│   ├── InlineModifier.cs           // Lambda wrapper
+│   ├── TransitionModifier.cs       // WithTransition() animation wrapper
 │   └── ViewModifierExtensions.cs   // .Modifier() extension methods
 ├── ControlStyles/
 │   ├── IControlStyle.cs            // Interface definition
-│   ├── ButtonConfiguration.cs      // Configuration struct
-│   ├── ToggleConfiguration.cs
-│   ├── TextFieldConfiguration.cs
-│   ├── SliderConfiguration.cs
+│   ├── ButtonConfiguration.cs      // Configuration struct (generated)
+│   ├── ToggleConfiguration.cs      // (generated)
+│   ├── TextFieldConfiguration.cs   // (generated)
+│   ├── SliderConfiguration.cs      // (generated)
 │   ├── ButtonStyles.cs             // Built-in button style variants
 │   ├── ToggleStyles.cs
+│   ├── ButtonStyleExtensions.cs    // .ButtonStyle() extension (generated)
+│   ├── ToggleStyleExtensions.cs    // .ToggleStyle() extension (generated)
 │   └── StyleToken.cs               // StyleToken<T> environment key
+├── Transitions/
+│   └── Transition.cs               // Transition record struct + presets
 ├── Theme.cs                        // Theme record
 ├── ThemeManager.cs                 // Static theme management
 ├── ThemeDefaults.cs                // Built-in Light/Dark themes
 ├── TypographyDefaults.cs           // Material3 typography presets
+├── TypographyExtensions.cs         // .Typography() convenience extension
 ├── SpacingDefaults.cs              // Standard spacing presets
 └── ShapeDefaults.cs                // Rounded shape presets
 ```
