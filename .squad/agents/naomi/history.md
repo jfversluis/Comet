@@ -516,3 +516,30 @@ Holden completed a comprehensive style/theme specification (greenfield design, n
 - Source generator: 0 errors, 6 pre-existing warnings
 - Comet library: only pre-existing BuiltInStyles.cs errors (RoundedRectangle). My generated code compiles clean.
 - Tests: pre-existing failures from stale DLL (unrelated to my changes).
+
+---
+
+## Wave 1: Style System Implementation (2026-03-09T20:33Z)
+
+**Status:** ✅ Complete
+
+Delivered style infrastructure source generator:
+- **CometControlStateAttribute** — Attribute for marking styleable controls
+- **StyleInfrastructureGenerator** — Analyzer for [CometControlState] and auto-generator of configuration structs, style extensions, ResolveCurrentStyle() methods
+- **StyleCodeGenerator** — Code emission engine with skip-if-exists logic for parallel safety
+- **TokenOverloads** — Token<T> factory method variants
+- **CometControlStateDeclarations** — Declarations for built-in controls (Button, TextField, etc.)
+
+**Files:** 5 new (generator) + conditional modifications to ControlsGenerator.csproj  
+**Lines:** ~620  
+**Build:** ✅ Clean, no errors  
+**Key decisions:** D6 (skip-if-exists for hand-written types), D7 (theme fallback conditional)
+
+**Features:**
+- Skip-if-exists logic prevents duplicate-type errors during parallel development (Amos's hand-written types authoritative until deleted)
+- ResolveCurrentStyle() always emitted (different signature than extension method)
+- Theme fallback conditional — only emits GetControlStyle<T,TConfig>() call if 2-param overload exists on Theme
+- Generator is source of truth for future styleable controls
+
+**Next:** Wave 2 integration. Holden completes Theme.GetControlStyle<T, TConfig>(), triggering conditional Theme fallback emission on re-run.
+

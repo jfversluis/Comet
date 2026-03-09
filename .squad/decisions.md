@@ -1287,3 +1287,85 @@ Extension points documented in new Section 14. Not silent about gaps.
 - `docs/STYLE_THEME_SPEC.md` (final)
 - `docs/reviews/REVIEW_RESPONSE.md` (Round 2 appended)
 
+
+---
+
+## Wave 1 Decisions (2026-03-10)
+
+### D1: UseTheme() instead of Theme()
+**Owner:** Holden (Lead Architect)  
+**Date:** 2026-03-10  
+**Status:** Implemented  
+**Context:** Extension method for scoped theme override needs a distinct name to avoid C# namespace conflict. `Theme` is both the type name and static color class reference.  
+**Decision:** Scoped theme override extension is named `.UseTheme()` not `.Theme()`. All consuming code should use `.UseTheme(myTheme)` for subtree theme scoping.  
+**Impact:** Eliminates namespace shadowing issues. No breaking changes — new API only.
+
+### D2: Additive Theme properties, not new Theme record
+**Owner:** Holden (Lead Architect)  
+**Date:** 2026-03-10  
+**Status:** Implemented  
+**Context:** Spec defined `record Theme` but existing codebase has `class Theme` with 640+ tests depending on `Theme.Current`, `Theme.Light`, `Theme.Dark`, etc.  
+**Decision:** Token set properties (`Colors`, `Typography`, `Spacing`, `Shapes`) were added directly to the existing Theme class. The new `ThemeManager` provides the reactive resolution path forward; the legacy `Theme.Current` path continues to work.  
+**Impact:** Backward compatible. No breaking changes. Tests unmodified.
+
+### D3: MauiColors alias for Microsoft.Maui.Graphics.Colors
+**Owner:** Holden (Lead Architect)  
+**Date:** 2026-03-10  
+**Status:** Implemented  
+**Context:** `Colors` property on Theme shadows `Microsoft.Maui.Graphics.Colors` (a static class with `White`, `Black`, etc.).  
+**Decision:** Theme.cs and ThemeDefaults.cs use `using MauiColors = Microsoft.Maui.Graphics.Colors;` to disambiguate. Other files in `Comet.Styles` that need `Colors.xxx` should use this alias pattern.  
+**Impact:** No compilation ambiguity. Minimal code noise.
+
+### D4: Token.Resolve(View) overload
+**Owner:** Holden (Lead Architect)  
+**Date:** 2026-03-10  
+**Status:** Implemented  
+**Context:** Amos's ControlStyles already call `token.Resolve(config.TargetView)` for view-aware theme resolution.  
+**Decision:** Added `Token<T>.Resolve(View)` in addition to `Resolve(Theme)`. This overload resolves the nearest scoped theme from the view, then delegates to `Resolve(Theme)`.  
+**Impact:** Enables control styles to use view-aware token resolution. ControlStyle<T> can pass a view instead of a resolved theme.
+
+### D5: Pre-existing BuiltInStyles build error (Amos to fix)
+**Owner:** Holden (Lead Architect), Amos (Controls & API Dev)  
+**Date:** 2026-03-10  
+**Status:** Flagged, pending fix  
+**Context:** `BuiltInStyles.cs` references `Comet.Graphics.RoundedRectangle` but the class lives in `Comet` namespace. This blocks the full project build.  
+**Decision:** Amos to fix the namespace reference: use `using Comet;` directive or fully-qualify as `new Comet.RoundedRectangle(20)`.  
+**Impact:** Blocks Bobbie's test compilation until resolved. Wave 2 integration gate.
+
+### D6: Style Generator Uses Skip-If-Exists for Parallel Safety
+**Owner:** Naomi (Source Generator Dev)  
+**Date:** 2026-03-10  
+**Status:** Implemented  
+**Context:** StyleInfrastructureGenerator generates configuration structs, style extensions, and ResolveCurrentStyle() methods. Amos has hand-written initial versions of these types.  
+**Decision:** The generator checks the compilation before emitting:
+- Config structs: Skips if `Comet.Styles.{Control}Configuration` already exists
+- Style extensions: Skips if `{Control}Style` method already exists on `ControlStyleExtensions`
+- ResolveCurrentStyle: Always emits (different signature from hand-written extension method)
+- Theme fallback: Conditional — only emits `GetControlStyle<T,TConfig>()` call if the 2-param overload exists on Theme
+
+**Impact:** Avoids duplicate-type errors during parallel development. Amos's hand-written types are authoritative until deleted. Generator is source of truth for future controls.
+
+### D7: Theme fallback conditional in source generator
+**Owner:** Naomi (Source Generator Dev)  
+**Date:** 2026-03-10  
+**Status:** Implemented  
+**Context:** Some controls may not have a `Theme.GetControlStyle<T, TConfig>()` overload available at code-gen time.  
+**Decision:** ResolveCurrentStyle() emission checks for the 2-parameter `Theme.GetControlStyle<T, TConfig>()` method. If it exists, emit the call. Otherwise, emit a comment warning that fallback is not available.  
+**Impact:** Safe generator behavior when theme infrastructure is incomplete. Unblocks parallel development.
+
+### D8: ControlState → [Flags] enum with power-of-two values
+**Owner:** Amos (Controls & API Dev)  
+**Date:** 2026-03-10  
+**Status:** Implemented  
+**Context:** Existing ControlState enum used sequential values. Spec §9 requires [Flags] for composite states (e.g., Hovered + Focused).  
+**Decision:** Converted to `[Flags]` with power-of-two values: Default=0, Pressed=1, Hovered=2, Focused=4, Disabled=8, Dragging=16. Dropped `Background` (zero usages). Kept `Default = 0` for backward compatibility.  
+**Impact:** StyleAwareValue<ControlState, T> dictionaries use different numeric values, but name-based lookups still compile. Composite states now supported.
+
+### D9: Style System Test Conventions
+**Owner:** Bobbie (Test Engineer)  
+**Date:** 2026-03-09  
+**Status:** Adopted  
+**Context:** Need clear patterns for testing style system types and behavior.  
+**Decision:** Style system tests live in `tests/Comet.Tests/Styles/` subdirectory with flat `Comet.Tests` namespace (matching existing project convention). Tests are TDD against `docs/STYLE_THEME_SPEC.md` and import `using Comet.Styles;`.  
+**Impact:** 113 test methods across 6 files, ready for Wave 2 integration. Clear structure for future style tests.
+

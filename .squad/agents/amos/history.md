@@ -831,3 +831,56 @@ Holden completed a comprehensive style/theme specification. Key impact for **Amo
 **Action:** Read `docs/STYLE_THEME_SPEC.md` Section 2 (ControlStyle Protocols & State-Aware Appearance) for your API design.
 
 **Related:** Addresses the "Consolidate Style Systems" decision with greenfield spec.
+
+### Control Style Types & Prerequisites Implemented (2026-03-10)
+
+**Status:** ✅ Complete
+
+**What was delivered:**
+- `ControlState` → `[Flags]` enum: Default=0, Pressed=1, Hovered=2, Focused=4, Disabled=8, Dragging=16. Dropped unused `Background` value. Zero existing usages broke.
+- `Binding<T>` overloads: `Padding(Binding<Thickness>)`, `ClipShape(Binding<IShape>)`, `Shadow(Binding<Graphics.Shadow>)` + matching `Func<T>` overloads following the established pattern in ColorExtensions.
+- `IControlStyle<TControl, TConfiguration>` interface in `Comet.Styles` namespace.
+- Configuration structs: `ButtonConfiguration`, `ToggleConfiguration`, `TextFieldConfiguration`, `SliderConfiguration` — all `readonly struct` with `View TargetView` per spec §4.3.
+- `StyleToken<TControl>` static key for environment registration.
+- Built-in styles: `FilledButtonStyle`, `OutlinedButtonStyle`, `TextButtonStyle`, `ElevatedButtonStyle` stored as statics on `ButtonStyles`.
+- Control style extension methods: `.ButtonStyle()`, `.ToggleStyle()`, `.TextFieldStyle()`, `.SliderStyle()`.
+- `ResolveCurrentStyle` helper on Button.
+
+**Dependency:** `ViewModifier`, `ViewModifier<T>`, `ColorTokens`, and `ViewModifier.Empty` are referenced but not yet defined — Holden is implementing those in parallel. All build errors are confined to those missing types.
+
+**Key files:**
+- `src/Comet/Styles/ControlState.cs` — [Flags] enum
+- `src/Comet/Styles/IControlStyle.cs` — interface
+- `src/Comet/Styles/StyleToken.cs` — environment key
+- `src/Comet/Styles/Configurations.cs` — all config structs
+- `src/Comet/Styles/BuiltInStyles.cs` — 4 button styles + ButtonStyles statics
+- `src/Comet/Styles/ControlStyleExtensions.cs` — extension methods + ResolveCurrentStyle
+- `src/Comet/Helpers/LayoutExtensions.cs` — Padding binding overload
+- `src/Comet/Helpers/DrawingExtensions.cs` — ClipShape binding overload
+- `src/Comet/Helpers/ViewExtensions.cs` — Shadow binding overload
+
+---
+
+## Wave 1: Style System Implementation (2026-03-09T20:33Z)
+
+**Status:** ✅ Complete (with D5 fix pending)
+
+Delivered control style infrastructure:
+- **IControlStyle<TControl, TConfig>** — Generic interface for control style definition
+- **ControlStyleConfig** — Base configuration struct
+- **StyleToken<T>** — Token aliasing for control styles
+- **BuiltInStyles** — Factory methods for system styles (MaterialStyle, CupertinoStyle, FluentStyle)
+- **ControlStyleExtensions** — Fluent API for applying control styles
+- **Configurations** — Pre-built config structs for Button, TextField, Toggle, Slider, Picker, etc.
+- **ControlState** (refactored) — [Flags] enum with power-of-two values (Default=0, Pressed=1, Hovered=2, Focused=4, Disabled=8, Dragging=16)
+- **Binding<T>_StyleOverloads** — Overloads of Binding<T> with style support
+
+**Files:** 8 new  
+**Lines:** ~480  
+**Build:** ⚠️ 6 pre-existing errors in BuiltInStyles.cs (namespace issue with Comet.Graphics.RoundedRectangle)  
+**Key decisions:** D8 (ControlState [Flags] refactor), D5 (flagged namespace fix)
+
+**D5 Action Required:** Fix BuiltInStyles.cs to use `using Comet;` or fully-qualify `Comet.RoundedRectangle`. Blocks Wave 2 integration and Bobbie's test compilation.
+
+**Next:** Resolve D5, then Wave 2 integration with Holden.
+

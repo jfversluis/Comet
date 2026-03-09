@@ -984,3 +984,27 @@ Most fluent extensions already have `Binding<T>` overloads (`Color`, `Background
 **Pre-existing issue found:** `BuiltInStyles.cs` references `Comet.Graphics.RoundedRectangle` which doesn't exist (the class is in `Comet` namespace). This is Amos's file — 6 build errors across 3 TFMs. Not introduced by this work.
 
 **Build result:** 0 new errors. 6 pre-existing errors in BuiltInStyles.cs (Amos's domain).
+
+---
+
+## Wave 1: Style System Implementation (2026-03-09T20:33Z)
+
+**Status:** ✅ Complete
+
+Architected core style primitives:
+- **Token<T>** — Generic token type with eager Resolve(Theme) and Resolve(View) overloads for scoped resolution
+- **ViewModifier** (abstract) + **ViewModifier<T>** — Single-responsibility modifier pattern with composition support
+- **ComposedModifier** — Chaining modifier together for cascading property application
+- **Theme** (extended) — Added Colors, Typography, Spacing, Shapes token set properties (additive to existing class)
+- **ThemeManager** — Reactive theme resolution with view-hierarchy scoping and fallback chain
+- **ThemeDefaults** — Token set defaults (ColorTokens, TypographyTokens, SpacingTokens, ShapeTokens)
+- **ThemeEnvironmentKeys** — Standardized keys for theme/modifier/scoped-theme environment propagation
+- **ThemeResolutionHelper** + **ViewModifierCache** — Infrastructure for efficient resolution and caching
+
+**Files:** 9 new + 3 modified (Theme.cs, View.cs, ControlsGenerator.cs)  
+**Lines:** ~960  
+**Build:** 0 new errors  
+**Key decisions:** D1 (UseTheme naming), D2 (additive theme properties), D3 (MauiColors alias), D4 (Token.Resolve(View) overload), D5 (flagged BuiltInStyles namespace fix for Amos)
+
+**Next:** Wave 2 integration with Amos/Naomi/Bobbie. Holden leading integration build.
+

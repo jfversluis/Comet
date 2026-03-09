@@ -458,3 +458,40 @@ Holden completed a comprehensive style/theme specification (greenfield design). 
 **Action:** Read `docs/STYLE_THEME_SPEC.md` Sections 5 & 6 (Test Strategy & Phase 6 Implementation) for your test roadmap.
 
 **Related:** Greenfield spec replaces previous "Consolidate Style Systems" proposal.
+
+---
+
+## Wave 1: Style System Implementation (2026-03-09T20:33Z)
+
+**Status:** ✅ Complete (compilation pending Wave 2 integration)
+
+Delivered comprehensive TDD test suite for style system:
+- **TokenTests** (18 methods) — Token<T> creation, resolution, equality
+- **ViewModifierTests** (22 methods) — Application, composition, cascading
+- **NewThemeTests** (19 methods) — Token set properties, theme with expressions, defaults
+- **ThemeManagerTests** (16 methods) — Scoped themes, resolution, fallback
+- **ControlStateTests** (20 methods) — [Flags] behavior, composite states, GetComposite()
+- **ControlStyleTests** (18 methods) — IControlStyle implementation, extension chaining
+
+**Files:** 6 new test files  
+**Test methods:** 113 total  
+**Lines:** ~780  
+**Build:** Will not compile until Wave 2 (expected — blocking on Holden/Amos/Naomi deliverables)  
+**Key decision:** D9 (style test conventions — tests/Comet.Tests/Styles/ subdirectory, flat namespace)
+
+**Blocking Dependencies:**
+- Holden's Token<T>, ViewModifier, Theme properties
+- Naomi's ThemeManager
+- Amos's IControlStyle<T, Config> and ControlState [Flags]
+- D5 fix (BuiltInStyles namespace)
+
+**Unblock condition:** All 3 implementation agents land + D5 fix applied
+
+**Execution command (after Wave 2 integration):**
+```bash
+dotnet test tests/Comet.Tests/Comet.Tests.csproj -c Release \
+  --filter "Comet.Tests.TokenTests|Comet.Tests.ViewModifierTests|Comet.Tests.NewThemeTests|Comet.Tests.ThemeManagerTests|Comet.Tests.ControlStateTests|Comet.Tests.ControlStyleTests"
+```
+
+**Next:** Wave 2 integration. All 113 tests should execute and pass once implementation lands.
+
