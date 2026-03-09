@@ -410,3 +410,64 @@ Upgrade `templates/single-project/` from legacy [Body]/[State]/net7.0 patterns t
 **Third-party Integration:** Syncfusion controls tested and functional (gauges, etc.).
 
 **Orchestration Log:** `.squad/orchestration-log/2026-03-09T14-12-sample-migration.md`
+
+### Factory Method Overloads & Build Cleanup (2026-03-09T15:48:17Z)
+
+**Context:** Phase 9 factory method DSL implementation across all 9 samples revealed 4 categories of missing factory overloads in `CometControls`:
+- Grid factory missing `(int rows, int columns, params View[])` signature
+- Image() zero-argument constructor not exposed as factory
+- TabView(params View[]) params array overload missing
+- Section5.cs LINQ incompatibility with factory syntax (reverted to collection initializer)
+
+**Solution:**
+
+1. **Grid Overload** — Added to `src/Comet/CometControls.Containers.cs`:
+   ```csharp
+   public static Grid Grid(int rows, int columns, params View[] children)
+   {
+       var grid = new Grid(rows, columns);
+       foreach (var child in children)
+           grid.Add(child);
+       return grid;
+   }
+   ```
+   Fixed: CometAllTheLists, CometWeather, CometStressTest
+
+2. **Image()** — Added to `src/Comet/CometControls.Controls.cs`:
+   ```csharp
+   public static Image Image() => new Image();
+   ```
+   Fixed: CometWeather
+
+3. **TabView(params View[])** — Added to `src/Comet/CometControls.Controls.cs`:
+   ```csharp
+   public static TabView TabView(params View[] children)
+   {
+       var tabView = new TabView();
+       foreach (var child in children)
+           tabView.Add(child);
+       return tabView;
+   }
+   ```
+   Fixed: CometTaskApp, CometWeather, CometProjectManager
+
+4. **Section5.cs LINQ Edge Case** — Reverted from factory to collection initializer:
+   ```csharp
+   new VStack
+   {
+       // LINQ Select() generates children dynamically
+   }
+   ```
+   Reason: Factory methods expect static params array; LINQ Select() returns IEnumerable<View> requiring post-instantiation Add() loop, which collection initializers handle natively. Revert is safe (equivalent semantics).
+
+**Outcome:**
+- ✅ All 9 samples build clean (0 warnings)
+- ✅ 729/729 unit tests pass
+- ✅ No regressions
+- ✅ Factory method DSL complete and validated
+
+**Commit:** `755b881c` — "Add missing factory methods and convert all samples to factory syntax"
+
+**Logs:**
+- Orchestration: `.squad/orchestration-log/2026-03-09T154817Z-naomi.md`
+- Session: `.squad/log/20260309T154817Z-factory-method-fixes.md`
