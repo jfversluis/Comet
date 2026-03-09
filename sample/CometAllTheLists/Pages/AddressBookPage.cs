@@ -106,6 +106,7 @@ public class AddressBookPage : View
 	Color GetContactColor(string name)
 	{
 		var colors = new[] { Colors.Red, Colors.Blue, Colors.Green, Colors.Orange, Colors.Purple, Colors.Pink };
-		return colors[name.GetHashCode() % colors.Length];
+		var hash = name.GetHashCode();
+		return colors[((hash % colors.Length) + colors.Length) % colors.Length];
 	}
 }
