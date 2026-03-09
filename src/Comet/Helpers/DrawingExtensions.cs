@@ -1,6 +1,7 @@
 ﻿using System;
 
 using Comet.Graphics;
+using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 
 // ReSharper disable once CheckNamespace
@@ -46,6 +47,13 @@ namespace Comet
 				view.SetEnvironment(EnvironmentKeys.View.ClipShape, shape, false);
 			return view;
 		}
+
+		public static T ClipShape<T>(this T view, Binding<IShape> shape) where T : View
+		{
+			view.SetEnvironment(EnvironmentKeys.View.ClipShape, shape, false);
+			return view;
+		}
+		public static T ClipShape<T>(this T view, Func<IShape> shape) where T : View => view.ClipShape((Binding<IShape>)shape);
 
 		public static Shape GetClipShape(this View view, Shape defaultShape = null, Type type = null)
 		{

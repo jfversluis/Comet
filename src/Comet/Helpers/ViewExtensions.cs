@@ -291,6 +291,13 @@ namespace Comet
 		public static T Shadow<T>(this T view, Graphics.Shadow shadow) where T : View =>
 			view.SetEnvironment(EnvironmentKeys.View.Shadow, shadow, false);
 
+		public static T Shadow<T>(this T view, Binding<Graphics.Shadow> shadow) where T : View
+		{
+			view.SetEnvironment(EnvironmentKeys.View.Shadow, shadow, false);
+			return view;
+		}
+		public static T Shadow<T>(this T view, Func<Graphics.Shadow> shadow) where T : View => view.Shadow((Binding<Graphics.Shadow>)shadow);
+
 		public static T IsEnabled<T>(this T view, bool enabled = true) where T : View =>
 			view.SetEnvironment(nameof(IView.IsEnabled), enabled);
 
