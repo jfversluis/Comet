@@ -23,7 +23,7 @@ public class AllTheListsApp : CometApp
 
 	static NavigationView MakeTab(Comet.View page, string title, string sfSymbol)
 	{
-		var navigation = new NavigationView { page.Title(title) };
+		var navigation = NavigationView(page.Title(title));
 		navigation.TabText(title);
 		navigation.TabIcon(sfSymbol);
 		return navigation;

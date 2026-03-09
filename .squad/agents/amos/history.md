@@ -757,3 +757,21 @@ After N state changes, the native `UITextField` (Picker's platform view) has N `
 - The CometBaristaNotes AOT issue appears to have been an SDK-level transient bug, now resolved.
 - `GetHashCode()` can return negative values (including Int32.MinValue). Never use `hash % len` for array indexing — use `((hash % len) + len) % len` to guarantee non-negative results. `Math.Abs` is insufficient because `Math.Abs(Int32.MinValue)` throws OverflowException.
 - Comet's RadioButton intentionally does NOT implement IRadioButton. The CometGenerate attribute is commented out in ControlsGenerator.cs line 20. The reason: Comet uses a container-based grouping model (RadioGroup) vs MAUI's property-based model (GroupName). Mapping to MAUI's RadioButtonHandler without IRadioButton causes InvalidCastException. Until the interface is properly implemented, RadioButton samples should not instantiate actual RadioButton controls.
+
+### Sample API migration — 3 samples migrated to Component<TState> pattern (2026-03-10)
+
+**What:** Migrated CometFeatureShowcase (5 pages), CometAllTheLists (5 pages + app), and CometWeather (3 pages) from old `View` + `State<T>` + `[Body]` pattern to evolved `Component<TState>` + `Render()` + factory methods.
+
+**Key patterns learned:**
+- Files importing both `Comet` and `Microsoft.Maui.Controls` get ambiguous `View` — qualify return type as `Comet.View Render()`.
+- `VStack(0f, ...)` is ambiguous between `VStack(float?, params View[])` and `VStack(LayoutAlignment, params View[])` because C# treats literal `0` (any form) as implicitly convertible to enums. Fix: always use named parameter `VStack(spacing: 0, ...)`.
+- Pages using MauiViewHost (native MAUI controls inside Comet) get empty state classes since their state is imperative, not reactive.
+- CollectionView, ShapeView, Spacer, TabView have no factory methods — keep `new`.
+- CometApp entry points stay as-is per team convention; only update control constructors within them.
+
+**Files changed (13 .cs files + 3 GlobalUsings):**
+- `sample/CometFeatureShowcase/` — 5 pages + GlobalUsings
+- `sample/CometAllTheLists/` — 5 pages + AllTheListsApp + GlobalUsings
+- `sample/CometWeather/` — 3 pages + GlobalUsings
+
+**Build result:** All 3 samples build clean (0 errors, 0 warnings). 729 tests pass, 0 regressions.
