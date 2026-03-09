@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Comet.Handlers;
+using Comet.Styles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui;
@@ -48,6 +49,17 @@ namespace Comet
 			//Set Default Style
 			var style = new Styles.Style();
 			style.Apply();
+
+			// Initialize the token-based theme system with Material 3 defaults.
+			// This must happen after legacy style.Apply() so the old environment
+			// keys are set first, then the new ThemeManager overlays token values.
+			var defaultTheme = Defaults.Light;
+			defaultTheme.SetControlStyle<Button, ButtonConfiguration>(ButtonStyles.Filled);
+			ThemeManager.SetTheme(defaultTheme);
+
+			// Register style resolution mappers for controls BEFORE the
+			// property-specific mappers so resolved values are available.
+			RegisterStyleResolutionMappers();
 
 			ViewHandler.ViewMapper.AppendToMapping(nameof(IGestureView.Gestures), CometViewHandler.AddGestures);
 			ViewHandler.ViewCommandMapper.AppendToMapping(Gesture.AddGestureProperty, CometViewHandler.AddGesture);
@@ -802,5 +814,146 @@ namespace Comet
 		}
 
 
+		/// <summary>
+		/// Registers handler mapper entries for IControlStyle resolution on Button,
+		/// Toggle, TextField, and Slider. These resolve the active control style
+		/// from the environment (scoped or theme-level) and apply it as fallback
+		/// values via the type-scoped global environment, which has lower priority
+		/// than explicit properties set on the view itself.
+		/// </summary>
+		static void RegisterStyleResolutionMappers()
+		{
+			// Button style resolution
+			ButtonHandler.Mapper.AppendToMapping("CometButtonStyleResolution", (handler, view) =>
+			{
+				if (view is not Button button)
+					return;
+
+				var resolved = button.ResolveCurrentStyle(new ButtonConfiguration
+				{
+					TargetView = button,
+					IsEnabled = button.GetEnvironment<bool?>(nameof(IView.IsEnabled)) ?? true,
+					Label = ((IText)button).Text,
+				});
+
+				if (resolved == null || resolved == ViewModifier.Empty)
+					return;
+
+				ApplyModifierAsTypeScopedDefaults(button, typeof(Button), resolved);
+			});
+
+			// Toggle style resolution
+			SwitchHandler.Mapper.AppendToMapping("CometToggleStyleResolution", (handler, view) =>
+			{
+				if (view is not Toggle toggle)
+					return;
+
+				var resolved = toggle.ResolveCurrentStyle(new ToggleConfiguration
+				{
+					TargetView = toggle,
+					IsOn = ((ISwitch)toggle).IsOn,
+					IsEnabled = toggle.GetEnvironment<bool?>(nameof(IView.IsEnabled)) ?? true,
+				});
+
+				if (resolved == null || resolved == ViewModifier.Empty)
+					return;
+
+				ApplyModifierAsTypeScopedDefaults(toggle, typeof(Toggle), resolved);
+			});
+
+			// TextField style resolution
+			EntryHandler.Mapper.AppendToMapping("CometTextFieldStyleResolution", (handler, view) =>
+			{
+				if (view is not TextField textField)
+					return;
+
+				var resolved = textField.ResolveCurrentStyle(new TextFieldConfiguration
+				{
+					TargetView = textField,
+					IsEnabled = textField.GetEnvironment<bool?>(nameof(IView.IsEnabled)) ?? true,
+					Placeholder = ((IPlaceholder)textField).Placeholder,
+				});
+
+				if (resolved == null || resolved == ViewModifier.Empty)
+					return;
+
+				ApplyModifierAsTypeScopedDefaults(textField, typeof(TextField), resolved);
+			});
+
+			// Slider style resolution
+			SliderHandler.Mapper.AppendToMapping("CometSliderStyleResolution", (handler, view) =>
+			{
+				if (view is not Slider slider)
+					return;
+
+				var resolved = slider.ResolveCurrentStyle(new SliderConfiguration
+				{
+					TargetView = slider,
+					Value = ((ISlider)slider).Value,
+					Minimum = ((IRange)slider).Minimum,
+					Maximum = ((IRange)slider).Maximum,
+					IsEnabled = slider.GetEnvironment<bool?>(nameof(IView.IsEnabled)) ?? true,
+				});
+
+				if (resolved == null || resolved == ViewModifier.Empty)
+					return;
+
+				ApplyModifierAsTypeScopedDefaults(slider, typeof(Slider), resolved);
+			});
+		}
+
+		/// <summary>
+		/// Applies a resolved ViewModifier's values as type-scoped global environment
+		/// defaults. This ensures explicit user properties (local scope) win over
+		/// style-resolved properties (global type-scoped scope).
+		///
+		/// Works by applying the modifier to a scratch view, then extracting the
+		/// environment values it set and pushing them to the global type-scoped store.
+		/// </summary>
+		static void ApplyModifierAsTypeScopedDefaults(View realView, Type controlType, ViewModifier modifier)
+		{
+			// Apply the modifier directly to the view. The modifier calls fluent
+			// methods which call SetEnvironment with cascades=true, writing to
+			// the view's Context dictionary.
+			//
+			// To preserve priority (explicit > style), we instead push values to
+			// the type-scoped global environment which sits below local values
+			// in the lookup chain (see ContextualObject.GetValue).
+			//
+			// Strategy: snapshot the view's context keys before applying, apply
+			// the modifier, detect new keys, move new values to global type-scoped,
+			// and revert changes on the view's context.
+			var contextBefore = new Dictionary<string, object>();
+			if (realView._context != null)
+			{
+				foreach (var kvp in realView._context.dictionary)
+					contextBefore[kvp.Key] = kvp.Value;
+			}
+
+			// Use MonitorChanges to capture what the modifier would write without
+			// actually persisting to the view's environment. This avoids firing
+			// property-changed notifications for style-default values.
+			ContextualObject.MonitorChanges();
+			try
+			{
+				modifier.Apply(realView);
+			}
+			finally
+			{
+				var changes = ContextualObject.StopMonitoringChanges();
+				// Push each changed property to the type-scoped global environment
+				// as a fallback. The view's own values (explicit user properties)
+				// take priority in the lookup chain.
+				foreach (var entry in changes)
+				{
+					var key = entry.Key.property;
+					var newValue = entry.Value.newValue;
+					if (newValue != null)
+					{
+						View.SetGlobalEnvironment(controlType, key, newValue);
+					}
+				}
+			}
+		}
 	}
 }

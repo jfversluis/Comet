@@ -55,12 +55,79 @@ namespace Comet
 
 		/// <summary>
 		/// Resolves the current button style from environment or theme defaults.
-		/// Call from Button's handler mapping or property changed logic.
+		/// Checks scoped environment first, then falls back to the active theme's
+		/// registered control style.
 		/// </summary>
 		public static ViewModifier ResolveCurrentStyle(this Button button, ButtonConfiguration config)
 		{
 			var style = button.GetEnvironment<IControlStyle<Button, ButtonConfiguration>>(
 				StyleToken<Button>.Key);
+
+			if (style == null)
+			{
+				var theme = ThemeManager.Current(button);
+				style = theme.GetNewControlStyle<Button>() as IControlStyle<Button, ButtonConfiguration>;
+			}
+
+			if (style == null)
+				return ViewModifier.Empty;
+
+			return style.Resolve(config);
+		}
+
+		/// <summary>
+		/// Resolves the current toggle style from environment or theme defaults.
+		/// </summary>
+		public static ViewModifier ResolveCurrentStyle(this Toggle toggle, ToggleConfiguration config)
+		{
+			var style = toggle.GetEnvironment<IControlStyle<Toggle, ToggleConfiguration>>(
+				StyleToken<Toggle>.Key);
+
+			if (style == null)
+			{
+				var theme = ThemeManager.Current(toggle);
+				style = theme.GetNewControlStyle<Toggle>() as IControlStyle<Toggle, ToggleConfiguration>;
+			}
+
+			if (style == null)
+				return ViewModifier.Empty;
+
+			return style.Resolve(config);
+		}
+
+		/// <summary>
+		/// Resolves the current text field style from environment or theme defaults.
+		/// </summary>
+		public static ViewModifier ResolveCurrentStyle(this TextField textField, TextFieldConfiguration config)
+		{
+			var style = textField.GetEnvironment<IControlStyle<TextField, TextFieldConfiguration>>(
+				StyleToken<TextField>.Key);
+
+			if (style == null)
+			{
+				var theme = ThemeManager.Current(textField);
+				style = theme.GetNewControlStyle<TextField>() as IControlStyle<TextField, TextFieldConfiguration>;
+			}
+
+			if (style == null)
+				return ViewModifier.Empty;
+
+			return style.Resolve(config);
+		}
+
+		/// <summary>
+		/// Resolves the current slider style from environment or theme defaults.
+		/// </summary>
+		public static ViewModifier ResolveCurrentStyle(this Slider slider, SliderConfiguration config)
+		{
+			var style = slider.GetEnvironment<IControlStyle<Slider, SliderConfiguration>>(
+				StyleToken<Slider>.Key);
+
+			if (style == null)
+			{
+				var theme = ThemeManager.Current(slider);
+				style = theme.GetNewControlStyle<Slider>() as IControlStyle<Slider, SliderConfiguration>;
+			}
 
 			if (style == null)
 				return ViewModifier.Empty;
