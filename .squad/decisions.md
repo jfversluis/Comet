@@ -1031,3 +1031,69 @@ The source generator produces `DatePicker(Binding<DateTime?> ...)` because `IDat
 xcrun simctl install 3F542DD1-6303-4C0B-8D81-83C4B2D1D680 app.ipa
 ```
 
+
+---
+
+## 2026-03-09T14:12:00Z: Sample Migration API Decisions (Batch)
+
+### VStack/HStack Named Spacing Parameter
+
+**Author:** Amos (Controls & API Dev)  
+**Status:** Applied  
+**Decision:** All sample and application code should use the named parameter form `VStack(spacing: 0, ...)` or `HStack(spacing: 8, ...)` when specifying numeric spacing values.
+
+**Context:** Literal numeric values (especially `0`) cause CS0121 ambiguity between `VStack(float?, params View[])` and `VStack(LayoutAlignment, params View[])` because numeric types implicitly convert to enums.
+
+**Impact:** Affects all code using VStack/HStack factory methods with a numeric spacing value. The pattern `VStack(spacing: N, child1, child2)` is the canonical form going forward.
+
+**Applied in:** CometFeatureShowcase, CometAllTheLists, CometWeather (agent-97)
+
+### Reactive<T> for Controls Without Change-Event Extensions
+
+**Author:** Holden (Lead Architect)  
+**Status:** Applied  
+**Decision:** When migrating to Component<TState>, controls that lack change-event extension methods (Stepper, DatePicker) should use `Reactive<T>` fields on the Component instead of properties in the TState class. This preserves two-way binding via the existing Comet binding system while keeping the Component pattern for everything else.
+
+**Context:** Stepper has no `.OnValueChanged()` (extension exists only for Slider), and DatePicker has no `.OnDateChanged()`. Without change-event handlers, there's no way to call `SetState()` to push control changes back to Component state. `Reactive<T>` fields participate in View dependency tracking (since Component extends View), so changes to them still trigger Render() re-evaluation.
+
+**Impact:** Sample migration pattern established for CometStressTest/ControlTestPage. Future generated controls should consider adding change-event extensions for all value-bearing properties to fully support the Component pattern without Reactive<T> fallback.
+
+**Applied in:** CometTaskApp, CometStressTest, CometProjectManager (agent-98)
+
+### Grid Factory Method Gap — rows/columns Parameters
+
+**Author:** Bobbie (Test Engineer)  
+**Status:** Documented  
+**Decision:** `CometControls.Grid(params View[])` factory only accepts child views. There is no overload for `Grid(rows, columns, children)`. Files using Grid with row/column definitions must use the constructor form `new Grid(rows:, columns:) { children }` instead of the factory.
+
+**Context:** During Comet.Sample migration, 3 files (DemoCreditCardView, ContinuosSample, ViewLayoutTestCase) require Grid with row/column definitions. Constructor form is a valid workaround.
+
+**Impact:** Minor API inconsistency — all other container types (VStack, HStack, ZStack, ScrollView, NavigationView, Border) have complete factory coverage. This is a follow-up task for Amos to add overloads for consistency.
+
+**Recommendation:** Add `Grid(object[] rows, object[] columns, params View[] children)` overloads to `CometControls.Containers.cs`.
+
+**Applied in:** Comet.Sample (agent-100)
+
+### Migration Summary — All Samples
+
+**Overall Status:** ✅ Complete  
+**Files Migrated:** 140 (across 8 samples)  
+**Unit Tests:** 729 pass  
+**Build Status:** Clean across all projects  
+**Compile Warnings:** 0
+
+**Samples:**
+- CometFeatureShowcase (agent-97) ✅
+- CometAllTheLists (agent-97) ✅
+- CometWeather (agent-97) ✅
+- CometTaskApp (agent-98) ✅
+- CometStressTest (agent-98) ✅
+- CometProjectManager (agent-98) ✅
+- Comet.Sample (agent-100) ✅
+- CometBaristaNotes (agent-99) ✅
+
+**Commits:**
+- agent-97: 6c53aee3
+- agent-98: 777ec83d
+- agent-100: e93b3311
+- agent-99: f127329d
