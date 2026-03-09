@@ -869,3 +869,68 @@ public partial class Component
 - Performance model: O(1) switch, lazy token reads, surgical invalidation
 - SwiftUI equivalence table for each API
 - End-to-end examples: brand theme, custom button styles, theme switching, scoped overrides
+
+### 2026-03-09 — Style & Theme Spec: Open Questions Resolved (Q1–Q6)
+
+**Status:** ✅ All 6 design decisions finalized by David Ortinau
+
+**Key decisions and their architectural impact:**
+
+1. **D1 — No InlineModifier:** Removed `InlineModifier` class and lambda `.Modifier()` overload entirely. One-off styling uses direct fluent chaining. This enforces "one way to do each thing" and eliminates closure allocations from the modifier path.
+
+2. **D2 — Token<T> implicit → Binding<T>:** Added `implicit operator Binding<T>` and `Map<TResult>()` on `Token<T>`. All code examples throughout the spec now use direct token form (`ColorTokens.Primary` instead of `Theme.Token(ColorTokens.Primary)`). This dramatically reduces API noise.
+
+3. **D3 — Typography: Option C on top of A:** Composite `FontSpec` stays as the token model. Added `.Typography(TypographyTokens.BodyLarge)` convenience extension (new Section 8.7). Replaces verbose `.FontSize(X.Map(f => f.Size))` pattern in most cases.
+
+4. **D4 — Apply() returns View:** Confirmed as originally proposed. No change needed.
+
+5. **D5 — Animation transitions in this spec:** Added full Section 9.5 covering `Transition` record struct, `TransitionModifier` wrapper, `WithTransition()` extension, platform handler integration (iOS `UIView.Animate`, Android `ViewPropertyAnimator`, Windows `Storyboard`), and animatable property matrix.
+
+6. **D6 — Source generator emits everything from day one:** Removed phased approach. Updated Section 12.2 with full generated code example showing `StyleToken<T>`, `{Control}Configuration`, and `{Control}StyleExtensions` for every `[CometGenerate]` control.
+
+**Patterns learned:**
+- When David says "no," remove the feature completely — don't leave it as an option or deprecated path
+- Implicit conversions in C# design tokens dramatically improve ergonomics but require `Map()` method on the source type for chaining (C# won't resolve extension methods through implicit conversions)
+- Animation transitions belong in the style spec, not a separate document, because they're tightly coupled to the control state model
+- Source generator work should be front-loaded — phasing adds migration cost with no benefit when the generator already has all needed metadata
+
+**Decision file:** `.squad/decisions/inbox/holden-spec-q1-q6-resolved.md`
+
+### 2026-03-10 — Style/Theme Spec Revision After Independent Review
+
+**Status:** ✅ Complete
+**Trigger:** David requested critical revision of `docs/STYLE_THEME_SPEC.md` based on GPT-5.4 and Gemini independent reviews.
+
+**What changed (13 accepted, 3 partially accepted, 1 rejected):**
+
+1. **Scoped theme resolution** — Added Section 8.8 with view-aware token resolution algorithm. Source generator emits `Token<T>` overloads that capture view reference and walk parent chain. Implicit conversion documented as global-only.
+2. **Theme class → record** — Fixed type inconsistency that made `with` syntax non-compiling.
+3. **ControlState → [Flags] enum** — Power-of-two values for bitwise combination.
+4. **StyleToken<TControl>** — Fixed invalid C# syntax (can't specialize a generic as a static class).
+5. **Control style fallback** — `ResolveCurrentStyle()` now falls back to theme-level defaults.
+6. **Handler honesty** — Removed "no handler changes required" claim. Enumerated ~80 hookup points.
+7. **Performance precision** — "O(1) mutation + O(K) propagation" replaces misleading "O(1)" claim.
+8. **GetToken value-type safety** — `TryGetEnvironment` for presence detection.
+9. **Typography null check** — Removed meaningless `Binding<string>` null test.
+10. **Theme.Resolve() API** — Fixed inconsistent usage in Section 9.4 examples.
+11. **OnControlStateChanged notification key** — Fixed to use concrete type's style key.
+12. **Generator metadata** — Added `[CometControlState]` attribute pattern.
+13. **Control style modifier restrictions** — New Section 10.5, property-only writes for v1.
+14. **Accessibility/RTL/responsive gaps** — New Section 14 with extension points.
+15. **ListView styling gap** — Acknowledged in Section 14.5.
+16. **Image tokens** — Addressed in Section 14.6.
+
+**Key finding during codebase investigation:**
+Most fluent extensions already have `Binding<T>` overloads (`Color`, `Background`, `Opacity`, `FontSize`, `FontWeight`, etc.). Gemini's "Silent Reactivity Loss" concern was accurate in principle but overstated in scope — the gap is narrower than described. Main missing overloads: `Padding(Binding<Thickness>)`, `ClipShape`, `Shadow`.
+
+**Rejected:** Gemini's `IThemeAware` interface suggestion — premature optimization, violates "one way to do each thing" principle.
+
+**Patterns learned:**
+- External review catches architectural inconsistencies that internal review misses. The scoped-vs-global resolution gap was foundational and I didn't see it.
+- Performance claims must be precise. "O(1)" when you mean "O(1) mutation + O(K) propagation" is dishonest. Reviewers will call it.
+- "No handler changes required" when handler changes ARE required destroys credibility across the entire spec. Be honest about scope even when it's large.
+- Always validate code examples would compile. Half the credibility issues came from examples that contradict the type definitions.
+- Codebase investigation before spec revision is essential. Knowing that `Binding<T>` overloads already exist changed the analysis of Gemini's #1 concern significantly.
+
+**Decision file:** `.squad/decisions/inbox/holden-review-response.md`
+**Response log:** `docs/reviews/REVIEW_RESPONSE.md`

@@ -1155,3 +1155,94 @@ The comparison analysis revealed that MauiReactor achieves equivalent functional
 **Artifact:** `docs/STYLE_THEME_SPEC.md` (1995 lines — production-ready architecture document)
 
 **Impact:** All 5 existing style/theme decisions are subsumed into this unified greenfield specification. No breaking changes to Component, Navigation, or View APIs. Backward compatible at the environment system level.
+
+---
+
+## 2026-03-10T00:00:00Z: Style/Theme Spec Revision After Independent Review
+
+**Author:** Holden (Lead Architect)  
+**Status:** Approved  
+**Context:** Two independent reviewers (GPT-5.4 and Gemini) reviewed the Style/Theme spec. Comprehensive revision addressing 17 reviewer concerns.
+
+### Sub-Decisions
+
+**D-REV-1: Token resolution is view-aware via generated overloads**  
+The implicit `Token<T> → Binding<T>` conversion resolves against the global theme. Scoped `.Theme()` resolution is handled by source-generated view-aware extension overloads (`view.GetToken(token)`) that walk the parent chain. C# overload resolution prefers the more specific `Token<T>` overload over implicit conversion.
+
+**D-REV-2: Theme is a record (not class)**  
+`Theme` changed to `record` to support `with` syntax used throughout examples. The mutable `_controlStyles` dictionary is documented as a tradeoff.
+
+**D-REV-3: ControlState is a [Flags] enum**  
+Changed from sequential values to power-of-two values for bitwise combination (e.g., `Hovered | Focused`).
+
+**D-REV-4: Control style resolution includes theme fallback**  
+`ResolveCurrentStyle()` now checks environment first, then falls back to `ThemeManager.Current(this).GetControlStyle()`.
+
+**D-REV-5: Handler work is explicitly enumerated**  
+Removed "no handler changes required" claim. Section 12.3 now has complete handler contract table.
+
+**D-REV-6: Generator needs explicit state metadata**  
+Added `[CometControlState]` attribute pattern for interactive state fields that can't be inferred from MAUI interfaces.
+
+**D-REV-7: Performance claim is O(1) mutation + O(K) propagation**  
+Not O(1) end-to-end. K = active bindings consuming theme tokens.
+
+**D-REV-8: Control style modifiers restricted to property-only (v1)**  
+No wrapper modifiers in control styles until lifecycle semantics are designed.
+
+**D-REV-9: TryGetEnvironment required for value-type tokens**  
+`GetToken` uses presence detection, not null/default probing.
+
+**D-REV-10: Accessibility/RTL/responsive explicitly scoped out of v1**  
+Extension points documented in new Section 14. Not silent about gaps.
+
+**Impact:** Spec revised from 2,231 to 2,552 lines. No code changes. Full disposition log in `docs/reviews/REVIEW_RESPONSE.md`.
+
+---
+
+## 2026-03-09T00:00:00Z: Style & Theme Spec — Q1–Q6 User-Directed Decisions
+
+**Author:** David Ortinau (via Holden, Lead Architect)  
+**Status:** Approved  
+**Context:** User review and approval of technical decisions Q1–Q6 from spec preparation.
+
+### D1: No Inline Modifier Sugar
+
+**Decision:** `InlineModifier` is removed. No lambda-accepting `.Modifier()` overload.  
+**Impact:** `ViewModifier` is exclusively for named, reusable classes. One-off styling uses direct fluent chaining (`.FontSize(24).FontWeight(FontWeight.Bold)`).
+
+### D2: Token\<T\> Implicit Conversion to Binding\<T\>
+
+**Decision:** `Token<T>` supports `implicit operator` to `Binding<T>`.  
+**Impact:** Code examples use `ColorTokens.Primary` directly instead of `Theme.Token(ColorTokens.Primary)`. Added `Map<TResult>()` method on `Token<T>`.
+
+### D3: Typography — Composite FontSpec + Convenience Extension
+
+**Decision:** Keep composite `FontSpec` token. Add `.Typography(TypographyTokens.BodyLarge)` convenience extension as sugar.  
+**Impact:** Cleaner typography API without sacrificing composability.
+
+### D4: ViewModifier.Apply() Returns View
+
+**Decision:** `Apply()` returns `View`.  
+**Impact:** Enables chaining on modifier applications.
+
+### D5: Animation Transitions Included in This Spec
+
+**Decision:** Animation/transition support specified directly in the style spec, not deferred.  
+**Impact:** Section 9.5 covers `Transition` record struct, `TransitionModifier` wrapper, `WithTransition()` extension, platform handler integration.
+
+### D6: Source Generator Emits All Style Infrastructure Immediately
+
+**Decision:** Source generator emits `StyleToken<T>`, `{Control}Configuration`, and `{Control}StyleExtensions` for all `[CometGenerate]` controls from day one.  
+**Impact:** No phased approach. Full infrastructure generated at compile time.
+
+### Sub-Decision: Migration & Naming (User Directive)
+
+**What:**  
+- 15.2 Migration: Keep `[Obsolete]` on old style/theme classes during transition. Samples should adopt the new APIs.
+- 15.3 Naming: Approved all proposed names — ViewModifier, Token<T>, ColorTokens, ThemeManager, IControlStyle<T,C>.
+
+**Why:** User request — captured for team memory.
+
+**Impact:** Clear migration path and unified naming across style system.
+
