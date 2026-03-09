@@ -87,7 +87,7 @@ s.Multiplier = 1.0;
 });
 }),
 
-new Spacer()
+Spacer()
 ).Padding(16)
 );
 

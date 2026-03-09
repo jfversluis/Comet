@@ -115,6 +115,17 @@ namespace Comet
 			return grid;
 		}
 
+		public static Grid Grid(object[] columns, object[] rows, params View[] children)
+		{
+			var grid = new Grid(columns: columns, rows: rows);
+			foreach (var child in children)
+			{
+				if (child != null)
+					grid.Add(child);
+			}
+			return grid;
+		}
+
 		public static ScrollView ScrollView(View content)
 		{
 			var scroll = new ScrollView();

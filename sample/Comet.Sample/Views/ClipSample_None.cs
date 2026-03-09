@@ -13,7 +13,7 @@ namespace Comet.Samples
 
 				public override View Render() => VStack(
 				Text("None"),
-				new Image("turtlerock.jpg")
+				Image("turtlerock.jpg")
 					.ClipShape(new Path(PuzzlePiece,PathScaling.None))
 					.Border(new Rectangle().Stroke(Colors.Blue, lineWidth: 1))
 					.Shadow(radius: 10)

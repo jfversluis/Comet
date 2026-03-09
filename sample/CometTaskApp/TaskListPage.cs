@@ -45,7 +45,7 @@ Text(() => task.Description)
 .FontSize(13)
 .Color(Colors.DarkGray)
 ),
-new Spacer(),
+Spacer(),
 Text(task.IsCompleted ? "✅" : "⬜")
 .FontSize(20)
 .OnTap(_ => _state.ToggleComplete(task.Id))
@@ -64,13 +64,12 @@ return row;
 public override View Render() =>
 NavigationView(
 VStack(
-new TextField(_state.SearchText, "Search tasks...")
+TextField(_state.SearchText, "Search tasks...")
 .Padding(new Thickness(12, 8))
 .SemanticDescription("Search tasks")
 .AutomationId("TaskSearchField"),
 
-new ScrollView(Orientation.Horizontal)
-{
+ScrollView(Orientation.Horizontal,
 HStack(8,
 FilterPill("All", null),
 FilterPill("🏠 Personal", TaskCategory.Personal),
@@ -80,7 +79,7 @@ FilterPill("💪 Health", TaskCategory.Health),
 FilterPill("📚 Learning", TaskCategory.Learning)
 )
 .Padding(new Thickness(12, 4))
-},
+),
 
 HStack(16,
 Text(() => $"📋 {_state.TotalCount} total")
@@ -89,7 +88,7 @@ Text(() => $"✅ {_state.CompletedCount} done")
 .FontSize(12).Color(Colors.Green),
 Text(() => $"⏳ {_state.PendingCount} pending")
 .FontSize(12).Color(Colors.Orange),
-new Spacer()
+Spacer()
 )
 .Padding(new Thickness(12, 4)),
 

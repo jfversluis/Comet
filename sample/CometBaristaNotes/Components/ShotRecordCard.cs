@@ -16,8 +16,7 @@ public static class ShotRecordCardFactory
 
 		var card = Border(
 			VStack(6,
-				new Comet.Grid(columns: new object[] { "*", "Auto" }, rows: new object[] { "Auto" })
-				{
+				Grid(columns: new object[] { "*", "Auto" }, rows: new object[] { "Auto" },
 					HStack(6,
 						Text(Icons.Coffee)
 							.FontFamily(Icons.FontFamily)
@@ -32,8 +31,8 @@ public static class ShotRecordCardFactory
 					.Cell(row: 0, column: 0),
 
 					MakeRatingBadge(shot)
-						.Cell(row: 0, column: 1),
-				},
+						.Cell(row: 0, column: 1)
+				),
 
 				Text(beanName)
 					.FontFamily(Theme.FontRegular)

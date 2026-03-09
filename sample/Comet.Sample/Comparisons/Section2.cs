@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-using System.Text;
-using Microsoft.Maui.Graphics;
-using static Comet.CometControls;
+﻿using static Comet.CometControls;
 
 
 /*
@@ -24,9 +19,9 @@ namespace Comet.Samples.Comparisons
 {
 	public class Section2 : Component
 	{
-				public override View Render() =>
-				 Text("Turtle Rock")
-					 .Color(Colors.Green);
+		public override View Render() =>
+			Text("Turtle Rock")
+				.Color(Colors.Green);
 	}
 
 }

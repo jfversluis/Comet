@@ -53,7 +53,7 @@ HStack(8,
 Text(task.IsCompleted ? "✅ Completed" : "⏳ Pending")
 .FontSize(14)
 .Color(task.IsCompleted ? Colors.Green : Colors.Orange),
-new Spacer(),
+Spacer(),
 Text($"Created: {task.CreatedAt:MMM dd, yyyy}")
 .FontSize(12)
 .Color(Colors.Gray)
@@ -74,16 +74,16 @@ TextField(State.Description, "Task description...")
 .OnTextChanged(value => SetState(state => state.Description = value ?? "")),
 
 Text("Priority").FontSize(12).Color(Colors.Gray),
-new Picker(State.Priority, "Low", "Medium", "High", "Critical")
+Picker(State.Priority, "Low", "Medium", "High", "Critical")
 .SemanticDescription("Task priority")
 .OnSelectedIndexChanged(index => SetState(state => state.Priority = index)),
 
 Text("Category").FontSize(12).Color(Colors.Gray),
-new Picker(State.Category, "Personal", "Work", "Shopping", "Health", "Learning", "Other")
+Picker(State.Category, "Personal", "Work", "Shopping", "Health", "Learning", "Other")
 .SemanticDescription("Task category")
 .OnSelectedIndexChanged(index => SetState(state => state.Category = index)),
 
-new Spacer().Frame(height: 20),
+Spacer().Frame(height: 20),
 
 Button("Save Changes", SaveChanges)
 .SemanticDescription("Save task changes")

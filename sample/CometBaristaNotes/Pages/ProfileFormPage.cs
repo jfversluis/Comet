@@ -132,7 +132,7 @@ public class ProfileFormPage : Component<ProfileFormPageState>
 		{
 			items.Add(
 				Border(
-					new Comet.Image(State.AvatarPath)
+					Image(State.AvatarPath)
 						.Aspect(Aspect.AspectFill)
 						.Frame(width: (float)AvatarSize, height: (float)AvatarSize)
 				)

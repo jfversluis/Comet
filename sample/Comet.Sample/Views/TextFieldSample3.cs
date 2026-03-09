@@ -24,7 +24,7 @@ namespace Comet.Samples
 				Text("Current Value:")
 					.Color(Colors.Grey),
 				Text(_state.Text),
-				new Spacer()
+				Spacer()
 			)
 		).FillHorizontal();
 	}

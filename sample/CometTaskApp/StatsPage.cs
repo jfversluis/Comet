@@ -73,7 +73,7 @@ Text(label)
 .FontSize(13)
 .Color(Colors.Gray)
 ),
-new Spacer()
+Spacer()
 )
 .Padding(12)
 .Background(new SolidPaint(Colors.WhiteSmoke))

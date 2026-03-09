@@ -45,7 +45,7 @@ public class ShotDetailPage : Component<ShotDetailPageState>
 				.FontSize(28)
 				.Color(Theme.TextPrimary),
 
-			new Spacer().Frame(height: 8),
+			Spacer().Frame(height: 8),
 
 			// Dose card
 			BuildCard("Dose",
@@ -119,7 +119,7 @@ public class ShotDetailPage : Component<ShotDetailPageState>
 		}
 
 		// Bottom padding
-		items.Add(new Spacer().Frame(height: 40));
+		items.Add(Spacer().Frame(height: 40));
 
 		var stack = VStack(Theme.SpacingS);
 		foreach (var item in items)
@@ -148,8 +148,7 @@ public class ShotDetailPage : Component<ShotDetailPageState>
 	}
 
 	static View BuildStatRow(string label, string value) =>
-		new Comet.Grid(columns: new object[] { 100, "*" }, rows: new object[] { "Auto" })
-		{
+		Grid(columns: new object[] { 100, "*" }, rows: new object[] { "Auto" },
 			Text(label)
 				.FontFamily(Theme.FontRegular)
 				.FontSize(15)
@@ -161,6 +160,6 @@ public class ShotDetailPage : Component<ShotDetailPageState>
 				.FontSize(15)
 				.Color(Theme.TextPrimary)
 				.VerticalTextAlignment(TextAlignment.Center)
-				.Cell(row: 0, column: 1),
-		};
+				.Cell(row: 0, column: 1)
+		);
 }

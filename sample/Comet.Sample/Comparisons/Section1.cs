@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using static Comet.CometControls;
+﻿using static Comet.CometControls;
 
 
 /*
@@ -20,7 +17,7 @@ namespace Comet.Samples.Comparisons
 {
 	public class Section1 : Component
 	{
-				public override View Render()
-			=> Text("Hello Comet!");
+		public override View Render() =>
+			Text("Hello Comet!");
 	}
 }

@@ -36,7 +36,7 @@ _state.DarkMode.Value
 () => _state.DarkMode.Value = !_state.DarkMode.Value
 ),
 
-new Spacer().Frame(height: 8),
+Spacer().Frame(height: 8),
 
 Text("Danger Zone")
 .FontSize(18)
@@ -65,7 +65,7 @@ new() { Title = "Go for a run", Description = "30 min", Priority = TaskPriority.
 .Color(Colors.Red)
 .SemanticDescription("Reset all tasks to sample data"),
 
-new Spacer().Frame(height: 20),
+Spacer().Frame(height: 20),
 
 Text("About")
 .FontSize(18)
@@ -94,7 +94,7 @@ VStack(2,
 Text(title).FontSize(16).FontWeight(FontWeight.Semibold),
 Text(subtitle).FontSize(12).Color(Colors.Gray)
 ),
-new Spacer(),
+Spacer(),
 indicator
 )
 .Padding(12)

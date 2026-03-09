@@ -12,7 +12,7 @@ public class AllTheListsApp : CometApp
 
 	Comet.View Build()
 	{
-		var tabs = new TabView();
+		var tabs = TabView();
 		tabs.Add(MakeTab(new ShoppingPage(), "Shopping", "cart.fill"));
 		tabs.Add(MakeTab(new CollectionViewPage(), "Collections", "square.grid.2x2.fill"));
 		tabs.Add(MakeTab(new InboxPage(), "Inbox", "tray.full.fill"));

@@ -211,8 +211,7 @@ public class BeanDetailPage : Component<BeanDetailPageState>
 			var barFraction = maxCount > 0 ? (double)counts[i] / maxCount : 0;
 
 			container.Add(
-				new Comet.Grid(columns: new object[] { 28, "*", 30 }, rows: new object[] { "Auto" })
-				{
+				Grid(columns: new object[] { 28, "*", 30 }, rows: new object[] { "Auto" },
 					Text(sentiments[i])
 						.FontFamily(Icons.FontFamily)
 						.FontSize(18)
@@ -230,8 +229,8 @@ public class BeanDetailPage : Component<BeanDetailPageState>
 						.Color(Theme.TextSecondary)
 						.HorizontalTextAlignment(TextAlignment.End)
 						.VerticalTextAlignment(TextAlignment.Center)
-						.Cell(row: 0, column: 2),
-				}
+						.Cell(row: 0, column: 2)
+				)
 				.ColumnSpacing(Theme.SpacingS)
 				.Frame(height: 24)
 			);
@@ -281,16 +280,15 @@ public class BeanDetailPage : Component<BeanDetailPageState>
 		foreach (var item in infoItems) infoStack.Add(item);
 
 		return Border(
-			new Comet.Grid(columns: new object[] { "*", "Auto" }, rows: new object[] { "Auto" })
-			{
+			Grid(columns: new object[] { "*", "Auto" }, rows: new object[] { "Auto" },
 				infoStack.Cell(row: 0, column: 0),
 				Text(Icons.ChevronRight)
 					.FontFamily(Icons.FontFamily)
 					.FontSize(20)
 					.Color(Theme.TextMuted)
 					.VerticalTextAlignment(TextAlignment.Center)
-					.Cell(row: 0, column: 1),
-			}
+					.Cell(row: 0, column: 1)
+			)
 		)
 		.CornerRadius(Theme.RadiusCard)
 		.Background(Theme.CardBackground)

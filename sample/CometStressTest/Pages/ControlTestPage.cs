@@ -30,14 +30,14 @@ Text($"Hello {State.Name}!")
 
 // SecureField
 Text("SecureField:").FontSize(14).Color(Colors.Gray),
-new SecureField(State.Password, "Enter password...")
+SecureField(State.Password, "Enter password...")
 .OnTextChanged(v => SetState(s => s.Password = v ?? "")),
 Text($"Password length: {State.Password?.Length ?? 0}")
 .FontSize(14),
 
 // SearchBar
 Text("SearchBar:").FontSize(14).Color(Colors.Gray),
-new SearchBar(State.SearchText)
+SearchBar(State.SearchText)
 .OnTextChanged(v => SetState(s => s.SearchText = v ?? "")),
 Text($"Searching: \"{State.SearchText}\"")
 .FontSize(14),
@@ -55,21 +55,21 @@ Text(State.ToggleValue ? "ON" : "OFF")
 Text("Slider + ProgressBar:").FontSize(14).Color(Colors.Gray),
 Slider(State.SliderValue, 0, 1)
 .OnValueChanged(v => SetState(s => s.SliderValue = v)),
-new ProgressBar(State.SliderValue),
+ProgressBar(State.SliderValue),
 Text($"Value: {State.SliderValue:F2}")
 .FontSize(14),
 
 // Stepper
 Text("Stepper:").FontSize(14).Color(Colors.Gray),
 HStack(10,
-new Stepper(stepperValue, 0, 20, 1),
+Stepper(stepperValue, 0, 20, 1),
 Text($"Steps: {stepperValue.Value}")
 .FontSize(16)
 ),
 
 // DatePicker
 Text("DatePicker:").FontSize(14).Color(Colors.Gray),
-new DatePicker(selectedDate),
+DatePicker(selectedDate),
 Text($"Selected: {selectedDate.Value:yyyy-MM-dd}")
 .FontSize(14),
 
@@ -82,7 +82,7 @@ SetState(s => s.ClickCount++);
 Text($"Total clicks: {State.ClickCount}")
 .FontSize(14),
 
-new Spacer()
+Spacer()
 ).Padding(16)
 );
 }

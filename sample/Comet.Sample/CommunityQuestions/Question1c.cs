@@ -8,7 +8,7 @@ namespace Comet.Samples
 	{
 				public override View Render() =>
 			VStack(
-				new Image("turtlerock.jpg")
+				Image("turtlerock.jpg")
 					.Frame(75, 75)
 					.Padding(4),
 				Text("Title")

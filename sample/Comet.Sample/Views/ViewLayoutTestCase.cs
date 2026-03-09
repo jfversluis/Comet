@@ -20,11 +20,10 @@ namespace Comet.Samples
 						.FontWeight(FontWeight.Bold)
 						.Margin(new Thickness(0, 6)),
 					ScrollView(Orientation.Horizontal,
-						new HStack
-						{
+						new HStack {
 							Enumerable.Range(0,10).Select(destination => ZStack(
 							// Destination Background Image
-							new Image()
+							Image()
 								.Background(Colors.SkyBlue).FillHorizontal().FillVertical(),
 							VStack(LayoutAlignment.Start,
 								VStack(
@@ -41,7 +40,7 @@ namespace Comet.Samples
 									.Padding(6)
 									.Margin(12),
 
-								new Spacer(),
+								Spacer(),
 								Text("Japan Street")
 									.Color(Colors.White)
 									.FontFamily("Rockolf Bold")
@@ -100,7 +99,7 @@ namespace Comet.Samples
 				Text("VStack With Spacers"),
 				VStack(
 					Text("L").Background(Colors.Blue),
-					new Spacer(),
+					Spacer(),
 					Text("C").Background(Colors.Blue),
 					Text("R").Background(Colors.Blue)
 
@@ -117,7 +116,7 @@ namespace Comet.Samples
 				Text("HStack With Spacers"),
 				HStack(
 					Text("L").Background(Colors.Blue),
-					new Spacer(),
+					Spacer(),
 					Text("C").Background(Colors.Blue),
 					Text("R").Background(Colors.Blue)
 

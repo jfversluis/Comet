@@ -27,7 +27,7 @@ namespace Comet.Samples.Comparisons
 	public class Section4b : Component
 	{
 				public override View Render() => VStack(
-				new Image("turtlerock.jpg")
+				Image("turtlerock.jpg")
 					.ClipShape(new Circle())
 					.Border(new Circle().Stroke(Colors.White, lineWidth: 4))
 					.Shadow(radius: 10)

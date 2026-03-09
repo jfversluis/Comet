@@ -45,15 +45,12 @@ namespace Comet.Samples
 			Card = new CreditCard();
 		}
 
-				public override View Render() => new Grid(
+				public override View Render() => Grid(
+			columns: new object[] { 20, "*", 20 },
 			rows: new object[] { "250", 20, 160, 20, 44, 20, 1, 20, 44, "*" },
-			columns: new object[] { 20, "*", 20 }
-			)
-		{
-			new Grid(
+			Grid(
+				columns: new object[] { 30, "*", 30 },
 				rows: new object[] { 30,"*",30},
-				columns: new object[] { 30, "*", 30 })
-			{
                 // cc background
                 new ShapeView(
 					new RoundedRectangle(8)
@@ -62,11 +59,9 @@ namespace Comet.Samples
 				).Cell(row:1, column:1),
 
                 // the cc details
-                new Grid(
+                Grid(
+					columns: new object[]{ 30, 120, "*", 40, 30 },
 					rows: new object[]{ 30, 30, 20, 30, 10, 20, 30, "*" },
-					columns: new object[]{ 30, 120, "*", 40, 30 }
-				)
-				{
 					Text("CARD NUMBER")
 						.FontSize(10)
 						.Color(Colors.Silver)
@@ -98,16 +93,15 @@ namespace Comet.Samples
 					).Cell(row: 1, column: 3)
 
 
-				}.Cell(row:1, column:1),
+				).Cell(row:1, column:1)
 
-			}
+			)
 			.Cell(row:0, column:0, colSpan:3)
 			.Background(Color.FromArgb("#E5E9EE"))
 			.Frame(height:250),
-			new Grid(
+			Grid(
+				columns: new object[] { "2*", 20, "*" },
 				rows: new object[] { 40, 20, 40, 20, 40, 20, 44, 20, 1, 20, 44 },
-				columns: new object[] { "2*", 20, "*" })
-			{
 				EntryContainer(Card.Number, "Enter CC Number", "\uf09d").Cell(row:0, column: 0, colSpan: 3),
 				EntryContainer(Card.Expiration, "MM/YYYY", "\uf783").Cell(row:2, column: 0),
 				EntryContainer(Card.CVV, "CVV", "\uf023").Cell(row:2, column: 2),
@@ -118,9 +112,9 @@ namespace Comet.Samples
 				Button("Or Pay with PayPal").RoundedBorder(22, Colors.SlateGrey).Cell(row:6, column:0, colSpan:3).Color(Colors.SlateGrey),
 				HRule().Cell(row:8,column:0,colSpan:3),
 				Button("Purchase for $200").RoundedBorder(22, Colors.SlateGrey).Background(Colors.SlateGrey).Cell(row:10,column:0,colSpan:3).Color(Colors.White)
-			}.Cell(row:2, column:1),
+			).Cell(row:2, column:1)
 
-		};
+		);
 
 		View HRule()
 		{

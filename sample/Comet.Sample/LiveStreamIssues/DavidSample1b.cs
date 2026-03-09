@@ -9,9 +9,9 @@ namespace Comet.Samples.LiveStreamIssues
 	{
 				public override View Render() =>
 			HStack(LayoutAlignment.Center,
-				new Spacer(),
+				Spacer(),
 				new ShapeView(new Circle().Stroke(Colors.Black, 2f)).Frame(44,44),
-				new Spacer()
+				Spacer()
 			);
 	}
 }

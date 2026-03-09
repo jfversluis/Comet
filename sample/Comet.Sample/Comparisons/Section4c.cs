@@ -25,7 +25,7 @@ namespace Comet.Samples.Comparisons
 	public class Section4c : Component
 	{
 				public override View Render() => VStack(
-				new Image("turtlerock.jpg")
+				Image("turtlerock.jpg")
 					.Shadow(radius: 10)
 			);
 

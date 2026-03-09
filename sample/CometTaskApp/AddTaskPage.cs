@@ -25,7 +25,7 @@ Text("Create New Task")
 .SemanticHeadingLevel(SemanticHeadingLevel.Level1),
 
 string.IsNullOrEmpty(State.ErrorMessage)
-? (View)new Spacer().Frame(height: 0)
+? (View)Spacer().Frame(height: 0)
 : Text(State.ErrorMessage)
 .FontSize(14)
 .Color(Colors.Red),
@@ -50,16 +50,16 @@ TextField(State.Description, "Add more details...")
 .OnTextChanged(value => SetState(state => state.Description = value ?? "")),
 
 Text("Priority").FontSize(12).Color(Colors.Gray),
-new Picker(State.Priority, "🟢 Low", "🟡 Medium", "🟠 High", "🔴 Critical")
+Picker(State.Priority, "🟢 Low", "🟡 Medium", "🟠 High", "🔴 Critical")
 .SemanticDescription("Task priority level")
 .OnSelectedIndexChanged(index => SetState(state => state.Priority = index)),
 
 Text("Category").FontSize(12).Color(Colors.Gray),
-new Picker(State.Category, "🏠 Personal", "💼 Work", "🛒 Shopping", "💪 Health", "📚 Learning", "📌 Other")
+Picker(State.Category, "🏠 Personal", "💼 Work", "🛒 Shopping", "💪 Health", "📚 Learning", "📌 Other")
 .SemanticDescription("Task category")
 .OnSelectedIndexChanged(index => SetState(state => state.Category = index)),
 
-new Spacer().Frame(height: 20),
+Spacer().Frame(height: 20),
 
 Button("Create Task", CreateTask)
 .SemanticDescription("Create the task")

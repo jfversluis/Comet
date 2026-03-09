@@ -28,7 +28,7 @@ namespace Comet.Samples
 			new ListView<TodoItem>(items){
 				ViewFor = (item)=>HStack(
 						Text(item.Name).Alignment( Alignment.Leading),
-						new Spacer(),
+						Spacer(),
 						Toggle(item.Done).Alignment(Alignment.Center)
 					).Margin(6).FillHorizontal()
 			}.Title("Tasky")

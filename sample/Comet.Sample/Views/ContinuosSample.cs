@@ -10,13 +10,12 @@ namespace Comet.Samples
 				public override View Render()
 		{
 
-			return new Grid(
+			return Grid(
 				columns: new object[] { "*", "*" },
-				rows: null)
-			{
+				rows: null,
 				TextField(_strokeColor, "Enter code here").Cell(row:0, column: 0),
 				Button("Controls appear here").Cell(row:0, column:1)
-			};
+			);
 		}
 	}
 }

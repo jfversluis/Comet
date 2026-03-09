@@ -10,7 +10,7 @@ namespace Comet.Samples
 	public class ClipSample1 : Component
 	{
 				public override View Render() => VStack(
-				new Image("turtlerock.jpg")
+				Image("turtlerock.jpg")
 				.Aspect(Aspect.AspectFill)
 					.ClipShape(new Circle())
 					.Border(new Circle().Stroke(Colors.White, lineWidth: 4))

@@ -26,13 +26,13 @@ namespace Comet.Samples
 
 				public override View Render() => NavigationView(
 			new ListView<TodoItem>(items){
-				ViewFor = (item)=>new ContentView{
+				ViewFor = (item)=>ContentView(
 					HStack(
 						Text(item.Name).Alignment( Alignment.Leading),
-						new Spacer(),
+						Spacer(),
 						Toggle(item.Done).Alignment(Alignment.Center)
 					).Margin(6)
-				}.FillHorizontal()
+				).FillHorizontal()
 			}.Title("Tasky")
 		);
 	}

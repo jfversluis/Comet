@@ -10,7 +10,7 @@ namespace Comet.Samples
 		{
 			return ScrollView(
 					VStack(
-						new Image("turtlerock.jpg").Frame(75, 75).Padding(4),
+						Image("turtlerock.jpg").Frame(75, 75).Padding(4),
 						Text("Title"),
 						Text("Description").FontSize(12).Color(Colors.Grey)
 					).FillHorizontal()

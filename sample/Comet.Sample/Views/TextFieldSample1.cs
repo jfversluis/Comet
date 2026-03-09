@@ -16,7 +16,7 @@ namespace Comet.Samples
 			HStack(
 				Text("onCommit:"),
 				Text(name1),
-				new Spacer()
+				Spacer()
 			)
 		).FillHorizontal();
 	}

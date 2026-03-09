@@ -71,7 +71,7 @@ namespace Comet.Samples
 					.Frame(height: 40, width: 200)
 					.Margin(left:20),
 
-				new Spacer(),
+				Spacer(),
 
 				new BorderedEntry(Card.CVV, "CVV", "\uf023")
 					.Frame( height: 40, width: 100)

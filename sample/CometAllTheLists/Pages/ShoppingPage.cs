@@ -73,7 +73,7 @@ public class ShoppingPage : Component<ShoppingPageState>
 						.FontSize(12)
 						.Color(Colors.Gray)
 				),
-				new Spacer(),
+				Spacer(),
 				VStack(LayoutAlignment.End, spacing: 2,
 					Text($"${item.Price}")
 						.FontSize(18)
@@ -107,7 +107,7 @@ public class ShoppingPage : Component<ShoppingPageState>
 					.FontSize(11)
 					.Color(Colors.Gray)
 			),
-			new Spacer(),
+			Spacer(),
 			Text($"${item.Price}")
 				.FontSize(16)
 				.FontWeight(FontWeight.Bold)

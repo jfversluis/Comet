@@ -208,7 +208,7 @@ public static class FormHelpers
 				.Margin(new Thickness(16, 0, 0, 4)),
 
 			Border(
-				new Comet.Picker(selectedIndex, items)
+				Picker(selectedIndex, items)
 					.Color(Theme.TextPrimary)
 					.Background(Colors.Transparent)
 					.Frame(height: Theme.FormFieldHeight)
@@ -307,8 +307,7 @@ public static class FormHelpers
 
 	public static View MakeToggleRow(string label, bool isOn, Action<bool> onChanged)
 	{
-		var grid = new Comet.Grid(columns: new object[] { "*", "Auto" }, rows: new object[] { "Auto" })
-		{
+		var grid = Grid(columns: new object[] { "*", "Auto" }, rows: new object[] { "Auto" },
 			Text(label)
 				.FontFamily(Theme.FontSemibold)
 				.FontSize(14)
@@ -320,8 +319,8 @@ public static class FormHelpers
 			Toggle(isOn)
 				.OnColor(Theme.Primary)
 				.OnToggled(onChanged)
-				.Cell(row: 0, column: 1),
-		};
+				.Cell(row: 0, column: 1)
+		);
 
 		return MakeCard(grid);
 	}

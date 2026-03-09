@@ -83,7 +83,7 @@ public class InboxPage : Component<InboxPageState>
 						.FontSize(11)
 						.Color(Colors.DarkGray)
 				),
-				new Spacer(),
+				Spacer(),
 				Text(FormatDate(msg.Date))
 					.FontSize(10)
 					.Color(Colors.Gray)

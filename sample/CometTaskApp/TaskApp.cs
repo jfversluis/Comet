@@ -12,12 +12,11 @@ public class TaskApp : CometApp
 	}
 
 	public static View CreateRootView() =>
-		new TabView
-		{
-			new TaskListPage().Title("Tasks"),
-			new StatsPage().Title("Stats"),
-			new SettingsPage().Title("Settings"),
-		};
+		TabView(
+			("Tasks", new TaskListPage()),
+			("Stats", new StatsPage()),
+			("Settings", new SettingsPage())
+		);
 }
 
 public static class MauiProgram

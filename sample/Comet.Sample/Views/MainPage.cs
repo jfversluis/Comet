@@ -111,7 +111,7 @@ namespace Comet.Samples
 			{
 				ViewFor = (page) => HStack(
 					Text(page.Title),
-					new Spacer()
+					Spacer()
 				).Frame(height: 44).Margin(left: 10),
 			}.OnSelectedNavigate(page => page.Page().Title(page.Title))
 		);

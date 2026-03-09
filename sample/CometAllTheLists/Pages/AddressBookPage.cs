@@ -84,7 +84,7 @@ public class AddressBookPage : Component<AddressBookPageState>
 						.Color(Colors.Gray)
 				),
 
-				new Spacer(),
+				Spacer(),
 
 				Text("→")
 					.FontSize(16)

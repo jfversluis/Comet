@@ -29,9 +29,8 @@ namespace Comet.Samples
 
 		public override View Render() => new ListView<Song>(Songs)
 		{
-			ViewFor = song => new HStack
-			{
-				new Image(song.ArtworkUrl)
+			ViewFor = song => HStack(
+				Image(song.ArtworkUrl)
 					.Frame(44,44).Alignment(Alignment.Center)
 					.Margin(left:10f)
 					.ClipShape(new Circle()),
@@ -39,8 +38,8 @@ namespace Comet.Samples
 					Text(song.Title),
 					Text(song.Artist),
 					Text(song.Album)
-				),
-			}.Alignment(Alignment.Leading),
+				)
+			).Alignment(Alignment.Leading),
 			Header = VStack(
 				Text("Songs")
 			),

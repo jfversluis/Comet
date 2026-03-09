@@ -10,7 +10,7 @@ namespace Comet.Samples
 		readonly Song song;
 
 		public override View Render() => VStack(
-			new Image(() => song.ArtworkUrl),
+			Image(() => song.ArtworkUrl),
 			Text(() => song.Title),
 			Text(() => song.Artist),
 			Text(() => song.Album)

@@ -62,7 +62,7 @@ public class CollectionViewPage : Component<CollectionViewPageState>
 					.Frame(width: 10, height: 10)
 					.Background(new SolidPaint(Colors.Blue)),
 				Text(item).FontSize(14),
-				new Spacer(),
+				Spacer(),
 				Text("→").FontSize(12).Color(Colors.Gray)
 			)
 		)

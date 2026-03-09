@@ -28,7 +28,7 @@ namespace Comet.Samples
 				public override View Render() => new ListView<Song>(Songs)
 		{
 			ViewFor = (song) => HStack(
-				new Image (song.ArtworkUrl).Frame(52, 52).Margin(4),
+				Image(song.ArtworkUrl).Frame(52, 52).Margin(4),
 				VStack(LayoutAlignment.Start, 2,
 					Text(song.Title).FontSize(17),
 					Text(song.Artist).Color(Colors.Grey),
