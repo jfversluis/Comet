@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using Comet.Styles;
 using Xunit;
 
 namespace Comet.Tests
