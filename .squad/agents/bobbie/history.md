@@ -350,3 +350,30 @@ View.ViewPropertyChanged → View.ContextPropertyChanged → ContextualObjectExt
 4. **Reactive<string> verified** — Status text updates correctly via Reactive<string> on every action, consistent with Mac Catalyst results.
 
 **Recommendation:** The MAUI Slider + Appium interaction gap should be investigated upstream. File an issue against dotnet/maui requesting that the iOS Slider handler expose proper accessibility value-setting support for automation frameworks.
+
+
+### CometBaristaNotes & CometStressTest iOS Simulator E2E — 29/33 Tests Pass, 1 Crash Found (2026-03-08T232500Z)
+
+**Status:** ✅ E2E COMPLETE
+
+**CometBaristaNotes (com.comet.baristanotes):**
+- **Build:** Debug config, net10.0-ios. 0 errors, 17 pre-existing warnings.
+- **Coverage:** 15 pages/features tested, 13 pass, 1 crash, 1 Appium limitation.
+- **Bug found:** BeanDetailPage crashes (SIGABRT) when navigated from BeanManagementPage (Settings → Beans → tap). The CoffeeBeanDetailPage from the Dashboard works fine — different navigation paths use different page classes.
+- **Syncfusion gauges:** Not exposed in accessibility tree, not automatable. License popup ("Claim License") appeared once, dismissed with OK.
+- **Debug host nav state:** The debug host restores navigation state across launches. After visiting Shot Logging, subsequent launches start on that page. Back-button navigation (coordinate tap ~x=57,y=78) works.
+- **Tab navigation:** All 3 tabs (Coffee Lab, Activity, Settings) work via coordinate taps on tab bar (y=850). Cross-tab navigation via "Open activity feed" button works.
+
+**CometStressTest (com.comet.stresstest):**
+- **Build:** Debug config, net10.0-ios. 0 errors, 0 warnings.
+- **Coverage:** 18 features tested across 6 tabs, 16 pass, 2 Appium limitations.
+- **Two-simulator gotcha:** Two simulators were booted (iPhone 16 Pro iOS 18.5, iPhone 17 Pro iOS 26.2). `xcrun simctl install booted` targeted the wrong device. Must specify UDID explicitly: `xcrun simctl install 3F542DD1-6303-4C0B-8D81-83C4B2D1D680`.
+- **Stress test highlights:** 100 rapid state updates completed without crash or UI freeze. Timer accurately tracked seconds. Button counter, stepper, and state reset all work correctly.
+- **All 6 tabs accessible:** Lists, Collections, Layouts, Controls via tab bar; State and Swipe via iOS "More" overflow tab.
+- **Zero crashes.** App handles complex layouts (grid spans, flex wrapping, absolute positioning, nested scrolls), large lists (50 items with dynamic add), and rapid state mutations.
+
+**Key patterns:**
+- Always specify simulator UDID when multiple are booted.
+- Appium `--tap` on "Coffee Lab" back button unreliable — use coordinate taps.
+- Swipe gestures on SwipeView items are not automatable via Appium.
+- MAUI Slider and Toggle Switch remain Appium automation gaps (upstream issue, not Comet bug).

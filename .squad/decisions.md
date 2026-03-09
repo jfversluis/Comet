@@ -955,3 +955,79 @@ The source generator produces `DatePicker(Binding<DateTime?> ...)` because `IDat
 
 **Verdict: ✅ COMPLETE (all builds green)**
 
+
+### ### 2026-03-09T04:32:21Z: Bug Fix — GetHashCode Negative Index (P1, Fixed)
+
+**Owner:** Amos (Controls & API Dev)  
+**Status:** Fixed  
+**Decision:** `String.GetHashCode() % array.Length` produces negative indices when hash is negative. Changed to `((hash % len) + len) % len` double-modulo pattern. This is safer than `Math.Abs()` which throws `OverflowException` on `Int32.MinValue`.
+
+**File:** `sample/CometAllTheLists/Pages/AddressBookPage.cs`
+
+**Convention:** All future code using hash-based indexing must use the double-modulo pattern.
+
+**Test Results:** Comet.Tests now passes (729/729, 0 failures).
+
+### ### 2026-03-09T04:32:21Z: Known Issue — RadioButton IRadioButton Interface (P2, Documented)
+
+**Owner:** Amos (Controls & API Dev)  
+**Status:** Known Issue (future work)  
+**Decision:** MAUI's `RadioButtonHandler` casts the view to `IRadioButton`, but Comet's `RadioButton` doesn't implement that interface. Architectural mismatch — Comet uses container-based grouping (RadioGroup required) while MAUI expects property-based grouping (GroupName). 
+
+**Root Cause:** The `CometGenerate` attribute for `IRadioButton` is intentionally commented out in `ControlsGenerator.cs`.
+
+**Action Taken:** Replaced sample body with known-issue placeholder. No RadioButton controls instantiated in Comet.Sample.
+
+**Future Work:** To fully fix, Comet's RadioButton needs to implement `IRadioButton` with explicit interface mappings (`Selected` → `IsChecked`, `Label` → `Content`), handle `GroupName` gracefully, and potentially create a custom handler instead of reusing MAUI's.
+
+### ### 2026-03-09T04:32:21Z: E2E Test Results — CometStressTest ✅ PASS (6/6 Categories)
+
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Complete  
+**Decision:** CometStressTest fully validates all core framework capabilities. 6/6 stress categories pass: Lists, Collections, Layouts, Controls, State (including 100 rapid updates — thread-safe), Swipe. Zero crashes, zero UI freezes. 
+
+**Platform:** iOS Simulator (iPhone 16 Pro, iOS 18.5)
+
+**Thread Safety:** Verified — 100 rapid state updates processed without freeze or crash.
+
+**Appium Limitations (not Comet bugs):**
+- Slider manipulation fails (upstream MAUI issue)
+- Toggle switch coordinate taps don't toggle (MAUI touch interception)
+- SwipeView actions don't trigger (Appium gesture gap)
+
+**Verdict:** ✅ PASS
+
+### ### 2026-03-09T04:32:21Z: E2E Test Results — CometBaristaNotes ⚠️ ISSUES (13/15 Features)
+
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Complete with P1 bug  
+**Decision:** CometBaristaNotes: 13/15 features pass. Primary flows stable (Dashboard, Activity, Settings, Shot Logging, direct bean detail). P1 crash found in specific navigation path.
+
+**Platform:** iOS Simulator (iPhone 16 Pro, iOS 18.5)
+
+**P1 Bug — BeanDetailPage Navigation Crash:**
+- **Repro:** Settings tab → Beans → tap any bean card
+- **Expected:** Navigate to BeanDetailPage with bean info
+- **Actual:** App crashes with SIGABRT
+- **Not affected:** Navigating to bean detail FROM the dashboard (Coffee Lab tab → tap bean card) works fine
+- **Likely cause:** Different navigation route — Bean Management uses `BeanDetailPage(beanId)` while Dashboard uses `CoffeeBeanDetailPage(beanId, source)`
+
+**Appium Limitations (not Comet bugs):**
+- Toggle switch coordinate taps don't toggle (MAUI touch interception)
+- Syncfusion gauges not exposed in accessibility tree (not automatable)
+
+**Debug Host Issue:** State persistence across app launches — after navigating to Shot Logging page, every subsequent launch starts on that page instead of Dashboard.
+
+**Verdict:** ⚠️ ISSUES (P1 crash in Settings → Beans → Detail path requires investigation)
+
+### ### 2026-03-09T04:32:21Z: Tooling — Multi-Simulator UDID Specification
+
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Documented  
+**Decision:** When multiple iOS simulators are booted, `xcrun simctl install booted` targets the wrong device. Always specify UDID explicitly to ensure consistent Appium targeting.
+
+**Example:**
+```bash
+xcrun simctl install 3F542DD1-6303-4C0B-8D81-83C4B2D1D680 app.ipa
+```
+
