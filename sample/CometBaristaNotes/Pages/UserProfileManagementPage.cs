@@ -1,48 +1,48 @@
-using Comet;
-using Microsoft.Maui;
-using Microsoft.Maui.Graphics;
 using CometBaristaNotes.Models;
 using CometBaristaNotes.Services;
 using CometBaristaNotes.Components;
 
-using ScrollView = Comet.ScrollView;
-
 namespace CometBaristaNotes.Pages;
 
-public class UserProfileManagementPage : Comet.View
+public class UserProfileManagementPageState
 {
-	[State] readonly State<List<UserProfile>> _profiles = new(new());
-	[State] readonly State<bool> _isLoaded = new(false);
+	public List<UserProfile> Profiles { get; set; } = new();
+	public bool IsLoaded { get; set; }
+}
 
+public class UserProfileManagementPage : Component<UserProfileManagementPageState>
+{
 	void LoadProfiles()
 	{
 		var store = InMemoryDataStore.Instance;
 		if (store == null) return;
-		_profiles.Value = store.GetAllProfiles();
-		_isLoaded.Value = true;
+		SetState(s =>
+		{
+			s.Profiles = store.GetAllProfiles();
+			s.IsLoaded = true;
+		});
 	}
 
-	[Body]
-	Comet.View body()
+	public override View Render()
 	{
-		if (!_isLoaded.Value)
+		if (!State.IsLoaded)
 			LoadProfiles();
 
-		var profiles = _profiles.Value;
+		var profiles = State.Profiles;
 
 		if (profiles.Count == 0)
 		{
-			return new VStack(spacing: Theme.SpacingM) {
+			return VStack(Theme.SpacingM,
 				FormHelpers.MakeEmptyState(Icons.Person, "No Profiles Yet", "Create profiles for different users or coffee preferences"),
-				FormHelpers.MakePrimaryButton("+ Add Profile", () => Navigation?.Navigate(new ProfileFormPage(0))),
-			}
+				FormHelpers.MakePrimaryButton("+ Add Profile", () => Navigation?.Navigate(new ProfileFormPage(0)))
+			)
 			.Padding(new Thickness(Theme.SpacingL))
 			.Background(Theme.Background);
 		}
 
-		var stack = new VStack(spacing: Theme.SpacingS) {
-			FormHelpers.MakePrimaryButton("+ Add Profile", () => Navigation?.Navigate(new ProfileFormPage(0))),
-		};
+		var stack = VStack(Theme.SpacingS,
+			FormHelpers.MakePrimaryButton("+ Add Profile", () => Navigation?.Navigate(new ProfileFormPage(0)))
+		);
 
 		foreach (var profile in profiles)
 		{
@@ -54,7 +54,7 @@ public class UserProfileManagementPage : Comet.View
 			));
 		}
 
-		return new ScrollView { stack.Padding(new Thickness(Theme.SpacingM)) }
+		return ScrollView(stack.Padding(new Thickness(Theme.SpacingM)))
 			.Background(Theme.Background);
 	}
 }

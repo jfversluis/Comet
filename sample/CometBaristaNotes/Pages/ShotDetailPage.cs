@@ -1,21 +1,16 @@
-using Comet;
-using Microsoft.Maui;
-using Microsoft.Maui.Graphics;
 using CometBaristaNotes.Models;
 using CometBaristaNotes.Services;
 using CometBaristaNotes.Components;
 
-using ScrollView = Comet.ScrollView;
-using Border = Comet.Border;
-using Grid = Comet.Grid;
-
 namespace CometBaristaNotes.Pages;
+
+public class ShotDetailPageState { }
 
 /// <summary>
 /// Displays the details of a previously logged shot.
 /// Navigated to from the Activity feed when tapping a shot card.
 /// </summary>
-public class ShotDetailPage : Comet.View
+public class ShotDetailPage : Component<ShotDetailPageState>
 {
 	readonly int _shotId;
 	ShotRecord? _shot;
@@ -26,28 +21,26 @@ public class ShotDetailPage : Comet.View
 		_shot = InMemoryDataStore.Instance?.GetShot(shotId);
 	}
 
-	[Body]
-	Comet.View body()
+	public override View Render()
 	{
 		if (_shot == null)
 		{
-			return new VStack
-			{
-				FormHelpers.MakeEmptyState(Icons.Coffee, "Shot Not Found", "This shot could not be loaded."),
-			}
+			return VStack(
+				FormHelpers.MakeEmptyState(Icons.Coffee, "Shot Not Found", "This shot could not be loaded.")
+			)
 			.Background(Theme.Background)
 			.FillVertical();
 		}
 
-		var items = new List<Comet.View>
+		var items = new List<View>
 		{
 			// Header
-			new Text(_shot.Timestamp.ToString("dddd, MMMM d 'at' h:mm tt"))
+			Text(_shot.Timestamp.ToString("dddd, MMMM d 'at' h:mm tt"))
 				.FontFamily(Theme.FontRegular)
 				.FontSize(14)
 				.Color(Theme.TextSecondary),
 
-			new Text(_shot.DrinkType)
+			Text(_shot.DrinkType)
 				.FontFamily(Theme.FontSemibold)
 				.FontSize(28)
 				.Color(Theme.TextPrimary),
@@ -74,7 +67,7 @@ public class ShotDetailPage : Comet.View
 		// Equipment card
 		if (!string.IsNullOrEmpty(_shot.MachineName) || !string.IsNullOrEmpty(_shot.GrinderName))
 		{
-			var equipmentRows = new List<Comet.View>();
+			var equipmentRows = new List<View>();
 			if (!string.IsNullOrEmpty(_shot.MachineName))
 				equipmentRows.Add(BuildStatRow("Machine", _shot.MachineName));
 			if (!string.IsNullOrEmpty(_shot.GrinderName))
@@ -102,11 +95,11 @@ public class ShotDetailPage : Comet.View
 				Icons.SentimentSatisfied,
 				Icons.SentimentVerySatisfied,
 			};
-			var ratingRow = new HStack(spacing: Theme.SpacingS);
+			var ratingRow = HStack(Theme.SpacingS);
 			for (int i = 0; i < sentiments.Length; i++)
 			{
 				var color = i == _shot.Rating.Value ? Theme.Primary : Theme.StarEmpty;
-				ratingRow.Add(new Text(sentiments[i])
+				ratingRow.Add(Text(sentiments[i])
 					.FontFamily(Icons.FontFamily)
 					.FontSize(28)
 					.Color(color));
@@ -118,7 +111,7 @@ public class ShotDetailPage : Comet.View
 		if (!string.IsNullOrEmpty(_shot.TastingNotes))
 		{
 			items.Add(BuildCard("Tasting Notes",
-				new Text(_shot.TastingNotes)
+				Text(_shot.TastingNotes)
 					.FontFamily(Theme.FontRegular)
 					.FontSize(16)
 					.Color(Theme.TextPrimary)
@@ -128,25 +121,25 @@ public class ShotDetailPage : Comet.View
 		// Bottom padding
 		items.Add(new Spacer().Frame(height: 40));
 
-		var stack = new VStack(spacing: Theme.SpacingS);
+		var stack = VStack(Theme.SpacingS);
 		foreach (var item in items)
 			stack.Add(item);
 		stack.Padding(new Thickness(Theme.SpacingM));
 
-		return new ScrollView { stack }.Background(Theme.Background);
+		return ScrollView(stack).Background(Theme.Background);
 	}
 
-	static Comet.View BuildCard(string title, params Comet.View[] children)
+	static View BuildCard(string title, params View[] children)
 	{
-		var stack = new VStack(spacing: Theme.SpacingS);
-		stack.Add(new Text(title.ToUpperInvariant())
+		var stack = VStack(Theme.SpacingS);
+		stack.Add(Text(title.ToUpperInvariant())
 			.FontFamily(Theme.FontSemibold)
 			.FontSize(11)
 			.Color(Theme.TextSecondary));
 		foreach (var child in children)
 			stack.Add(child);
 
-		return new Border { stack }
+		return Border(stack)
 			.CornerRadius(16)
 			.Background(Theme.Surface)
 			.StrokeThickness(0)
@@ -154,16 +147,16 @@ public class ShotDetailPage : Comet.View
 			.Margin(new Thickness(0, 4));
 	}
 
-	static Comet.View BuildStatRow(string label, string value) =>
-		new Grid(columns: new object[] { 100, "*" }, rows: new object[] { "Auto" })
+	static View BuildStatRow(string label, string value) =>
+		new Comet.Grid(columns: new object[] { 100, "*" }, rows: new object[] { "Auto" })
 		{
-			new Text(label)
+			Text(label)
 				.FontFamily(Theme.FontRegular)
 				.FontSize(15)
 				.Color(Theme.TextSecondary)
 				.VerticalTextAlignment(TextAlignment.Center)
 				.Cell(row: 0, column: 0),
-			new Text(value)
+			Text(value)
 				.FontFamily(Theme.FontSemibold)
 				.FontSize(15)
 				.Color(Theme.TextPrimary)

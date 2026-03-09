@@ -1,53 +1,69 @@
-using Comet;
-using Microsoft.Maui.Graphics;
 using CometBaristaNotes.Models;
 using CometBaristaNotes.Services;
 using CometBaristaNotes.Components;
 
-using ScrollView = Comet.ScrollView;
-
 namespace CometBaristaNotes.Pages;
 
-public class BagDetailPage : Comet.View
+public class BagDetailPageState
+{
+	public string BeanName { get; set; } = "";
+	public int BeanId { get; set; }
+	public string RoastDate { get; set; } = "";
+	public string Notes { get; set; } = "";
+	public bool IsComplete { get; set; }
+	public int ShotCount { get; set; }
+	public bool IsLoaded { get; set; }
+	public string Error { get; set; } = "";
+	public RatingAggregate Rating { get; set; } = new();
+}
+
+public class BagDetailPage : Component<BagDetailPageState>
 {
 	readonly int _bagId;
-
-	[State] readonly State<string> _beanName = new("");
-	[State] readonly State<int> _beanId = new(0);
-	[State] readonly State<string> _roastDate = new("");
-	[State] readonly State<string> _notes = new("");
-	[State] readonly State<bool> _isComplete = new(false);
-	[State] readonly State<int> _shotCount = new(0);
-	[State] readonly State<bool> _isLoaded = new(false);
-	[State] readonly State<string> _error = new("");
-	[State] readonly State<RatingAggregate> _rating = new(new());
 
 	public BagDetailPage(int bagId = 0) { _bagId = bagId; }
 
 	void LoadBag()
 	{
-		if (_bagId <= 0) { _isLoaded.Value = true; return; }
+		if (_bagId <= 0)
+		{
+			SetState(s => s.IsLoaded = true);
+			return;
+		}
 
 		var store = InMemoryDataStore.Instance;
 		if (store == null) return;
 
 		var bag = store.GetBag(_bagId);
-		if (bag == null) { _error.Value = "Bag not found"; _isLoaded.Value = true; return; }
+		if (bag == null)
+		{
+			SetState(s =>
+			{
+				s.Error = "Bag not found";
+				s.IsLoaded = true;
+			});
+			return;
+		}
 
-		_beanName.Value = bag.BeanName ?? "";
-		_beanId.Value = bag.BeanId;
-		_roastDate.Value = bag.RoastDate.ToString("yyyy-MM-dd");
-		_notes.Value = bag.Notes ?? "";
-		_isComplete.Value = bag.IsComplete;
-		_shotCount.Value = bag.ShotCount;
-		_rating.Value = store.GetBagRating(_bagId);
+		var rating = store.GetBagRating(_bagId);
 
-		_isLoaded.Value = true;
+		SetState(s =>
+		{
+			s.BeanName = bag.BeanName ?? "";
+			s.BeanId = bag.BeanId;
+			s.RoastDate = bag.RoastDate.ToString("yyyy-MM-dd");
+			s.Notes = bag.Notes ?? "";
+			s.IsComplete = bag.IsComplete;
+			s.ShotCount = bag.ShotCount;
+			s.Rating = rating;
+			s.IsLoaded = true;
+		});
 	}
 
 	void Save()
 	{
-		_error.Value = "";
+		SetState(s => s.Error = "");
+
 		var store = InMemoryDataStore.Instance;
 		if (store == null) return;
 
@@ -56,10 +72,10 @@ public class BagDetailPage : Comet.View
 			store.UpdateBag(new Bag
 			{
 				Id = _bagId,
-				BeanId = _beanId.Value,
-				RoastDate = DateTime.TryParse(_roastDate.Value, out var d) ? d : DateTime.Now,
-				Notes = string.IsNullOrWhiteSpace(_notes.Value) ? null : _notes.Value,
-				IsComplete = _isComplete.Value,
+				BeanId = State.BeanId,
+				RoastDate = DateTime.TryParse(State.RoastDate, out var d) ? d : DateTime.Now,
+				Notes = string.IsNullOrWhiteSpace(State.Notes) ? null : State.Notes,
+				IsComplete = State.IsComplete,
 				IsActive = true
 			});
 		}
@@ -71,8 +87,8 @@ public class BagDetailPage : Comet.View
 		var page = CometBaristaNotes.Services.PageHelper.GetCurrentPage();
 		if (page == null) return;
 
-		var message = _shotCount.Value > 0
-			? $"This bag has {_shotCount.Value} shot(s) logged. Deleting it will hide it from all lists. Continue?"
+		var message = State.ShotCount > 0
+			? $"This bag has {State.ShotCount} shot(s) logged. Deleting it will hide it from all lists. Continue?"
 			: "Are you sure you want to delete this bag?";
 
 		var confirmed = await page.DisplayAlertAsync("Delete Bag", message, "Delete", "Cancel");
@@ -91,74 +107,73 @@ public class BagDetailPage : Comet.View
 		if (store == null) return;
 
 		store.ReactivateBag(_bagId);
-		_isComplete.Value = false;
+		SetState(s => s.IsComplete = false);
 	}
 
-	[Body]
-	Comet.View body()
+	public override View Render()
 	{
-		if (!_isLoaded.Value)
+		if (!State.IsLoaded)
 			LoadBag();
 
 		if (_bagId <= 0)
 		{
-			return new VStack {
-				new Text("Bag not found")
+			return VStack(
+				Text("Bag not found")
 					.FontFamily(Theme.FontRegular)
-					.Color(Theme.TextSecondary),
-			}
+					.Color(Theme.TextSecondary)
+			)
 			.Padding(new Thickness(Theme.SpacingM))
 			.Background(Theme.Background);
 		}
 
-		var items = new List<Comet.View>();
+		var items = new List<View>();
 
 		items.Add(FormHelpers.MakeSectionHeader("BAG DETAILS"));
-		items.Add(FormHelpers.MakeReadOnlyField("Bean", _beanName.Value));
-		items.Add(FormHelpers.MakeReadOnlyField("Roast Date", _roastDate.Value));
-		items.Add(FormHelpers.MakeFormEntryWithLimit("Notes", _notes.Value, "Bag notes", 500, v => _notes.Value = v));
+		items.Add(FormHelpers.MakeReadOnlyField("Bean", State.BeanName));
+		items.Add(FormHelpers.MakeReadOnlyField("Roast Date", State.RoastDate));
+		items.Add(FormHelpers.MakeFormEntryWithLimit("Notes", State.Notes, "Bag notes", 500, v => SetState(s => s.Notes = v)));
 
 		// Shot count card
 		items.Add(FormHelpers.MakeCard(
-			new VStack(spacing: 2) {
-				new Text("Shots Logged")
+			VStack(2,
+				Text("Shots Logged")
 					.FontFamily(Theme.FontRegular)
 					.FontSize(14)
 					.Color(Theme.TextSecondary),
-				new Text($"{_shotCount.Value}")
+				Text($"{State.ShotCount}")
 					.FontFamily(Theme.FontSemibold)
 					.FontSize(24)
 					.FontWeight(FontWeight.Bold)
-					.Color(Theme.TextPrimary),
-			}
+					.Color(Theme.TextPrimary)
+			)
 		));
 
 		// Status toggle card
 		items.Add(FormHelpers.MakeToggleRow(
-			_isComplete.Value ? "Status: Complete" : "Status: Active",
-			_isComplete.Value,
-			v => _isComplete.Value = v
+			State.IsComplete ? "Status: Complete" : "Status: Active",
+			State.IsComplete,
+			v => SetState(s => s.IsComplete = v)
 		));
 
-		if (!string.IsNullOrEmpty(_error.Value))
-			items.Add(new Text(_error.Value).Color(Theme.Error).FontSize(14));
+		if (!string.IsNullOrEmpty(State.Error))
+			items.Add(Text(State.Error).Color(Theme.Error).FontSize(14));
 
 		items.Add(FormHelpers.MakePrimaryButton("Save Changes", Save));
 
-		if (_isComplete.Value)
+		if (State.IsComplete)
 			items.Add(FormHelpers.MakeSecondaryButton("Reactivate Bag", ReactivateBag));
 
 		items.Add(FormHelpers.MakeDangerButton("Delete Bag", DeleteBag));
 
 		items.Add(FormHelpers.MakeSectionHeader("RATINGS"));
-		items.Add(RatingDisplayFactory.Create(_rating.Value));
+		items.Add(RatingDisplayFactory.Create(State.Rating));
 
-		var stack = new VStack(spacing: Theme.SpacingS);
+		var stack = VStack(Theme.SpacingS);
 		foreach (var item in items) stack.Add(item);
 
-		return new ScrollView {
+		return ScrollView(
 			stack.Padding(new Thickness(Theme.SpacingM))
-		}
+		)
 		.Background(Theme.Background);
 	}
 }

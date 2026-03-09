@@ -7,9 +7,6 @@ using CometBaristaNotes.Models;
 using CometBaristaNotes.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
-using Border = Comet.Border;
-using ScrollView = Comet.ScrollView;
-using View = Comet.View;
 
 namespace CometBaristaNotes.Pages;
 
@@ -59,20 +56,16 @@ var recentShots = allShots.Take(3).ToList();
 var ratedShots = allShots.Where(shot => shot.Rating.HasValue).ToList();
 var averageRating = ratedShots.Count > 0 ? ratedShots.Average(shot => shot.Rating!.Value) : 0;
 
-var content = new VStack(spacing: Theme.SpacingM)
-{
+var content = VStack(Theme.SpacingM,
 BuildHeroCard(selectedBean, allShots.Count, bags.Count(bag => !bag.IsComplete)),
 BuildFilterCard(beanOptions, selectedIndex),
 BuildMetricsCard(allShots.Count, bags.Count, averageRating, ratedShots.Count),
 BuildBagSection(bags),
 BuildRecentShotsSection(recentShots),
-BuildQuickActions(),
-};
+BuildQuickActions());
 
-return new ScrollView
-{
-content.Padding(new Thickness(Theme.SpacingM))
-}
+return ScrollView(
+content.Padding(new Thickness(Theme.SpacingM)))
 .Background(Theme.Background)
 .Title("Coffee Lab");
 }
@@ -99,38 +92,35 @@ var subtitle = selectedBean == null
 : $"{selectedBean.Name} • {selectedBean.Roaster ?? "Independent roaster"}";
 
 return FormHelpers.MakeCard(
-new VStack(spacing: Theme.SpacingS)
-{
-new Text("Coffee Lab")
+VStack(Theme.SpacingS,
+Text("Coffee Lab")
 .FontFamily(Theme.FontSemibold)
 .FontSize(26)
 .FontWeight(FontWeight.Bold)
 .Color(Theme.TextPrimary),
 
-new Text(subtitle)
+Text(subtitle)
 .FontFamily(Theme.FontRegular)
 .FontSize(15)
 .Color(Theme.TextSecondary),
 
-new Text($"{totalShots} shots tracked • {openBags} bags in rotation")
+Text($"{totalShots} shots tracked • {openBags} bags in rotation")
 .FontFamily(Theme.FontSemibold)
 .FontSize(14)
-.Color(Theme.Primary),
-});
+.Color(Theme.Primary)));
 }
 
 View BuildFilterCard(string[] beanOptions, int selectedIndex)
 {
 return FormHelpers.MakeCard(
-new VStack(spacing: Theme.SpacingS)
-{
-new Text("Typed state filters")
+VStack(Theme.SpacingS,
+Text("Typed state filters")
 .FontFamily(Theme.FontSemibold)
 .FontSize(18)
 .FontWeight(FontWeight.Bold)
 .Color(Theme.TextPrimary),
 
-new Text("These controls mutate CoffeeDashboardState via SetState(...).")
+Text("These controls mutate CoffeeDashboardState via SetState(...).")
 .FontFamily(Theme.FontRegular)
 .FontSize(13)
 .Color(Theme.TextSecondary),
@@ -138,54 +128,45 @@ new Text("These controls mutate CoffeeDashboardState via SetState(...).")
 FormHelpers.MakeFormPicker("Bean focus", selectedIndex, beanOptions,
 index => SetState(state => state.SelectedBeanIndex = index)),
 
-new HStack(spacing: Theme.SpacingS)
-{
-new Toggle(State.IncludeCompletedBags)
+HStack(Theme.SpacingS,
+Toggle(State.IncludeCompletedBags)
 .OnColor(Theme.Primary)
 .OnToggled(isOn => SetState(state => state.IncludeCompletedBags = isOn)),
 
-new Text(State.IncludeCompletedBags
+Text(State.IncludeCompletedBags
 ? "Including completed bags"
 : "Showing active bags only")
 .FontFamily(Theme.FontRegular)
 .FontSize(14)
 .Color(Theme.TextSecondary)
-.VerticalTextAlignment(TextAlignment.Center),
-},
-});
+.VerticalTextAlignment(TextAlignment.Center))));
 }
 
 View BuildMetricsCard(int totalShots, int bagCount, double averageRating, int ratedCount)
 {
 return FormHelpers.MakeCard(
-new HStack(spacing: Theme.SpacingS)
-{
+HStack(Theme.SpacingS,
 BuildMetric("Shots", totalShots.ToString()),
 BuildMetric("Bags", bagCount.ToString()),
-BuildMetric("Avg", ratedCount > 0 ? $"{averageRating:F1}★" : "—"),
-});
+BuildMetric("Avg", ratedCount > 0 ? $"{averageRating:F1}★" : "—")));
 }
 
 View BuildMetric(string label, string value)
 {
-return new Border
-{
-new VStack(spacing: 4)
-{
-new Text(value)
+return Border(
+VStack(4,
+Text(value)
 .FontFamily(Theme.FontSemibold)
 .FontWeight(FontWeight.Bold)
 .FontSize(22)
 .Color(Theme.TextPrimary)
 .HorizontalTextAlignment(TextAlignment.Center),
 
-new Text(label)
+Text(label)
 .FontFamily(Theme.FontRegular)
 .FontSize(12)
 .Color(Theme.TextMuted)
-.HorizontalTextAlignment(TextAlignment.Center),
-}
-}
+.HorizontalTextAlignment(TextAlignment.Center)))
 .Background(Theme.SurfaceVariant)
 .StrokeThickness(0)
 .CornerRadius(Theme.RadiusCard)
@@ -195,10 +176,8 @@ new Text(label)
 
 View BuildBagSection(List<Bag> bags)
 {
-var stack = new VStack(spacing: Theme.SpacingS)
-{
-FormHelpers.MakeSectionHeader("Beans to dial in"),
-};
+var stack = VStack(Theme.SpacingS);
+stack.Add(FormHelpers.MakeSectionHeader("Beans to dial in"));
 
 if (bags.Count == 0)
 {
@@ -227,10 +206,8 @@ return stack;
 
 View BuildRecentShotsSection(List<ShotRecord> recentShots)
 {
-var stack = new VStack(spacing: Theme.SpacingS)
-{
-FormHelpers.MakeSectionHeader("Recent shots"),
-};
+var stack = VStack(Theme.SpacingS);
+stack.Add(FormHelpers.MakeSectionHeader("Recent shots"));
 
 if (recentShots.Count == 0)
 {
@@ -254,21 +231,19 @@ return stack;
 View BuildQuickActions()
 {
 return FormHelpers.MakeCard(
-new VStack(spacing: Theme.SpacingS)
-{
-new Text("Quick actions")
+VStack(Theme.SpacingS,
+Text("Quick actions")
 .FontFamily(Theme.FontSemibold)
 .FontSize(18)
 .FontWeight(FontWeight.Bold)
 .Color(Theme.TextPrimary),
 
-new Text("Use typed navigation from the dashboard to jump into detail pages.")
+Text("Use typed navigation from the dashboard to jump into detail pages.")
 .FontFamily(Theme.FontRegular)
 .FontSize(13)
 .Color(Theme.TextSecondary),
 
 FormHelpers.MakePrimaryButton("Log a new shot", () => Navigation?.Navigate<ShotLoggingPage>()),
-FormHelpers.MakeSecondaryButton("Open activity feed", () => Navigation?.Navigate<ActivityFeedPage>()),
-});
+FormHelpers.MakeSecondaryButton("Open activity feed", () => Navigation?.Navigate<ActivityFeedPage>())));
 }
 }

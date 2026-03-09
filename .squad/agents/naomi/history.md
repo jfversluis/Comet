@@ -28,6 +28,13 @@ Comprehensive analysis: 19 generated controls cover all suitable IView interface
 
 ## Learnings
 
+### CometBaristaNotes migration — factory method ambiguity (2026-03-09)
+
+- `VStack(0, ...)` is ambiguous between `VStack(float?, params View[])` and `VStack(LayoutAlignment, params View[])` because the literal `0` (and `0f`) implicitly converts to any enum type in C#. Fix: use parameterless `VStack(...)` when spacing is 0 (it's the default), or use named argument `spacing: 0f`.
+- Types like `Grid`, `Picker`, and `Image` that exist in both `Comet` and `Microsoft.Maui.Controls` namespaces need explicit `Comet.Grid`/`Comet.Picker`/`Comet.Image` qualification when `Microsoft.Maui.Controls` is also in scope (even transitively). Factory methods (`Text()`, `Button()`, etc.) don't have this problem since they resolve to the `using static CometControls` methods.
+- Adding `global using static Comet.CometControls;` and `global using View = Comet.View;` to `GlobalUsings.cs` eliminates the need for per-file type aliases in most cases — keeps the code clean.
+- Mixed Comet/MAUI pages (like ShotLoggingPage with Syncfusion gauges) migrate cleanly: only Comet control constructors change to factories; native MAUI controls stay as-is.
+
 ### Template modernization for current-surface migrations (2026-03-08T162622Z)
 
 - `templates/single-project/` was still teaching the legacy starter path: `[Body]`, `[State]`, `net7.0-*`, and `Reloadify3000`.

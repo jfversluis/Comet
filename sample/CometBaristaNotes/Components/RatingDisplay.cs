@@ -1,5 +1,5 @@
+using Comet;
 using CometBaristaNotes.Models;
-using Border = Comet.Border;
 
 namespace CometBaristaNotes.Components;
 
@@ -8,18 +8,16 @@ namespace CometBaristaNotes.Components;
 /// </summary>
 public static class RatingDisplayFactory
 {
-	public static Comet.View Create(RatingAggregate rating)
+	public static View Create(RatingAggregate rating)
 	{
-		return new Border
-		{
-			new HStack(spacing: 12)
-			{
+		return Border(
+			HStack(12,
 				MakeStatBlock("Avg", rating.RatedShots > 0 ? $"{rating.AverageRating:F1}" : "—"),
 				MakeStatBlock("Shots", $"{rating.TotalShots}"),
 				MakeStatBlock("Best", rating.BestRating?.ToString() ?? "—"),
-				MakeStatBlock("Worst", rating.WorstRating?.ToString() ?? "—"),
-			}
-		}
+				MakeStatBlock("Worst", rating.WorstRating?.ToString() ?? "—")
+			)
+		)
 		.CornerRadius(Theme.RadiusCard)
 		.Background(Theme.CardBackground)
 		.StrokeColor(Theme.CardStroke)
@@ -27,19 +25,18 @@ public static class RatingDisplayFactory
 		.Padding(new Thickness(Theme.SpacingM));
 	}
 
-	static Comet.View MakeStatBlock(string label, string value)
+	static View MakeStatBlock(string label, string value)
 	{
-		return new VStack(spacing: 2)
-		{
-			new Text(value)
+		return VStack(2,
+			Text(value)
 				.FontFamily(Theme.FontSemibold)
 				.FontWeight(FontWeight.Bold)
 				.FontSize(20)
 				.Color(Theme.TextPrimary),
-			new Text(label)
+			Text(label)
 				.FontFamily(Theme.FontRegular)
 				.FontSize(12)
-				.Color(Theme.TextMuted),
-		};
+				.Color(Theme.TextMuted)
+		);
 	}
 }

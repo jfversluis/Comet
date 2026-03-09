@@ -1,48 +1,48 @@
-using Comet;
-using Microsoft.Maui;
-using Microsoft.Maui.Graphics;
 using CometBaristaNotes.Models;
 using CometBaristaNotes.Services;
 using CometBaristaNotes.Components;
 
-using ScrollView = Comet.ScrollView;
-
 namespace CometBaristaNotes.Pages;
 
-public class EquipmentManagementPage : Comet.View
+public class EquipmentManagementPageState
 {
-	[State] readonly State<List<Equipment>> _equipment = new(new());
-	[State] readonly State<bool> _isLoaded = new(false);
+	public List<Equipment> Equipment { get; set; } = new();
+	public bool IsLoaded { get; set; }
+}
 
+public class EquipmentManagementPage : Component<EquipmentManagementPageState>
+{
 	void LoadEquipment()
 	{
 		var store = InMemoryDataStore.Instance;
 		if (store == null) return;
-		_equipment.Value = store.GetAllEquipment();
-		_isLoaded.Value = true;
+		SetState(s =>
+		{
+			s.Equipment = store.GetAllEquipment();
+			s.IsLoaded = true;
+		});
 	}
 
-	[Body]
-	Comet.View body()
+	public override View Render()
 	{
-		if (!_isLoaded.Value)
+		if (!State.IsLoaded)
 			LoadEquipment();
 
-		var items = _equipment.Value;
+		var items = State.Equipment;
 
 		if (items.Count == 0)
 		{
-			return new VStack(spacing: Theme.SpacingM) {
+			return VStack(Theme.SpacingM,
 				FormHelpers.MakeEmptyState(Icons.Build, "No Equipment Yet", "Add your coffee machines, grinders, and accessories"),
-				FormHelpers.MakePrimaryButton("+ Add Equipment", () => Navigation?.Navigate(new EquipmentDetailPage(0))),
-			}
+				FormHelpers.MakePrimaryButton("+ Add Equipment", () => Navigation?.Navigate(new EquipmentDetailPage(0)))
+			)
 			.Padding(new Thickness(Theme.SpacingL))
 			.Background(Theme.Background);
 		}
 
-		var stack = new VStack(spacing: Theme.SpacingS) {
-			FormHelpers.MakePrimaryButton("+ Add Equipment", () => Navigation?.Navigate(new EquipmentDetailPage(0))),
-		};
+		var stack = VStack(Theme.SpacingS,
+			FormHelpers.MakePrimaryButton("+ Add Equipment", () => Navigation?.Navigate(new EquipmentDetailPage(0)))
+		);
 
 		foreach (var eq in items)
 		{
@@ -54,7 +54,7 @@ public class EquipmentManagementPage : Comet.View
 			));
 		}
 
-		return new ScrollView { stack.Padding(new Thickness(Theme.SpacingM)) }
+		return ScrollView(stack.Padding(new Thickness(Theme.SpacingM)))
 			.Background(Theme.Background);
 	}
 }

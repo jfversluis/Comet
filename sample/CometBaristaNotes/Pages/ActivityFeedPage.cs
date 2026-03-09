@@ -1,14 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Comet;
 using CometBaristaNotes.Components;
 using CometBaristaNotes.Models;
 using CometBaristaNotes.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
-using ScrollView = Comet.ScrollView;
-using View = Comet.View;
 
 namespace CometBaristaNotes.Pages;
 
@@ -41,30 +35,27 @@ public class ActivityFeedPage : Component<ActivityFeedState>
 		var shots = _store.GetAllShots().Take(MaxShots).ToList();
 		if (shots.Count == 0)
 		{
-			return new VStack
-			{
+			return VStack(
 				FormHelpers.MakeEmptyState(Icons.Feed, "No shots yet", "Log a new shot to seed the activity feed.")
-			}
+			)
 			.Background(Theme.Background)
 			.FillHorizontal()
 			.Title("Activity");
 		}
 
-		var content = new VStack(spacing: Theme.SpacingS)
-		{
-			BuildSummaryCard(shots),
-			FormHelpers.MakeSectionHeader("Latest shots"),
-		};
+		var content = VStack(Theme.SpacingS,
+				BuildSummaryCard(shots),
+				FormHelpers.MakeSectionHeader("Latest shots")
+			);
 
 		foreach (var shot in shots)
 		{
 			content.Add(BuildShotCard(shot));
 		}
 
-		return new ScrollView
-		{
-			content.Padding(new Thickness(Theme.SpacingM))
-		}
+		return ScrollView(
+				content.Padding(new Thickness(Theme.SpacingM))
+			)
 		.Background(Theme.Background)
 		.Title("Activity");
 	}
@@ -96,19 +87,18 @@ public class ActivityFeedPage : Component<ActivityFeedState>
 		var detail = $"{shots.Count} recent shots • latest {FormatTimestamp(latestShot.Timestamp)}";
 
 		return FormHelpers.MakeCard(
-			new VStack(spacing: Theme.SpacingS)
-			{
-				new Text("Activity feed")
+			VStack(Theme.SpacingS,
+				Text("Activity feed")
 					.FontFamily(Theme.FontSemibold)
 					.FontSize(18)
 					.FontWeight(FontWeight.Bold)
 					.Color(Theme.TextPrimary),
 
-				new Text(detail)
+				Text(detail)
 					.FontFamily(Theme.FontRegular)
 					.FontSize(13)
-					.Color(Theme.TextSecondary),
-			});
+					.Color(Theme.TextSecondary)
+			));
 	}
 
 	View BuildShotCard(ShotRecord shot)

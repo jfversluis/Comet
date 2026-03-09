@@ -17,8 +17,6 @@ using MauiBoxView = Microsoft.Maui.Controls.BoxView;
 using SolidColorBrush = Microsoft.Maui.Controls.SolidColorBrush;
 using MauiFontAttributes = Microsoft.Maui.Controls.FontAttributes;
 using MauiPicker = Microsoft.Maui.Controls.Picker;
-using ScrollView = Comet.ScrollView;
-using Border = Comet.Border;
 
 namespace CometBaristaNotes.Pages;
 
@@ -27,7 +25,9 @@ namespace CometBaristaNotes.Pages;
 /// Native MAUI controls are built once and updated directly in event handlers,
 /// avoiding full UI rebuild on each state change.
 /// </summary>
-public class ShotLoggingPage : Comet.View
+public class ShotLoggingPageState { }
+
+public class ShotLoggingPage : Component<ShotLoggingPageState>
 {
 // Edit mode: if > 0, we're editing an existing shot
 int _editingShotId = 0;
@@ -72,7 +72,7 @@ MauiLabel? _timeValueLabel;
 MauiLabel? _machineNameLabel;
 VerticalStackLayout? _additionalStack;
 Microsoft.Maui.Controls.ActivityIndicator? _savingIndicator;
-Comet.View? _saveButton;
+View? _saveButton;
 
 // Data
 List<Bag> _bags = new();
@@ -84,8 +84,7 @@ static readonly string[] DrinkTypes = { "Espresso", "Americano", "Latte", "Cappu
 
 double Ratio => _doseIn > 0 ? Math.Round(_doseOut / _doseIn, 1) : 0;
 
-[Body]
-Comet.View body()
+public override View Render()
 {
 var store = InMemoryDataStore.Instance;
 _bags = store?.GetAllBags().Where(b => !b.IsComplete).ToList() ?? new();
@@ -105,7 +104,7 @@ _savingIndicator = new Microsoft.Maui.Controls.ActivityIndicator
 	HeightRequest = 32,
 };
 
-var items = new List<Comet.View>();
+var items = new List<View>();
 
 // Saving indicator — MAUI ActivityIndicator, wrapped
 items.Add(new MauiViewHost(_savingIndicator));
@@ -132,7 +131,7 @@ items.Add(new MauiViewHost(BuildAdditionalDetails()));
 // Delete button — pure Comet
 if (IsEditMode)
 {
-	items.Add(new Comet.Button("Delete Shot", async () => await DeleteShot())
+	items.Add(Button("Delete Shot", async () => await DeleteShot())
 		.FontFamily(Theme.FontSemibold).FontSize(16)
 		.Color(Theme.Error).Background(Colors.Transparent)
 		.CornerRadius((int)Theme.RadiusPill)
@@ -144,11 +143,11 @@ else
 	saveBtn.Margin(new Thickness(0, Theme.SpacingS, 0, Theme.SpacingXL));
 }
 
-var stack = new VStack(spacing: Theme.SpacingM);
+var stack = VStack(Theme.SpacingM);
 foreach (var item in items) stack.Add(item);
 stack.Padding(new Thickness(Theme.SpacingM));
 
-return new ScrollView { stack }.Background(Theme.Background);
+return ScrollView(stack).Background(Theme.Background);
 }
 
 Microsoft.Maui.Controls.View BuildDoseGaugesRow()
@@ -744,24 +743,24 @@ row.Add(lbl);
 return row;
 }
 
-Comet.View BuildTastingNotes() =>
-	new VStack(spacing: 0) {
-		new Text("Tasting Notes (optional)")
+View BuildTastingNotes() =>
+	VStack(
+		Text("Tasting Notes (optional)")
 			.FontFamily(Theme.FontRegular).FontSize(12).Color(Theme.TextSecondary)
 			.Margin(new Thickness(16, 0, 0, 4)),
-		new Border {
-			new TextEditor(_tastingNotes)
+		Border(
+			TextEditor(_tastingNotes)
 				.FontSize(16).FontFamily(Theme.FontRegular)
 				.Color(Theme.TextPrimary).Background(Colors.Transparent)
 				.Frame(height: 80)
 				.Margin(new Thickness(16, 8))
 				.Placeholder("E.g., bright, fruity, slightly sour...")
 				.OnTextChanged(v => _tastingNotes = v)
-		}
+		)
 		.CornerRadius(Theme.RadiusEditor)
 		.Background(Theme.SurfaceVariant)
-		.StrokeThickness(0),
-	};
+		.StrokeThickness(0)
+	);
 
 // Bag picker reference for refreshing after inline creation
 MauiPicker? _bagPicker;

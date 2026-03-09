@@ -2,11 +2,18 @@ using CometBaristaNotes.Models;
 using CometBaristaNotes.Services;
 using CometBaristaNotes.Components;
 
-using ScrollView = Comet.ScrollView;
-
 namespace CometBaristaNotes.Pages;
 
-public class EquipmentDetailPage : Comet.View
+public class EquipmentDetailPageState
+{
+	public string Name { get; set; } = "";
+	public int SelectedTypeIndex { get; set; }
+	public string Notes { get; set; } = "";
+	public bool IsLoaded { get; set; }
+	public string Error { get; set; } = "";
+}
+
+public class EquipmentDetailPage : Component<EquipmentDetailPageState>
 {
 	static readonly string[] TypeNames = { "Machine", "Grinder", "Tamper", "PuckScreen", "Other" };
 	static readonly EquipmentType[] TypeValues =
@@ -14,45 +21,51 @@ public class EquipmentDetailPage : Comet.View
 
 	readonly int _equipmentId;
 
-	[State] readonly State<string> _name = new("");
-	[State] readonly State<int> _selectedTypeIndex = new(0);
-	[State] readonly State<string> _notes = new("");
-	[State] readonly State<bool> _isLoaded = new(false);
-	[State] readonly State<string> _error = new("");
-
 	public EquipmentDetailPage(int equipmentId = 0) { _equipmentId = equipmentId; }
 
 	void LoadEquipment()
 	{
-		if (_equipmentId <= 0) { _isLoaded.Value = true; return; }
+		if (_equipmentId <= 0) { SetState(s => s.IsLoaded = true); return; }
 
 		var store = InMemoryDataStore.Instance;
 		if (store == null) return;
 
 		var eq = store.GetEquipment(_equipmentId);
-		if (eq == null) { _error.Value = "Equipment not found"; _isLoaded.Value = true; return; }
+		if (eq == null)
+		{
+			SetState(s =>
+			{
+				s.Error = "Equipment not found";
+				s.IsLoaded = true;
+			});
+			return;
+		}
 
-		_name.Value = eq.Name;
-		_selectedTypeIndex.Value = Array.IndexOf(TypeValues, eq.Type);
-		if (_selectedTypeIndex.Value < 0) _selectedTypeIndex.Value = 0;
-		_notes.Value = eq.Notes ?? "";
+		var typeIndex = Array.IndexOf(TypeValues, eq.Type);
+		if (typeIndex < 0) typeIndex = 0;
 
-		_isLoaded.Value = true;
+		SetState(s =>
+		{
+			s.Name = eq.Name;
+			s.SelectedTypeIndex = typeIndex;
+			s.Notes = eq.Notes ?? "";
+			s.IsLoaded = true;
+		});
 	}
 
 	void Save()
 	{
-		if (string.IsNullOrWhiteSpace(_name.Value))
+		if (string.IsNullOrWhiteSpace(State.Name))
 		{
-			_error.Value = "Equipment name is required";
+			SetState(s => s.Error = "Equipment name is required");
 			return;
 		}
-		_error.Value = "";
+		SetState(s => s.Error = "");
 
 		var store = InMemoryDataStore.Instance;
 		if (store == null) return;
 
-		var typeIdx = _selectedTypeIndex.Value;
+		var typeIdx = State.SelectedTypeIndex;
 		var eqType = (typeIdx >= 0 && typeIdx < TypeValues.Length) ? TypeValues[typeIdx] : EquipmentType.Machine;
 
 		if (_equipmentId > 0)
@@ -60,9 +73,9 @@ public class EquipmentDetailPage : Comet.View
 			store.UpdateEquipment(new Equipment
 			{
 				Id = _equipmentId,
-				Name = _name.Value,
+				Name = State.Name,
 				Type = eqType,
-				Notes = string.IsNullOrWhiteSpace(_notes.Value) ? null : _notes.Value,
+				Notes = string.IsNullOrWhiteSpace(State.Notes) ? null : State.Notes,
 				IsActive = true
 			});
 		}
@@ -70,9 +83,9 @@ public class EquipmentDetailPage : Comet.View
 		{
 			store.CreateEquipment(new Equipment
 			{
-				Name = _name.Value,
+				Name = State.Name,
 				Type = eqType,
-				Notes = string.IsNullOrWhiteSpace(_notes.Value) ? null : _notes.Value,
+				Notes = string.IsNullOrWhiteSpace(State.Notes) ? null : State.Notes,
 			});
 		}
 
@@ -90,7 +103,7 @@ public class EquipmentDetailPage : Comet.View
 
 		var confirm = await page.DisplayAlertAsync(
 			"Archive Equipment?",
-			$"Are you sure you want to archive '{_name.Value}'? This action cannot be undone.",
+			$"Are you sure you want to archive '{State.Name}'? This action cannot be undone.",
 			"Archive", "Cancel");
 		if (!confirm) return;
 
@@ -98,37 +111,36 @@ public class EquipmentDetailPage : Comet.View
 		Navigation?.Pop();
 	}
 
-	[Body]
-	Comet.View body()
+	public override View Render()
 	{
-		if (!_isLoaded.Value)
+		if (!State.IsLoaded)
 			LoadEquipment();
 
 		var isEdit = _equipmentId > 0;
 
-		var items = new List<Comet.View>
+		var items = new List<View>
 		{
 			FormHelpers.MakeSectionHeader(isEdit ? "EDIT EQUIPMENT" : "NEW EQUIPMENT"),
-			FormHelpers.MakeFormEntry("Name *", _name.Value, "Equipment name", v => _name.Value = v),
-			FormHelpers.MakeFormPicker("Type", _selectedTypeIndex.Value, TypeNames, v => _selectedTypeIndex.Value = v),
-			FormHelpers.MakeFormEntry("Notes", _notes.Value, "Additional details", v => _notes.Value = v),
+			FormHelpers.MakeFormEntry("Name *", State.Name, "Equipment name", v => SetState(s => s.Name = v)),
+			FormHelpers.MakeFormPicker("Type", State.SelectedTypeIndex, TypeNames, v => SetState(s => s.SelectedTypeIndex = v)),
+			FormHelpers.MakeFormEntry("Notes", State.Notes, "Additional details", v => SetState(s => s.Notes = v)),
 		};
 
-		if (!string.IsNullOrEmpty(_error.Value))
-			items.Add(new Text(_error.Value).Color(Theme.Error).FontFamily(Theme.FontRegular).FontSize(14));
+		if (!string.IsNullOrEmpty(State.Error))
+			items.Add(Text(State.Error).Color(Theme.Error).FontFamily(Theme.FontRegular).FontSize(14));
 
 		items.Add(FormHelpers.MakePrimaryButton(isEdit ? "Save Changes" : "Add Equipment", Save));
 
 		if (isEdit)
 			items.Add(FormHelpers.MakeDangerButton("Archive Equipment", Archive));
 
-		var stack = new VStack(spacing: Theme.SpacingS);
+		var stack = VStack(Theme.SpacingS);
 		foreach (var item in items)
 			stack.Add(item);
 
-		return new ScrollView {
+		return ScrollView(
 			stack.Padding(new Thickness(Theme.SpacingM))
-		}
+		)
 		.Background(Theme.Background);
 	}
 }

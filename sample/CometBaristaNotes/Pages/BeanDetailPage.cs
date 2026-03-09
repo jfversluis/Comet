@@ -1,62 +1,65 @@
-using Comet;
-using Microsoft.Maui.Graphics;
 using CometBaristaNotes.Models;
 using CometBaristaNotes.Services;
 using CometBaristaNotes.Components;
 
-using ScrollView = Comet.ScrollView;
-using Border = Comet.Border;
-using Grid = Comet.Grid;
-
 namespace CometBaristaNotes.Pages;
 
-public class BeanDetailPage : Comet.View
+public class BeanDetailPageState
+{
+	public string Name { get; set; } = "";
+	public string Roaster { get; set; } = "";
+	public string Origin { get; set; } = "";
+	public string Notes { get; set; } = "";
+	public bool IsLoaded { get; set; }
+	public string Error { get; set; } = "";
+	public List<Bag> Bags { get; set; } = new();
+	public RatingAggregate Rating { get; set; } = new();
+	public List<ShotRecord> AllShots { get; set; } = new();
+	public int VisibleShotCount { get; set; } = 10;
+}
+
+public class BeanDetailPage : Component<BeanDetailPageState>
 {
 	readonly int _beanId;
 	const int ShotsPageSize = 10;
-
-	[State] readonly State<string> _name = new("");
-	[State] readonly State<string> _roaster = new("");
-	[State] readonly State<string> _origin = new("");
-	[State] readonly State<string> _notes = new("");
-	[State] readonly State<bool> _isLoaded = new(false);
-	[State] readonly State<string> _error = new("");
-	[State] readonly State<List<Bag>> _bags = new(new());
-	[State] readonly State<RatingAggregate> _rating = new(new());
-	[State] readonly State<List<ShotRecord>> _allShots = new(new());
-	[State] readonly State<int> _visibleShotCount = new(ShotsPageSize);
 
 	public BeanDetailPage(int beanId = 0) { _beanId = beanId; }
 
 	void LoadBean()
 	{
-		if (_beanId <= 0) { _isLoaded.Value = true; return; }
+		if (_beanId <= 0) { SetState(s => s.IsLoaded = true); return; }
 
 		var store = InMemoryDataStore.Instance;
 		if (store == null) return;
 
 		var bean = store.GetBean(_beanId);
-		if (bean == null) { _error.Value = "Bean not found"; _isLoaded.Value = true; return; }
+		if (bean == null)
+		{
+			SetState(s => { s.Error = "Bean not found"; s.IsLoaded = true; });
+			return;
+		}
 
-		_name.Value = bean.Name;
-		_roaster.Value = bean.Roaster ?? "";
-		_origin.Value = bean.Origin ?? "";
-		_notes.Value = bean.Notes ?? "";
-		_bags.Value = store.GetBagsForBean(_beanId);
-		_rating.Value = store.GetBeanRating(_beanId);
-		_allShots.Value = store.GetShotsByBean(_beanId);
-
-		_isLoaded.Value = true;
+		SetState(s =>
+		{
+			s.Name = bean.Name;
+			s.Roaster = bean.Roaster ?? "";
+			s.Origin = bean.Origin ?? "";
+			s.Notes = bean.Notes ?? "";
+			s.Bags = store.GetBagsForBean(_beanId);
+			s.Rating = store.GetBeanRating(_beanId);
+			s.AllShots = store.GetShotsByBean(_beanId);
+			s.IsLoaded = true;
+		});
 	}
 
 	void Save()
 	{
-		if (string.IsNullOrWhiteSpace(_name.Value))
+		if (string.IsNullOrWhiteSpace(State.Name))
 		{
-			_error.Value = "Bean name is required";
+			SetState(s => s.Error = "Bean name is required");
 			return;
 		}
-		_error.Value = "";
+		SetState(s => s.Error = "");
 
 		var store = InMemoryDataStore.Instance;
 		if (store == null) return;
@@ -66,10 +69,10 @@ public class BeanDetailPage : Comet.View
 			store.UpdateBean(new Bean
 			{
 				Id = _beanId,
-				Name = _name.Value,
-				Roaster = string.IsNullOrWhiteSpace(_roaster.Value) ? null : _roaster.Value,
-				Origin = string.IsNullOrWhiteSpace(_origin.Value) ? null : _origin.Value,
-				Notes = string.IsNullOrWhiteSpace(_notes.Value) ? null : _notes.Value,
+				Name = State.Name,
+				Roaster = string.IsNullOrWhiteSpace(State.Roaster) ? null : State.Roaster,
+				Origin = string.IsNullOrWhiteSpace(State.Origin) ? null : State.Origin,
+				Notes = string.IsNullOrWhiteSpace(State.Notes) ? null : State.Notes,
 				IsActive = true
 			});
 		}
@@ -77,10 +80,10 @@ public class BeanDetailPage : Comet.View
 		{
 			store.CreateBean(new Bean
 			{
-				Name = _name.Value,
-				Roaster = string.IsNullOrWhiteSpace(_roaster.Value) ? null : _roaster.Value,
-				Origin = string.IsNullOrWhiteSpace(_origin.Value) ? null : _origin.Value,
-				Notes = string.IsNullOrWhiteSpace(_notes.Value) ? null : _notes.Value,
+				Name = State.Name,
+				Roaster = string.IsNullOrWhiteSpace(State.Roaster) ? null : State.Roaster,
+				Origin = string.IsNullOrWhiteSpace(State.Origin) ? null : State.Origin,
+				Notes = string.IsNullOrWhiteSpace(State.Notes) ? null : State.Notes,
 			});
 		}
 
@@ -94,7 +97,7 @@ public class BeanDetailPage : Comet.View
 
 		var confirmed = await page.DisplayAlertAsync(
 			"Delete Bean",
-			$"Are you sure you want to delete \"{_name.Value}\"? This will also archive all associated bags.",
+			$"Are you sure you want to delete \"{State.Name}\"? This will also archive all associated bags.",
 			"Delete", "Cancel");
 
 		if (!confirmed) return;
@@ -106,24 +109,23 @@ public class BeanDetailPage : Comet.View
 		Navigation?.Pop();
 	}
 
-	[Body]
-	Comet.View body()
+	public override View Render()
 	{
-		if (!_isLoaded.Value)
+		if (!State.IsLoaded)
 			LoadBean();
 
 		var isEdit = _beanId > 0;
 
-		var items = new List<Comet.View>();
+		var items = new List<View>();
 
 		items.Add(FormHelpers.MakeSectionHeader(isEdit ? "EDIT BEAN" : "NEW BEAN"));
-		items.Add(FormHelpers.MakeFormEntry("Name *", _name.Value, "Bean name", v => _name.Value = v));
-		items.Add(FormHelpers.MakeFormEntry("Roaster", _roaster.Value, "Roaster name", v => _roaster.Value = v));
-		items.Add(FormHelpers.MakeFormEntry("Origin", _origin.Value, "Country or region", v => _origin.Value = v));
-		items.Add(FormHelpers.MakeFormEntry("Notes", _notes.Value, "Tasting notes, processing, etc.", v => _notes.Value = v));
+		items.Add(FormHelpers.MakeFormEntry("Name *", State.Name, "Bean name", v => SetState(s => s.Name = v)));
+		items.Add(FormHelpers.MakeFormEntry("Roaster", State.Roaster, "Roaster name", v => SetState(s => s.Roaster = v)));
+		items.Add(FormHelpers.MakeFormEntry("Origin", State.Origin, "Country or region", v => SetState(s => s.Origin = v)));
+		items.Add(FormHelpers.MakeFormEntry("Notes", State.Notes, "Tasting notes, processing, etc.", v => SetState(s => s.Notes = v)));
 
-		if (!string.IsNullOrEmpty(_error.Value))
-			items.Add(new Text(_error.Value).Color(Theme.Error).FontFamily(Theme.FontRegular).FontSize(14));
+		if (!string.IsNullOrEmpty(State.Error))
+			items.Add(Text(State.Error).Color(Theme.Error).FontFamily(Theme.FontRegular).FontSize(14));
 
 		items.Add(FormHelpers.MakePrimaryButton(isEdit ? "Save Changes" : "Create Bean", Save));
 
@@ -131,33 +133,33 @@ public class BeanDetailPage : Comet.View
 		{
 			items.Add(FormHelpers.MakeDangerButton("Delete Bean", DeleteBean));
 			items.Add(FormHelpers.MakeSectionHeader("RATINGS"));
-			items.Add(RatingDisplayFactory.Create(_rating.Value));
+			items.Add(RatingDisplayFactory.Create(State.Rating));
 			items.Add(BuildRatingDistribution());
 
 			items.Add(FormHelpers.MakeSectionHeader("BAGS"));
-			if (_bags.Value.Count == 0)
-				items.Add(new Text("No bags added yet").FontFamily(Theme.FontRegular).FontSize(14).Color(Theme.TextSecondary));
+			if (State.Bags.Count == 0)
+				items.Add(Text("No bags added yet").FontFamily(Theme.FontRegular).FontSize(14).Color(Theme.TextSecondary));
 
 			items.Add(FormHelpers.MakeSecondaryButton("+ Add Bag", () =>
 			{
 				Navigation?.Navigate(new BagFormPage(_beanId));
 			}));
 
-			foreach (var bag in _bags.Value)
+			foreach (var bag in State.Bags)
 			{
 				items.Add(BuildBagCard(bag));
 			}
 
 			// Shot History
 			items.Add(FormHelpers.MakeSectionHeader("SHOT HISTORY"));
-			var shots = _allShots.Value;
+			var shots = State.AllShots;
 			if (shots.Count == 0)
 			{
-				items.Add(new Text("No shots recorded yet").FontFamily(Theme.FontRegular).FontSize(14).Color(Theme.TextSecondary));
+				items.Add(Text("No shots recorded yet").FontFamily(Theme.FontRegular).FontSize(14).Color(Theme.TextSecondary));
 			}
 			else
 			{
-				var visible = shots.Take(_visibleShotCount.Value).ToList();
+				var visible = shots.Take(State.VisibleShotCount).ToList();
 				foreach (var shot in visible)
 				{
 					var shotId = shot.Id;
@@ -167,27 +169,27 @@ public class BeanDetailPage : Comet.View
 					}));
 				}
 
-				if (_visibleShotCount.Value < shots.Count)
+				if (State.VisibleShotCount < shots.Count)
 				{
 					items.Add(FormHelpers.MakeSecondaryButton(
-						$"Load More ({shots.Count - _visibleShotCount.Value} remaining)",
-						() => { _visibleShotCount.Value += ShotsPageSize; }));
+						$"Load More ({shots.Count - State.VisibleShotCount} remaining)",
+						() => { SetState(s => s.VisibleShotCount += ShotsPageSize); }));
 				}
 			}
 		}
 
-		var stack = new VStack(spacing: Theme.SpacingS);
+		var stack = VStack(Theme.SpacingS);
 		foreach (var item in items) stack.Add(item);
 
-		return new ScrollView {
+		return ScrollView(
 			stack.Padding(new Thickness(Theme.SpacingM))
-		}
+		)
 		.Background(Theme.Background);
 	}
 
-	Comet.View BuildRatingDistribution()
+	View BuildRatingDistribution()
 	{
-		var shots = _allShots.Value;
+		var shots = State.AllShots;
 		var sentiments = new[] { Icons.SentimentVeryDissatisfied, Icons.SentimentDissatisfied, Icons.SentimentNeutral, Icons.SentimentSatisfied, Icons.SentimentVerySatisfied };
 		var sentimentColors = new[] { Theme.Error, Theme.Warning, Theme.TextMuted, Theme.Success, Theme.StarFilled };
 
@@ -202,18 +204,16 @@ public class BeanDetailPage : Comet.View
 		}
 		var maxCount = counts.Max();
 
-		var container = new VStack(spacing: Theme.SpacingXS);
+		var container = VStack(Theme.SpacingXS);
 
-		// Iterate from highest rating (5/VerySatisfied) down to lowest (1/VeryDissatisfied)
 		for (var i = 4; i >= 0; i--)
 		{
 			var barFraction = maxCount > 0 ? (double)counts[i] / maxCount : 0;
 
 			container.Add(
-				new Grid(columns: new object[] { 28, "*", 30 }, rows: new object[] { "Auto" })
+				new Comet.Grid(columns: new object[] { 28, "*", 30 }, rows: new object[] { "Auto" })
 				{
-					// Sentiment icon
-					new Text(sentiments[i])
+					Text(sentiments[i])
 						.FontFamily(Icons.FontFamily)
 						.FontSize(18)
 						.Color(sentimentColors[i])
@@ -221,12 +221,10 @@ public class BeanDetailPage : Comet.View
 						.VerticalTextAlignment(TextAlignment.Center)
 						.Cell(row: 0, column: 0),
 
-					// Progress bar
 					BuildBarOverlay(barFraction, sentimentColors[i])
 						.Cell(row: 0, column: 1),
 
-					// Count label
-					new Text(counts[i].ToString())
+					Text(counts[i].ToString())
 						.FontFamily(Theme.FontRegular)
 						.FontSize(12)
 						.Color(Theme.TextSecondary)
@@ -239,9 +237,9 @@ public class BeanDetailPage : Comet.View
 			);
 		}
 
-		return new Border {
+		return Border(
 			container
-		}
+		)
 		.CornerRadius(Theme.RadiusCard)
 		.Background(Theme.CardBackground)
 		.StrokeColor(Theme.CardStroke)
@@ -250,50 +248,50 @@ public class BeanDetailPage : Comet.View
 		.Margin(new Thickness(0, Theme.SpacingXS, 0, 0));
 	}
 
-	Comet.View BuildBarOverlay(double fraction, Color fillColor)
+	View BuildBarOverlay(double fraction, Color fillColor)
 	{
-		return new Comet.ProgressBar(fraction)
+		return ProgressBar(fraction)
 			.ProgressColor(fillColor)
 			.TrackColor(Theme.SurfaceVariant)
 			.Frame(height: 12);
 	}
 
-	Comet.View BuildBagCard(Bag bag)
+	View BuildBagCard(Bag bag)
 	{
-		var statsItems = new List<Comet.View>();
-		statsItems.Add(new Text($"{bag.ShotCount} shots").FontFamily(Theme.FontRegular).FontSize(12).Color(Theme.TextMuted));
+		var statsItems = new List<View>();
+		statsItems.Add(Text($"{bag.ShotCount} shots").FontFamily(Theme.FontRegular).FontSize(12).Color(Theme.TextMuted));
 
 		if (bag.AverageRating.HasValue)
-			statsItems.Add(new Text($"{Icons.SentimentVerySatisfied} {bag.AverageRating.Value:F1}").FontFamily(Icons.FontFamily).FontSize(12).Color(Theme.StarFilled));
+			statsItems.Add(Text($"{Icons.SentimentVerySatisfied} {bag.AverageRating.Value:F1}").FontFamily(Icons.FontFamily).FontSize(12).Color(Theme.StarFilled));
 		else
-			statsItems.Add(new Text("No ratings").FontFamily(Theme.FontRegular).FontSize(12).Color(Theme.TextMuted));
+			statsItems.Add(Text("No ratings").FontFamily(Theme.FontRegular).FontSize(12).Color(Theme.TextMuted));
 
-		statsItems.Add(new Text(bag.IsComplete ? "Complete" : "Active").FontFamily(Theme.FontRegular).FontSize(12).Color(bag.IsComplete ? Theme.Success : Theme.Primary));
+		statsItems.Add(Text(bag.IsComplete ? "Complete" : "Active").FontFamily(Theme.FontRegular).FontSize(12).Color(bag.IsComplete ? Theme.Success : Theme.Primary));
 
-		var statsStack = new HStack(spacing: 12);
+		var statsStack = HStack(12);
 		foreach (var s in statsItems) statsStack.Add(s);
 
-		var infoItems = new List<Comet.View>();
-		infoItems.Add(new Text($"Roasted {bag.RoastDate:MMM d, yyyy}").FontFamily(Theme.FontSemibold).FontSize(14).FontWeight(FontWeight.Bold).Color(Theme.TextPrimary));
+		var infoItems = new List<View>();
+		infoItems.Add(Text($"Roasted {bag.RoastDate:MMM d, yyyy}").FontFamily(Theme.FontSemibold).FontSize(14).FontWeight(FontWeight.Bold).Color(Theme.TextPrimary));
 		if (bag.Notes != null)
-			infoItems.Add(new Text(bag.Notes).FontFamily(Theme.FontRegular).FontSize(12).Color(Theme.TextSecondary));
+			infoItems.Add(Text(bag.Notes).FontFamily(Theme.FontRegular).FontSize(12).Color(Theme.TextSecondary));
 		infoItems.Add(statsStack);
 
-		var infoStack = new VStack(spacing: 4);
+		var infoStack = VStack(4);
 		foreach (var item in infoItems) infoStack.Add(item);
 
-		return new Border {
-			new Grid(columns: new object[] { "*", "Auto" }, rows: new object[] { "Auto" })
+		return Border(
+			new Comet.Grid(columns: new object[] { "*", "Auto" }, rows: new object[] { "Auto" })
 			{
 				infoStack.Cell(row: 0, column: 0),
-				new Text(Icons.ChevronRight)
+				Text(Icons.ChevronRight)
 					.FontFamily(Icons.FontFamily)
 					.FontSize(20)
 					.Color(Theme.TextMuted)
 					.VerticalTextAlignment(TextAlignment.Center)
 					.Cell(row: 0, column: 1),
 			}
-		}
+		)
 		.CornerRadius(Theme.RadiusCard)
 		.Background(Theme.CardBackground)
 		.StrokeColor(Theme.CardStroke)

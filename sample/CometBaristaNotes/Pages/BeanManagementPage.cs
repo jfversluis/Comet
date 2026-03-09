@@ -1,48 +1,48 @@
-using Comet;
-using Microsoft.Maui;
-using Microsoft.Maui.Graphics;
 using CometBaristaNotes.Models;
 using CometBaristaNotes.Services;
 using CometBaristaNotes.Components;
 
-using ScrollView = Comet.ScrollView;
-
 namespace CometBaristaNotes.Pages;
 
-public class BeanManagementPage : Comet.View
+public class BeanManagementPageState
 {
-	[State] readonly State<List<Bean>> _beans = new(new());
-	[State] readonly State<bool> _isLoaded = new(false);
+	public List<Bean> Beans { get; set; } = new();
+	public bool IsLoaded { get; set; }
+}
 
+public class BeanManagementPage : Component<BeanManagementPageState>
+{
 	void LoadBeans()
 	{
 		var store = InMemoryDataStore.Instance;
 		if (store == null) return;
-		_beans.Value = store.GetAllBeans();
-		_isLoaded.Value = true;
+		SetState(s =>
+		{
+			s.Beans = store.GetAllBeans();
+			s.IsLoaded = true;
+		});
 	}
 
-	[Body]
-	Comet.View body()
+	public override View Render()
 	{
-		if (!_isLoaded.Value)
+		if (!State.IsLoaded)
 			LoadBeans();
 
-		var beans = _beans.Value;
+		var beans = State.Beans;
 
 		if (beans.Count == 0)
 		{
-			return new VStack(spacing: Theme.SpacingM) {
+			return VStack(Theme.SpacingM,
 				FormHelpers.MakeEmptyState(Icons.Coffee, "No Beans Yet", "Add your favorite coffee beans to track freshness and tasting notes"),
-				FormHelpers.MakePrimaryButton("+ Add Bean", () => Navigation?.Navigate(new BeanDetailPage(0))),
-			}
+				FormHelpers.MakePrimaryButton("+ Add Bean", () => Navigation?.Navigate(new BeanDetailPage(0)))
+			)
 			.Padding(new Thickness(Theme.SpacingL))
 			.Background(Theme.Background);
 		}
 
-		var stack = new VStack(spacing: Theme.SpacingS) {
-			FormHelpers.MakePrimaryButton("+ Add Bean", () => Navigation?.Navigate(new BeanDetailPage(0))),
-		};
+		var stack = VStack(Theme.SpacingS,
+			FormHelpers.MakePrimaryButton("+ Add Bean", () => Navigation?.Navigate(new BeanDetailPage(0)))
+		);
 
 		foreach (var bean in beans)
 		{
@@ -54,7 +54,7 @@ public class BeanManagementPage : Comet.View
 			));
 		}
 
-		return new ScrollView { stack.Padding(new Thickness(Theme.SpacingM)) }
+		return ScrollView(stack.Padding(new Thickness(Theme.SpacingM)))
 			.Background(Theme.Background);
 	}
 }
