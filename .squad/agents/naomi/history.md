@@ -491,3 +491,28 @@ Holden completed a comprehensive style/theme specification (greenfield design, n
 **Action:** Read `docs/STYLE_THEME_SPEC.md` Section 3 (Generator Surface & Phase 6 Implementation) for your sprint planning.
 
 **Related:** Replaces the previous "Consolidate Style Systems" decision (now subsumed).
+
+### Style Infrastructure Generator — Parallel-Safe Generation (2026-03-10)
+
+**Task:** Implement source generator updates for the style system per STYLE_THEME_SPEC.md (§4.6, §4.8, §8.8, §12.2, D6).
+
+**Delivered:**
+1. `CometControlStateAttribute` (`src/Comet/Styles/`) — assembly-level attribute with InterfaceType, States, ControlName, ConfigProperties. Lives in Comet namespace for easy use in ControlsGenerator.cs.
+2. `StyleInfrastructureGenerator` (`src/Comet.SourceGenerator/`) — new ISourceGenerator that reads [CometControlState] and emits:
+   - Configuration structs (readonly struct with TargetView, IsEnabled, states, config properties)
+   - Scoped style extension classes ({Control}StyleExtensions)
+   - Partial class with private state-tracking fields + ResolveCurrentStyle() instance method
+3. Token<T> overloads in CometViewSourceGenerator — every non-Action, non-Func extension property now also gets a `Token<T>` overload for view-aware scoped theme resolution.
+4. [CometControlState] declarations for Button, Toggle, Slider, TextField in ControlsGenerator.cs.
+
+**Key Design Decisions:**
+- **Skip-if-exists:** Generator checks compilation for existing hand-written config structs and style extension methods before emitting. Avoids duplicate-type errors during parallel development. When hand-written files are removed, generator takes over.
+- **Config struct field introspection:** ResolveCurrentStyle inspects the actual config struct in the compilation to only reference fields that exist. This handles mismatches between attribute metadata and hand-written structs gracefully.
+- **Theme fallback is conditional:** Generator checks if `Theme.GetControlStyle<T, TConfig>()` 2-param overload exists. If not (current state), emits a TODO comment. Auto-upgrades when Holden adds the method.
+- **Nullable safety:** Binding<T>.CurrentValue returns T? for value types. Generator uses `?? default` for value-type config properties, bare `?.CurrentValue` for reference types.
+- **Token<T> uses established cast pattern:** `(Binding<T>)(Func<T>)(() => view.GetToken(token))` matching the existing extension template's cast-to-Binding pattern.
+
+**Build Status:**
+- Source generator: 0 errors, 6 pre-existing warnings
+- Comet library: only pre-existing BuiltInStyles.cs errors (RoundedRectangle). My generated code compiles clean.
+- Tests: pre-existing failures from stale DLL (unrelated to my changes).
