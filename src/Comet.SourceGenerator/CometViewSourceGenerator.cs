@@ -106,6 +106,10 @@ namespace {{NameSpace}} {
 		public static T On{{Name}}<T>(this T view, {{{Type}}} {{LowercaseName}}, bool cascades = true) where T : {{ClassName}} =>
 			view.SetEnvironment(nameof({{FullName}}),{{LowercaseName}},cascades);
 ";
+		const string tokenExtensionProperty = @"
+		public static T {{Name}}<T>(this T view, Comet.Styles.Token<{{{Type}}}> token) where T : {{ClassName}} =>
+			view.SetEnvironment(nameof({{FullName}}),(Binding<{{{Type}}}>)(Func<{{{Type}}}>)(() => view.GetToken(token)),true);
+";
 		const string factoryMustacheTemplate = @"
 using System;
 using Comet;
@@ -130,6 +134,7 @@ namespace {{NameSpace}} {
 ";
 		const string extensionMustacheTemplate = @"
 using Comet;
+using Comet.Styles;
 using Microsoft.Maui;
 using System;
 namespace {{NameSpace}} {
@@ -466,6 +471,9 @@ namespace Comet.Styles {
 					// Phase 2.2: Add "On" prefixed alias for Action-type extension properties
 					if (typeStr.StartsWith("System.Action"))
 						result += stubble.Render(onPrefixedExtensionActionProperty, dyn);
+					// View-aware Token<T> overloads for scoped theme resolution (spec §8.8, D6)
+					if (!typeStr.StartsWith("System.Action") && !typeStr.StartsWith("System.Func"))
+						result += stubble.Render(tokenExtensionProperty, dyn);
 					return result;
 				}),
 				HasRenamedProperties = propertyNameTransforms.Any(),
