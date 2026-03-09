@@ -716,3 +716,47 @@ After discovering MauiDevFlow limitations (cannot target Comet descendants), App
 
 **Impact:** AC-13 added to P1 acceptance criteria. Naomi assigned to implement factory method source generation. Holden assigned to update acceptance criteria document to reflect factory methods as in-scope.
 
+
+### ### 2026-03-09T01:38:00Z: User Directive — Use Opus 4.6 for All Agents
+
+**Owner:** David Ortinau (via Copilot)  
+**Status:** Affirmed  
+**Decision:** Use Opus 4.6 (`claude-opus-4.6`) for ALL agents this session. Quality over cost.
+
+**Why:** User request — session-wide model override for maximum output quality.
+
+**Impact:** All agent spawns in this session use `claude-opus-4.6` as the model parameter.
+
+### ### 2026-03-09T01:38:00Z: Holden — P1 Acceptance Criteria for CometMauiApp
+
+**Owner:** Holden (Lead Architect)  
+**Status:** Proposed  
+**Decision:** P1 is complete when CometMauiApp satisfies 13 acceptance criteria (AC-1 through AC-13). Each maps to a specific phase with binary pass/fail verification. Exit criteria: all 13 ACs are DONE or PARTIAL (with justification), none PENDING, build+test gate green, David reviews.
+
+**Key ACs:** AC-1 Component+SetState ✅, AC-2 Reactive<T> ✅, AC-3 multiple controls ❌, AC-4 On-events ⚠️, AC-5/6/7 themes ❌, AC-8 CometShell nav ❌, AC-9 keyed views ❌, AC-10 NativeHost ❌, AC-11 hot reload ⚠️, AC-12 build gate ✅, AC-13 factory methods ❌.
+
+**Estimated work:** ~4 focused sessions.
+
+**Why:** David directed CometMauiApp-only scope. Measurable criteria prevent scope drift.
+
+**Impact:** All P1 work targets these 13 ACs. Other samples deferred.
+
+### ### 2026-03-09T01:38:00Z: Holden — Factory Methods Are P1 Requirement (Correction)
+
+**Owner:** Holden (Lead Architect)  
+**Status:** Correction  
+**Decision:** Factory methods (`Button("text")` without `new`) are a **core P1 requirement**. Holden incorrectly marked factory methods as out-of-scope. Correction: AC-13 restored as full P1 acceptance criterion under Phase 2. Factory methods removed from "Out of Scope" section. Phase coverage matrix updated. Exit criteria updated to 13 ACs (was 12).
+
+**Why:** PRD explicitly requires factory methods (lines 228, 432, 446-456). David confirmed this is a dealbreaker. Holden's error was prioritizing "what's implemented now" over "what the PRD says."
+
+**Impact:** Adds ~1 session to P1 scope. Source generator extension required. CometMauiApp must use factory syntax.
+
+### ### 2026-03-09T01:38:00Z: Naomi — Container Factory Methods in CometControls
+
+**Owner:** Naomi (Source Generator Dev)  
+**Status:** Implemented  
+**Decision:** Handwritten factory methods for container controls (VStack, HStack, ZStack, Grid) added to `CometControls` partial class in new file `src/Comet/CometControls.Containers.cs`. Factory methods accept `params View[] children`. Includes overloads for common parameters (alignment, spacing). Matches existing `CometControls.Navigation.cs` and `CometControls.Interop.cs` patterns.
+
+**Why:** PRD requires factory syntax for ALL controls including containers. Containers are handwritten (not generated), so simple handwritten factory methods suffice without generator changes.
+
+**Impact:** Enables `VStack(child1, child2)` syntax. 5 new tests added, all passing (725/744 total). Additive only — no breaking changes. CometMauiApp not yet migrated to use them.

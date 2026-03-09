@@ -311,3 +311,45 @@ Upgrade `templates/single-project/` from legacy [Body]/[State]/net7.0 patterns t
 **Timeline:** Medium priority. Can run in parallel with Amos' iOS fix. Target: Wave 2 closure.
 
 **Next:** Upgrade template to current surface, verify build and runtime, become reference for remaining samples.
+
+### Factory Methods for Container Controls (2026-03-09)
+
+**Context:** PRD requires factory method syntax (`VStack(child1, child2)`) for all controls including handwritten containers. Generator already produces factories for generated controls (Button, Text, etc.) in `CometControls` partial class. Containers (VStack, HStack, ZStack, Grid) are handwritten and used with collection initializer syntax (`new VStack { child1, child2 }`).
+
+**Implementation:**
+- Created `src/Comet/CometControls.Containers.cs` as a new partial class for handwritten container factory methods
+- Added factory methods:
+  - `VStack(params View[] children)` with alignment and spacing overloads
+  - `HStack(params View[] children)` with alignment and spacing overloads
+  - `ZStack(params View[] children)`
+  - `Grid(params View[] children)`
+- Factories instantiate the container and call `.Add()` for each child
+- Pattern matches existing `CometControls.Navigation.cs` and `CometControls.Interop.cs` partials
+
+**Test Coverage:**
+- Added 5 new tests to `tests/Comet.Tests/FactoryMethodTests.cs`:
+  - `VStackFactoryCreatesVStack` — verifies VStack factory creates and populates children
+  - `HStackFactoryCreatesHStack` — verifies HStack factory creates and populates children
+  - `ZStackFactoryCreatesZStack` — verifies ZStack factory creates and populates children
+  - `GridFactoryCreatesGrid` — verifies Grid factory creates and populates children
+  - `VStackFactoryWithNoChildrenWorks` — verifies parameterless overload
+- All 725 tests pass (was 720, added 5)
+
+**Key Files:**
+- `src/Comet/CometControls.Containers.cs` — new file with container factory methods
+- `tests/Comet.Tests/FactoryMethodTests.cs` — updated with 5 new container tests
+- `src/Comet/Controls/VStack.cs`, `HStack.cs`, `ZStack.cs`, `Grid.cs` — handwritten containers (unchanged)
+
+**Architecture Decisions:**
+- Factory methods live in `CometControls` static partial class (not Component) — consistent with Phase 2 design
+- Component base class (src/Comet/Component.cs) is for MVU lifecycle (Render, SetState), not factory methods
+- PRD example showed `Component` but history shows established pattern is `CometControls`
+- Importable via `using static Comet.CometControls;`
+- Containers don't require source generator changes — simple handwritten methods suffice
+- Pattern: instantiate, loop through params array, call `.Add()` for each child
+
+**Outcome:**
+✅ Factory method DSL complete for all controls (generated + handwritten containers)
+✅ PRD requirement satisfied: `Button("text")`, `VStack(child1, child2)` work as specified
+✅ 0 regressions, 5 new tests, 725/744 tests passing
+✅ Build clean (only pre-existing warnings)
