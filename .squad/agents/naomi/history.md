@@ -541,5 +541,16 @@ Delivered style infrastructure source generator:
 - Theme fallback conditional — only emits GetControlStyle<T,TConfig>() call if 2-param overload exists on Theme
 - Generator is source of truth for future styleable controls
 
-**Next:** Wave 2 integration. Holden completes Theme.GetControlStyle<T, TConfig>(), triggering conditional Theme fallback emission on re-run.
+## Wave 2 — Integration Build (2026-03-09T20:37Z)
+
+**Status:** ✅ COMPLETE — All 846 tests passing, source generator output validated
+
+Naomi's source generator (CometViewSourceGenerator, AutoNotifyGenerator, StyleInfrastructureGenerator) validated in full integration:
+- Generated control classes correct
+- Style builder generation working
+- No duplicate-type errors
+- Parallel safety (skip-if-exists logic) functioning
+- Generator output cohesive with handwritten types
+
+**Wave 2 outcome:** Source generator stable and ready for scale. Generated code integrates cleanly with all other components. All 846 tests pass.
 

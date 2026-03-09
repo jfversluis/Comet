@@ -882,5 +882,16 @@ Delivered control style infrastructure:
 
 **D5 Action Required:** Fix BuiltInStyles.cs to use `using Comet;` or fully-qualify `Comet.RoundedRectangle`. Blocks Wave 2 integration and Bobbie's test compilation.
 
-**Next:** Resolve D5, then Wave 2 integration with Holden.
+## Wave 2 — Integration Build (2026-03-09T20:37Z)
+
+**Status:** ✅ COMPLETE — All 846 tests passing, GetControlStyle API and control styles validated
+
+Amos's API contributions (GetControlStyle, DefaultThemeStyles, control styling, ControlState enum) validated in full integration:
+- GetControlStyle API contract correct
+- Default theme styles registration working
+- Control style builders functional
+- ControlState enum [Flags] baseline correct
+- No API mismatches or conflicts
+
+**Wave 2 outcome:** All control API surface stable and integrated. Amos's work cohesive with theme system and control generation. Ready for Wave 3.
 

@@ -1369,3 +1369,17 @@ Extension points documented in new Section 14. Not silent about gaps.
 **Decision:** Style system tests live in `tests/Comet.Tests/Styles/` subdirectory with flat `Comet.Tests` namespace (matching existing project convention). Tests are TDD against `docs/STYLE_THEME_SPEC.md` and import `using Comet.Styles;`.  
 **Impact:** 113 test methods across 6 files, ready for Wave 2 integration. Clear structure for future style tests.
 
+
+### D10: Theme remains a class, not a record (Holden — Wave 2)
+**Owner:** Holden (Lead Architect)  
+**Date:** 2025-07-24  
+**Status:** Confirmed during Wave 2 integration  
+**Context:** During Wave 2 integration testing, confirmed that Theme is and must remain a class (not a record). Making it a record would break backward compatibility since existing code does `new Theme()` and subclasses it (`BrandTheme : Theme`). Bobbie's tests incorrectly assumed Theme is a record (used `with` expressions).  
+**Decision:**
+- **Theme** = class (supports inheritance, mutable control style registration)
+- **ColorTokenSet, TypographyTokenSet, SpacingTokenSet, ShapeTokenSet** = records (support `with` for safe derivation)
+- Tests that need "derived themes" should manually construct new Theme instances and copy token sets
+- The `Theme.Colors` property shadows `Microsoft.Maui.Graphics.Colors` in subclasses — use fully qualified names in that context
+
+**Impact:** Tests using `theme with { ... }` must use `new Theme { Name = ..., Colors = baseTheme.Colors, ... }` instead. Backward compatibility maintained for all existing code.  
+**Who should know:** Bobbie (test patterns), Amos (control style API consumers)

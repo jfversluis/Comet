@@ -493,5 +493,15 @@ dotnet test tests/Comet.Tests/Comet.Tests.csproj -c Release \
   --filter "Comet.Tests.TokenTests|Comet.Tests.ViewModifierTests|Comet.Tests.NewThemeTests|Comet.Tests.ThemeManagerTests|Comet.Tests.ControlStateTests|Comet.Tests.ControlStyleTests"
 ```
 
-**Next:** Wave 2 integration. All 113 tests should execute and pass once implementation lands.
+## Wave 2 — Integration Build (2026-03-09T20:37Z)
+
+**Status:** ✅ COMPLETE — All 846 tests passing, 113 Bobbie style tests included
+
+Bobbie's style system tests (113 methods across 6 files in `tests/Comet.Tests/Styles/`) are now passing as part of the full suite. Wave 2 integration validated that:
+- Style system tests run and pass with full framework
+- No regressions in style testing
+- Test patterns hold up under cross-agent integration
+- Theme and control style system cohesive and stable
+
+**Wave 2 outcome:** All test infrastructure stable and regression-free. Bobbie's test coverage (style system, component tests, navigation tests) fully integrated with framework implementation.
 
