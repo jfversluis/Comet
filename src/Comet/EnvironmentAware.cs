@@ -307,6 +307,28 @@ namespace Comet
 		public static object GetEnvironment(this View view, string key, bool cascades = true) => view.GetValue(key, view, view.Parent, ContextualObject.GetTypedStyleId(view, key), ContextualObject.GetTypedKey(view, key), cascades);
 		public static object GetEnvironment(this View view, Type type, string key, bool cascades = true) => view.GetValue(key, view, view.Parent, ContextualObject.GetTypedStyleId(view, key), ContextualObject.GetTypedKey(type ?? view.GetType(), key), cascades);
 
+		/// <summary>
+		/// Presence-detecting environment lookup. Required for value-type tokens
+		/// (e.g., Token&lt;double&gt;) where default(T) is a valid override value.
+		/// Returns true if the key was found, false otherwise.
+		/// </summary>
+		public static bool TryGetEnvironment<T>(this View view, string key, out T value, bool cascades = true)
+		{
+			var raw = view.GetEnvironment(key, cascades);
+			if (raw is T typed)
+			{
+				value = typed;
+				return true;
+			}
+			if (raw is Binding<T> binding)
+			{
+				value = binding.CurrentValue;
+				return true;
+			}
+			value = default;
+			return raw != null;
+		}
+
 
 		public static Dictionary<string, object> DebugGetEnvironment(this View view)
 		{

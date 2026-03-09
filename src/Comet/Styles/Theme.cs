@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.Maui.Graphics;
+using MauiColors = Microsoft.Maui.Graphics.Colors;
 
 namespace Comet.Styles
 {
@@ -40,9 +42,9 @@ namespace Comet.Styles
 		// Legacy simple color properties — kept for backward compatibility
 		public Color PrimaryColor { get; set; } = new Color(0.32f, 0.17f, 0.83f); // #512BD4
 		public Color SecondaryColor { get; set; } = new Color(0.87f, 0.32f, 0.15f);
-		public Color BackgroundColor { get; set; } = Colors.White;
+		public Color BackgroundColor { get; set; } = MauiColors.White;
 		public Color SurfaceColor { get; set; } = new Color(0.96f, 0.96f, 0.96f);
-		public Color TextColor { get; set; } = Colors.Black;
+		public Color TextColor { get; set; } = MauiColors.Black;
 		public Color SecondaryTextColor { get; set; } = new Color(0.4f, 0.4f, 0.4f);
 		public Color ErrorColor { get; set; } = new Color(0.7f, 0.11f, 0.11f);
 
@@ -51,6 +53,60 @@ namespace Comet.Styles
 		/// When null, <see cref="Apply"/> uses the legacy simple color properties.
 		/// </summary>
 		public ThemeColors ColorScheme { get; set; }
+
+		// --- New token-based style system (spec §5.2) ---
+
+		/// <summary>
+		/// Human-readable theme name (e.g., "Light", "Dark", "BrandOcean").
+		/// </summary>
+		public string Name { get; set; }
+
+		/// <summary>
+		/// Color tokens — primary, secondary, surface, error, etc.
+		/// </summary>
+		public ColorTokenSet Colors { get; set; }
+
+		/// <summary>
+		/// Typography tokens — display, headline, title, body, label sizes/weights.
+		/// </summary>
+		public TypographyTokenSet Typography { get; set; }
+
+		/// <summary>
+		/// Spacing tokens — compact, standard, comfortable.
+		/// </summary>
+		public SpacingTokenSet Spacing { get; set; }
+
+		/// <summary>
+		/// Shape tokens — corner radii for small, medium, large containers.
+		/// </summary>
+		public ShapeTokenSet Shapes { get; set; }
+
+		/// <summary>
+		/// Per-control type style defaults for the new token system.
+		/// Uses ImmutableDictionary so derived themes get independent copies.
+		/// </summary>
+		ImmutableDictionary<Type, object> _newControlStyles =
+			ImmutableDictionary<Type, object>.Empty;
+
+		/// <summary>
+		/// Sets a control style in the new token-based system.
+		/// </summary>
+		public Theme SetControlStyle<TControl, TConfig>(object style)
+			where TControl : View
+			where TConfig : struct
+		{
+			_newControlStyles = _newControlStyles.SetItem(typeof(TControl), style);
+			return this;
+		}
+
+		/// <summary>
+		/// Gets a control style from the new token-based system.
+		/// </summary>
+		public object GetNewControlStyle<TControl>()
+			where TControl : View
+		{
+			return _newControlStyles.TryGetValue(typeof(TControl), out var s) ? s : null;
+		}
 
 		readonly Dictionary<Type, object> _controlStyles = new Dictionary<Type, object>();
 
@@ -183,9 +239,9 @@ namespace Comet.Styles
 		public static Theme Light => new Theme
 		{
 			CurrentTheme = AppTheme.Light,
-			BackgroundColor = Colors.White,
+			BackgroundColor = MauiColors.White,
 			SurfaceColor = new Color(0.96f, 0.96f, 0.96f),
-			TextColor = Colors.Black,
+			TextColor = MauiColors.Black,
 			SecondaryTextColor = new Color(0.4f, 0.4f, 0.4f),
 			ColorScheme = ThemeColors.LightScheme,
 		};
@@ -195,7 +251,7 @@ namespace Comet.Styles
 			CurrentTheme = AppTheme.Dark,
 			BackgroundColor = new Color(0.07f, 0.07f, 0.07f),
 			SurfaceColor = new Color(0.15f, 0.15f, 0.15f),
-			TextColor = Colors.White,
+			TextColor = MauiColors.White,
 			SecondaryTextColor = new Color(0.7f, 0.7f, 0.7f),
 			ColorScheme = ThemeColors.DarkScheme,
 		};
