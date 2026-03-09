@@ -424,3 +424,26 @@ View.ViewPropertyChanged → View.ContextPropertyChanged → ContextualObjectExt
 - 3 API decisions captured in decisions.md
 
 **Orchestration Log:** `.squad/orchestration-log/2026-03-09T14-12-sample-migration.md`
+
+---
+
+## 2026-03-09 (Cross-Agent Update — Scribe)
+
+**From:** Holden (Lead Architect) via Scribe  
+**Re:** Style & Theme System Greenfield Specification (docs/STYLE_THEME_SPEC.md)
+
+Holden completed a comprehensive style/theme specification (greenfield design). Key impact for **Bobbie (Test Engineer)**:
+
+- Phase 6+ will require tests for:
+  - Token-based type-safe keys (`Token<T>`)
+  - ControlStyle protocol implementations (`ControlStyle<T, TConfig>`)
+  - Theme switching (O(1) via single environment reference)
+  - Scoped theme subtrees (cascade behavior)
+  - State-aware styling (control configurations with `IsPressed`, `IsHovered`, etc.)
+  
+- No test changes needed for Phase 5 (Navigation tests unaffected)
+- Component, View, and state tests remain valid
+
+**Action:** Read `docs/STYLE_THEME_SPEC.md` Sections 5 & 6 (Test Strategy & Phase 6 Implementation) for your test roadmap.
+
+**Related:** Greenfield spec replaces previous "Consolidate Style Systems" proposal.

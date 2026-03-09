@@ -471,3 +471,23 @@ Upgrade `templates/single-project/` from legacy [Body]/[State]/net7.0 patterns t
 **Logs:**
 - Orchestration: `.squad/orchestration-log/2026-03-09T154817Z-naomi.md`
 - Session: `.squad/log/20260309T154817Z-factory-method-fixes.md`
+
+---
+
+## 2026-03-09 (Cross-Agent Update — Scribe)
+
+**From:** Holden (Lead Architect) via Scribe  
+**Re:** Style & Theme System Greenfield Specification (docs/STYLE_THEME_SPEC.md)
+
+Holden completed a comprehensive style/theme specification (greenfield design, no backward compatibility constraints). Key impact for **Naomi (Source Generator Dev)**:
+
+- `ControlStyle<T, TConfig>` replaces per-control styling patterns
+- `Token<T>` type-safe keys replace `EnvironmentKeys.*` strings
+- Source generator will need updates in Phase 6 to produce:
+  - `TokenKey<T>` static constants for each control
+  - Style builder classes that use typed tokens
+  - Control configuration types (`ButtonConfiguration`, `ToggleConfiguration`, etc.)
+
+**Action:** Read `docs/STYLE_THEME_SPEC.md` Section 3 (Generator Surface & Phase 6 Implementation) for your sprint planning.
+
+**Related:** Replaces the previous "Consolidate Style Systems" decision (now subsumed).

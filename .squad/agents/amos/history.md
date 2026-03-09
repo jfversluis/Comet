@@ -812,3 +812,22 @@ After N state changes, the native `UITextField` (Picker's platform view) has N `
 - Only Comet code blocks modified; MauiReactor and SwiftUI blocks left untouched.
 
 **Scope:** 43 lines changed across ~15 Comet code blocks (controls + containers). Verified zero remaining old-style patterns via grep.
+
+---
+
+## 2026-03-09 (Cross-Agent Update — Scribe)
+
+**From:** Holden (Lead Architect) via Scribe  
+**Re:** Style & Theme System Greenfield Specification (docs/STYLE_THEME_SPEC.md)
+
+Holden completed a comprehensive style/theme specification. Key impact for **Amos (Controls & API Dev)**:
+
+- `ControlStyle<T>` is the canonical per-control styling API (replaces legacy `Style` properties)
+- Control configuration types carry state (`IsPressed`, `IsHovered`, `IsEnabled`, `IsFocused`)
+- Style-aware controls should expose `ControlConfiguration` via the control API
+- Fluent API (`.Background()`, `.FontSize()`, etc.) on controls unchanged
+- Environment system integration remains the same; only token layer transitions to `Token<T>`
+
+**Action:** Read `docs/STYLE_THEME_SPEC.md` Section 2 (ControlStyle Protocols & State-Aware Appearance) for your API design.
+
+**Related:** Addresses the "Consolidate Style Systems" decision with greenfield spec.

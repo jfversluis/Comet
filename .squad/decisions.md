@@ -1124,3 +1124,34 @@ The comparison analysis revealed that MauiReactor achieves equivalent functional
 - Breaking change for code using `new Style()` or `MaterialStyle` directly
 - No impact on fluent extension methods (`.Background()`, `.FontSize()`, etc.)
 - No impact on `Theme`/`ThemeColors`/`ControlStyle<T>` (these are the promoted APIs)
+
+---
+
+### 2026-03-09T18:03:06Z: Style & Theme System Greenfield Specification
+
+**Author:** Holden (Lead Architect)  
+**Status:** Approved  
+**Decision:** Comprehensive technical specification for Comet's style and theming system. Greenfield design covering all 5 pillars: ViewModifier composition, ControlStyle protocols, Token-based type-safe keys, Theme definition with O(1) switching, and scoped propagation.
+
+**Key Design Principles:**
+
+1. **One unified pattern per concern:** `ViewModifier` for reusable styles, `ControlStyle<T, TConfig>` for per-control styling, `Theme` for design systems. Consolidates overlapping `Style`, `Style<T>`, and `ControlStyle<T>` abstractions.
+
+2. **Type-safe tokens:** `Token<T>` replaces all `EnvironmentKeys.*` string constants. Compile-time safety for token access and type consistency.
+
+3. **O(1) theme switch:** Store one `Theme` reference in the environment instead of pushing N individual token values. Reactive bindings handle invalidation on theme change.
+
+4. **Scoped themes via cascade:** `.Theme(darkTheme)` on a container scopes that theme to the subtree using the existing parent-chain environment lookup mechanism.
+
+5. **Control state in style protocols:** `ButtonConfiguration`, `ToggleConfiguration`, etc. carry `IsPressed`, `IsHovered`, `IsEnabled`, `IsFocused`. Style protocols resolve state-aware appearance without multi-dispatch.
+
+**Implementation Scope:**
+
+- Replaces current `Styles/` directory contents and consolidation plan
+- Source generator updates required (Phase 6+ implementation)
+- Existing fluent API (`.Background()`, `.FontSize()`, etc.) unchanged
+- Environment system internals unchanged; only the addressing layer (keys) transitions from string to `Token<T>`
+
+**Artifact:** `docs/STYLE_THEME_SPEC.md` (1995 lines — production-ready architecture document)
+
+**Impact:** All 5 existing style/theme decisions are subsumed into this unified greenfield specification. No breaking changes to Component, Navigation, or View APIs. Backward compatible at the environment system level.

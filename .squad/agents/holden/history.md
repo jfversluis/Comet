@@ -838,3 +838,34 @@ public partial class Component
 - `src/Comet/Styles/ThemeExtensions.cs` — .ThemeBackground(), .ThemeForeground()
 - `src/Comet/EnvironmentData.cs` — Full EnvironmentKeys inventory
 - `sample/CometBaristaNotes/Components/Theme.cs` — Sample design token pattern
+
+### 2026-03-09 — Style & Theme System Technical Specification (Greenfield)
+
+**Status:** ✅ Proposal complete — `docs/STYLE_THEME_SPEC.md` (995 lines)
+
+**Architecture decisions in the spec:**
+
+1. **Unified `ViewModifier` pattern** replaces three overlapping abstractions (`Style`, `Style<T>`, `ControlStyle<T>`). Composable via `.Then()`. Typed variant `ViewModifier<T>` for per-control modifiers. Static singleton pattern for zero-allocation reuse.
+
+2. **`IControlStyle<TControl, TConfig>` protocol** replaces `ControlStyle<T>` string dictionaries. Configuration structs (`ButtonConfiguration`, `ToggleConfiguration`, etc.) carry interactive state (pressed, hovered, disabled, focused). Style protocol resolves to a `ViewModifier` — no separate rendering system.
+
+3. **`Token<T>` type-safe environment keys** replace all `EnvironmentKeys.*` string constants. Each token has a `Resolver` function that extracts its value from a `Theme`. Compile-time safety: `Token<Color>` won't go where `Token<double>` is expected.
+
+4. **Theme = token sets + control defaults.** `Theme` is a record-like class with `ColorTokenSet`, `TypographyTokenSet`, `SpacingTokenSet`, `ShapeTokenSet` records. Themes compose via C# `with` syntax. Per-control defaults registered via `SetControlStyle()`.
+
+5. **O(1) theme switch.** Instead of pushing N tokens into the global environment (O(N×V)), the new system stores ONE `Theme` reference under `ActiveThemeToken`. Views that read tokens via `Theme.Token(...)` get `Binding<T>` closures that resolve lazily from the active theme. StateManager's existing tracking invalidates only affected views.
+
+6. **Scoped themes via environment cascade.** `.Theme(AppThemes.Dark)` on any container stores the theme reference in that view's cascading context. Child views resolve tokens from the nearest ancestor's theme. No new tree-walk mechanism needed — existing parent-chain lookup handles it.
+
+**Key files:**
+- `docs/STYLE_THEME_SPEC.md` — Full specification (all 5 pillars)
+
+**Patterns documented:**
+- ViewModifier composition model
+- IControlStyle protocol with Configuration structs
+- Token<T> type-safe keys with lazy resolution
+- Theme record composition via `with`
+- Scoped theme override via environment cascade
+- Performance model: O(1) switch, lazy token reads, surgical invalidation
+- SwiftUI equivalence table for each API
+- End-to-end examples: brand theme, custom button styles, theme switching, scoped overrides
