@@ -809,3 +809,32 @@ public partial class Component
 **Follow-up (Recommended):** Consider adding change-event extensions (`.OnValueChanged()` for Stepper, `.OnDateChanged()` for DatePicker) to generated controls to fully support Component pattern without Reactive<T> fallback in future versions.
 
 **Orchestration Log:** `.squad/orchestration-log/2026-03-09T14-12-sample-migration.md`
+
+### Style & Theme Comparison Analysis
+
+**Date:** 2026 session
+**Output:** `docs/STYLE_THEME_COMPARISON.md`
+**Task:** Exhaustive comparison of styling/theming APIs across Comet, MauiReactor, and SwiftUI.
+
+**What I learned:**
+- Comet has **three overlapping style systems**: legacy `Style` (with ButtonStyle/TextStyle/SliderStyle), `ControlStyle<T>` (dictionary-based, Phase 3), and `Style<T>` (functional action-based). They all ultimately write to the same `EnvironmentData` dictionary but with different API shapes. This creates real developer confusion.
+- The environment cascade (parent→child lookup) is a genuine architectural advantage over MauiReactor. Only SwiftUI matches it.
+- Comet's 27 MD3 `ThemeColors` tokens + 15 Material `ColorPalette` presets are far more complete than MauiReactor's manual color constants.
+- **Biggest gap vs SwiftUI:** No declarative animation of style changes. `.animation()` modifier pattern is the #1 missing feature.
+- **Biggest gap vs MauiReactor:** API complexity. MauiReactor's `OnApply()` + `ThemeKey()` is cleaner than Comet's multi-layer approach.
+- `StyleAwareValue<ControlState, T>` in the legacy system supports per-state styling (Default/Hovered/Pressed/Disabled) — but this capability isn't exposed through the modern `ControlStyle<T>` API at all.
+- The CometBaristaNotes sample demonstrates the practical pattern: static `Theme` class with design tokens (colors, spacing, radii, sizes) used directly in view code. This bypasses all three style systems.
+
+**Key files analyzed:**
+- `src/Comet/Styles/Theme.cs` — Theme singleton with Apply() cascade
+- `src/Comet/Styles/ThemeColors.cs` — 27 MD3 semantic tokens
+- `src/Comet/Styles/ControlStyle.cs` — Generic typed per-control env style
+- `src/Comet/Styles/Style.cs` — Legacy global style + Style<T> functional
+- `src/Comet/Styles/MaterialStyle.cs` — Material Design button variants
+- `src/Comet/Helpers/ColorExtensions.cs` — .Color(), .Background() overloads
+- `src/Comet/Helpers/FontExtensions.cs` — .FontSize(), .FontWeight(), etc.
+- `src/Comet/Helpers/DrawingExtensions.cs` — .Shadow(), .ClipShape(), .Border(), .RoundedBorder()
+- `src/Comet/Helpers/ViewExtensions.cs` — .ThemeColor(), .ApplyTheme(), .ApplyControlStyle()
+- `src/Comet/Styles/ThemeExtensions.cs` — .ThemeBackground(), .ThemeForeground()
+- `src/Comet/EnvironmentData.cs` — Full EnvironmentKeys inventory
+- `sample/CometBaristaNotes/Components/Theme.cs` — Sample design token pattern

@@ -798,3 +798,17 @@ After N state changes, the native `UITextField` (Picker's platform view) has N `
 **Follow-up (Recommended):** Add `Grid(object[] rows, object[] columns, params View[] children)` overloads to `CometControls.Containers.cs` for factory API consistency (per Bobbie's grid factory gap decision).
 
 **Orchestration Log:** `.squad/orchestration-log/2026-03-09T14-12-sample-migration.md`
+
+## Learnings
+
+### 2025-07-24: STYLE_THEME_COMPARISON.md Factory Syntax Update
+
+**Task:** Converted all Comet code examples in `docs/STYLE_THEME_COMPARISON.md` from `new` constructor syntax to factory method syntax.
+
+**Pattern applied:** 
+- Controls: `new Text(...)` → `Text(...)`, `new Button(...)` → `Button(...)`, etc.
+- Containers: `new VStack { child1, child2 }` → `VStack(child1, child2)` with closing `}` → `)` and trailing comma cleanup.
+- Preserved `new` for non-controls: `SolidPaint`, `Thickness`, `RoundedRectangle`, `Style<T>`, `ControlStyle<T>`, `Theme`, `ThemeColors`, `ResourceDictionary`, `Shadow`, `ButtonStyle`.
+- Only Comet code blocks modified; MauiReactor and SwiftUI blocks left untouched.
+
+**Scope:** 43 lines changed across ~15 Comet code blocks (controls + containers). Verified zero remaining old-style patterns via grep.
