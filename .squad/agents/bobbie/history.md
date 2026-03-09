@@ -38,6 +38,17 @@ Theme system validated with 34 tests. Confirmed concrete `Theme` base class, `Th
 
 ## Learnings
 
+### Style System TDD Test Suite — 113 Tests Written (2026-03-09T202000Z)
+
+**Status:** ✅ TESTS WRITTEN (TDD — awaiting implementation)
+
+- **Scope:** 6 test files in `tests/Comet.Tests/Styles/` covering all 6 spec sections: Token<T> (§8), ViewModifier (§3), Theme (§5), ThemeManager (§6), ControlState (§9), ControlStyle + TokenOverride (§4, §7.5).
+- **Test count:** 113 test methods (32 Token, 17 ViewModifier, 20 Theme, 11 ThemeManager, 11 ControlState, 22 ControlStyle).
+- **Build status:** Does not compile yet — expected. The implementation agents (Amos, Holden) are building the spec types in parallel. Key missing types: `ViewModifier` (abstract class), `ThemeManager`, `ColorTokens`/`TypographyTokens`/`SpacingTokens`/`ShapeTokens` (token identifier classes). Types that DO exist: `Token<T>`, `IControlStyle<,>`, configuration structs, `StyleToken<T>`, token set records, `Defaults`, `ControlState` (values differ from spec).
+- **Namespace:** New spec types live in `Comet.Styles`. Tests import via `using Comet.Styles;`. `InternalsVisibleTo("Comet.Tests")` already exists in Comet's AssemblyInfo for testing `Token<T>.Key` (internal).
+- **Implementation deltas noted:** (1) `Theme` is a class not a record per spec — `with` expression tests will fail until converted. (2) `ControlState` values differ from spec (current: Pressed=1/Hovered=2/Focused=4/Disabled=8; spec: Disabled=1/Pressed=2/Hovered=4/Focused=8). (3) `Defaults.Light`/`.Dark` return new Theme instances each call (not cached readonly). (4) `Theme.SetControlStyle` signature takes `object style` not `IControlStyle<T,TConfig>`.
+- **Convention:** Flat `Comet.Tests` namespace, `Styles/` subdirectory for organization.
+
 ### Comet.Sample iOS Simulator E2E — 45/46 Pages Pass, RadioButton Crash Found (2026-03-08T230200Z)
 
 **Status:** ✅ E2E COMPLETE
