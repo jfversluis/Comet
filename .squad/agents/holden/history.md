@@ -701,3 +701,21 @@ public partial class Component
 - When defining scope, the PRD is the source of truth, not the current implementation
 - "Not implemented yet" ≠ "out of scope" — confirm with David before scoping anything out
 - Dealbreakers should be treated as P0, not negotiable features
+
+### 2026-03-08 — E2E Testing: CometFeatureShowcase & CometTaskApp
+
+**Status:** ✅ Complete
+
+**What was tested:**
+- CometFeatureShowcase on iPhone 16 Pro (iOS 18.5) — all 5 feature pages exercised via Appium
+- CometTaskApp on Mac Catalyst (macOS 26.4) — task list, search, filters, add task flow exercised via Appium mac2 driver
+
+**Bug found and fixed:**
+- `sample/CometTaskApp/TaskApp.cs` crashed in DEBUG mode because `UseCometSampleDebugHost<TaskApp>()` rejects `CometApp`-derived types. Fixed by extracting `CreateRootView()` static factory and using `UseCometSampleDebugHost(TaskApp.CreateRootView)` pattern, matching CometMauiApp's approach.
+
+**Issues identified:**
+- Comet TabView tab headers are not exposed in Mac Catalyst accessibility tree under `UseCometSampleDebugHost` — Stats/Settings pages unreachable via Appium in DEBUG mode
+- CometFeatureShowcase AnimationPage uses deprecated `FadeTo`/`ScaleTo`/`RotateTo` APIs (should use `*Async` variants)
+- WDA session instability on iOS simulator causes intermittent session drops during scroll/animation operations — this is an Appium/WDA issue, not a Comet issue
+
+**Results:** 8/9 tests pass, 1 partial (TabView accessibility in debug host)

@@ -38,6 +38,17 @@ Theme system validated with 34 tests. Confirmed concrete `Theme` base class, `Th
 
 ## Learnings
 
+### Comet.Sample iOS Simulator E2E — 45/46 Pages Pass, RadioButton Crash Found (2026-03-08T230200Z)
+
+**Status:** ✅ E2E COMPLETE
+
+- **Build:** Release config required. Debug config crashes on launch due to shared DEBUG host rejecting CometApp roots (known issue). Built Comet + Comet.SourceGenerator for net10.0-ios, then Comet.Sample Release for iossimulator-arm64.
+- **Navigation coverage:** 46 demo pages tested. 45 navigated successfully, 1 crashed (RadioButtonSample).
+- **Interactive coverage:** 15 pages exercised with real control interaction (button taps, tab switching, stepper increment/decrement, scrolling lists, toggling state, updating text/font bindings). All 15 interactive tests passed.
+- **Bug found:** RadioButtonSample crashes with `System.InvalidCastException` in `RadioButtonHandler.get_VirtualView()` — Comet's View passed to the RadioButton handler doesn't satisfy the `IRadioButton` cast. Reproducible 2/2 times. Routed to Amos.
+- **WDA instability:** `page_source` calls (used by `--list-elements`, `--list-buttons`) crash the WDA session ~50% of the time after navigation. Workaround: use `--exists`, `--find-text`, `--tap-button` instead. This is a tooling issue, not a Comet issue.
+- **Key pattern:** Always terminate app via `xcrun simctl terminate` between tests (not Appium `--terminate`) to avoid WDA session conflicts. Fresh Appium sessions per test are more reliable than `--reuse-session`.
+
 ### P0 Shared-Debug-Host Revision — Launch/Render Approved, Interactive Still Blocked (2026-03-08T171500Z)
 
 **Status:** ✅ APPROVED at the claimed ceiling
@@ -286,3 +297,56 @@ View.ViewPropertyChanged → View.ContextPropertyChanged → ContextualObjectExt
 - `--scroll` not supported
 
 **Flaky Session Note:** First Appium session showed button-death after toggle, but this was not reproducible on a fresh app launch. The failed session had prior `--set-slider` and `--drag` attempts that may have corrupted the Appium session state. On a clean session, all buttons worked correctly after toggle interactions.
+
+
+### CometMauiApp E2E Test Results — iOS Simulator (Appium xcuitest)
+
+**Date:** 2025-07-24
+**Context:** End-to-end Appium automation of CometMauiApp on iOS Simulator (iPhone 16 Pro, iOS 18.5). Follow-up to Mac Catalyst test where slider and scroll were blocked by mac2 driver limitations. David's hypothesis: xcuitest driver on iOS Simulator should have full slider and scroll support.
+
+**Build:** `dotnet build sample/CometMauiApp/CometMauiApp.csproj -f net10.0-ios -c Debug` — ✅ 0 errors, 11 warnings (all pre-existing).
+
+**Simulator:** iPhone 16 Pro (3F542DD1) — iOS 18.5, booted.
+
+**Test Results: 10/12 PASS**
+
+| # | Test | Result | Notes |
+|---|------|--------|-------|
+| 1 | Element discovery + initial state | ✅ PASS | All 5 AutomationIds found. Full accessibility tree returned including scroll bar ("2 pages"). Count: 0, Step: 1, Toggle: ON. |
+| 2 | Increment button (0→1) | ✅ PASS | "Count: 1", banner: "The evolved MVU surface has rendered 1 updates.", status: "Incremented by 1. Current count: 1." |
+| 3 | Decrement button (1→0) | ✅ PASS | "Count: 0", status: "Decremented by 1. Current count: 0." |
+| 4 | Reset after 3 increments | ✅ PASS | 3x increment → reset. "Count: 0", status: "Counter reset to zero." |
+| 5 | Slider manipulation | ❌ FAIL | `--set-slider` (send_keys), `--drag` (mobile:dragFromToForDuration), and `--tap-coords` all report success but do NOT change MAUI Slider value. Slider stays at "Step size: 1" / "0%". Same behavior as Mac Catalyst. This is a MAUI Slider handler + Appium interaction gap, NOT a Comet bug. |
+| 6 | Increment after slider change | ⚠️ SKIPPED | Blocked by slider limitation (#5). |
+| 7 | Toggle celebrations OFF | ✅ PASS | Toggle text 1→0. Text changed to "Run quiet updates for raw counter flow." and "Milestone celebrations are paused." / "Milestones are currently disabled." |
+| 8 | Toggle celebrations ON | ✅ PASS | Toggle text 0→1. Text changed to "Celebrate every fifth increment." and "Milestone celebrations are enabled." |
+| 9 | Scroll down | ✅ PASS | `--scroll down` executed successfully (unlike Mac Catalyst where it was unsupported). Full content visible in accessibility tree. David's hypothesis confirmed: xcuitest scroll works on iOS. |
+| 10 | Status card visibility | ✅ PASS | "What this sample is showing" card, description text, and milestone status all present in accessibility tree. |
+| 11 | Milestone at count=5 | ✅ PASS | Reset → 5x increment (with 2s waits). "Count: 5", banner: "Milestone hit: 5 total taps.", "Next milestone: 10", status: "Incremented by 1. Current count: 5." |
+| 12 | All AutomationIds targetable | ✅ PASS | counter-increment-button ✅, counter-decrement-button ✅, counter-reset-button ✅, counter-step-slider ✅ (found but not manipulable), counter-celebrate-toggle ✅ |
+
+**Score: 10/12** (vs 10/12 on Mac Catalyst — same score, different gaps filled)
+
+**iOS vs Mac Catalyst Comparison:**
+
+| Capability | Mac Catalyst (mac2) | iOS Simulator (xcuitest) |
+|-----------|-------------------|------------------------|
+| Button taps | ✅ | ✅ |
+| Toggle switch | ✅ | ✅ |
+| Slider manipulation | ❌ (send_keys silent fail) | ❌ (send_keys/drag/tap-coords all silent fail) |
+| Scroll | ❌ (unsupported) | ✅ (works!) |
+| Element discovery | ✅ | ✅ |
+| Milestone celebration | ✅ | ✅ |
+| Session stability | Good | Fragile (sessions die on rapid taps; 2s waits required) |
+
+**Key Findings:**
+
+1. **Scroll works on iOS** — David was right. The xcuitest driver supports `--scroll down` on iOS Simulator, confirming the gap was a mac2 driver limitation.
+
+2. **Slider is STILL broken** — Despite xcuitest's supposed "full slider support", the MAUI Slider does not respond to any Appium programmatic interaction (send_keys, drag, tap-coords). All methods report "ok" but the native UISlider value doesn't change. Root cause: MAUI's Slider handler on iOS may not wire up the accessibility `setValue` method properly, or the `OnValueChanged` callback only fires on genuine user touch events.
+
+3. **Session instability on iOS** — XCUITest/WDA sessions are more fragile than mac2. Sessions frequently terminate mid-chain, especially after rapid taps (0.5s waits) or when the UI re-renders heavily (milestone celebration). Workaround: use 2-second waits between operations and split long chains into smaller batches.
+
+4. **Reactive<string> verified** — Status text updates correctly via Reactive<string> on every action, consistent with Mac Catalyst results.
+
+**Recommendation:** The MAUI Slider + Appium interaction gap should be investigated upstream. File an issue against dotnet/maui requesting that the iOS Slider handler expose proper accessibility value-setting support for automation frameworks.

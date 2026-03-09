@@ -722,3 +722,36 @@ After N state changes, the native `UITextField` (Picker's platform view) has N `
 - `dotnet test tests/Comet.Tests/Comet.Tests.csproj --no-build -c Release` ✅ (725 passed, 0 failed, 19 skipped)
 
 **Key pattern:** `VStack(20, child1, child2)` — the int `20` implicitly converts to `float?` for the spacing parameter. No ambiguity with other overloads since `int` is not `View` or `LayoutAlignment`.
+
+### Full Sample Build Audit (2025-07-22)
+
+**Status:** ✅ COMPLETE — 10/10 samples build on net10.0-maccatalyst
+
+**Task:** Build-check all 10 sample projects, fix trivial errors, report status.
+
+**Fixes applied (all 1-line):**
+1. `sample/Comet.Sample/Views/DatePickerSample.cs` — `State<DateTime>` → `State<DateTime?>` (DatePicker constructor expects nullable)
+2. `sample/CometStressTest/Pages/ControlTestPage.cs` — Same DatePicker fix
+3. `sample/MauiReference/Pages/ManageMetaPage.xaml` — `ValidateOnUnfocusing` → `ValidateOnUnfocused` (CommunityToolkit.Maui v14 enum rename)
+
+**Key learning:** The source generator produces `DatePicker(Binding<DateTime?> ...)` because `IDatePicker.Date` is `DateTime?`. Any sample using `State<DateTime>` (non-nullable) for DatePicker will fail — must use `State<DateTime?>`. This is a recurring pattern to watch for in new samples.
+
+**Test suite:** 748 total (729 passed, 19 skipped, 0 failed) — fixes confirmed safe.
+
+---
+
+## 2025-07-18 — Sample Build Fixes (3 samples)
+
+### Fixes Applied
+
+1. **CometStressTest** — `State<DateTime>` → `State<DateTime?>` in ControlTestPage.cs (already applied in working tree by prior session). Build: ✅ 0 errors, 0 warnings.
+2. **MauiReference** — Two fixes:
+   - `ValidateOnUnfocusing` → `ValidateOnUnfocused` in ManageMetaPage.xaml (CommunityToolkit.Maui 14.x enum rename, already applied by prior session)
+   - `shell.DisplayAlert()` → `shell.DisplayAlertAsync()` in ModalErrorHandler.cs (.NET 10 MAUI obsoleted the old API)
+   - Build: ✅ 0 errors, 0 warnings.
+3. **CometBaristaNotes** — Release AOT issue (MSB4018) **no longer reproduces**. Both Debug and Release build clean on net10.0-maccatalyst. Syncfusion.Maui.Gauges 32.2.8 and EF Core Sqlite 9.0.7 work fine with .NET 10.
+
+### Learnings
+- `.NET 10 MAUI` obsoleted `Page.DisplayAlert` → use `DisplayAlertAsync`. Same for `DisplayActionSheet` → `DisplayActionSheetAsync`. Watch for this in all samples.
+- CommunityToolkit.Maui 14.x renamed `ValidationFlags.ValidateOnUnfocusing` → `ValidateOnUnfocused`.
+- The CometBaristaNotes AOT issue appears to have been an SDK-level transient bug, now resolved.

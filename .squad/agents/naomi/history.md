@@ -353,3 +353,28 @@ Upgrade `templates/single-project/` from legacy [Body]/[State]/net7.0 patterns t
 ✅ PRD requirement satisfied: `Button("text")`, `VStack(child1, child2)` work as specified
 ✅ 0 regressions, 5 new tests, 725/744 tests passing
 ✅ Build clean (only pre-existing warnings)
+
+### E2E Testing: CometAllTheLists, CometWeather, CometProjectManager (2026-03-08)
+
+**Context:** End-to-end tested three sample apps on iPhone 16 Pro simulator (iOS 18.5) using Appium XCUITest driver.
+
+**Key Findings:**
+
+1. **CometAllTheLists Contacts tab crash** — `AddressBookPage.GetContactColor()` uses `GetHashCode() % colors.Length` which yields negative array indices. App crashes immediately on navigating to the Contacts tab. Fix: use `Math.Abs()` or bitmask (`& 0x7FFFFFFF`). Other 4 tabs (Shopping, Collections, Inbox, Streaming) work correctly with full data rendering.
+
+2. **Debug build crash for CometApp subclasses** — `SampleRuntimeDebugExtensions.UseCometSampleDebugHost<T>()` throws `InvalidOperationException` when T inherits `CometApp`. Affects CometAllTheLists (and any app using `CometApp` as root). Release builds bypass the debug host and work fine.
+
+3. **CometWeather fully functional** — All 3 tabs (Home, Favorites, Settings) render correctly. Home shows 24-hour forecast, Favorites shows 15 world cities, Settings shows profile/units/theme. Settings radio buttons need AutomationId for automation testing.
+
+4. **CometProjectManager fully functional** — Main view renders with categories, projects, and 12 task toggles. Category pill taps work. Shell navigation and theme system operational.
+
+5. **Appium WDA instability** — WebDriverAgent sessions expire after 1–2 operations, requiring fresh sessions per action. This is a tooling issue, not an app issue. Element enumeration (list-elements) is reliable; multi-step chains are not.
+
+**Files involved:**
+- `sample/CometAllTheLists/Pages/AddressBookPage.cs` — crash bug at line 103
+- `sample/CometAllTheLists/AllTheListsApp.cs` — debug host incompatibility at line 40
+- `sample/CometWeather/WeatherApp.cs` — no issues
+- `sample/CometProjectManager/` — no issues
+- `sample/Shared/RuntimeDebug/SampleRuntimeDebugExtensions.cs` — rejects CometApp subclasses
+
+**Report:** `.squad/decisions/inbox/naomi-lists-weather-e2e.md`

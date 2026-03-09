@@ -832,3 +832,126 @@ This follows the established pattern used by `Tag<T>`, `Key<T>`, `SemanticHint<T
 - Appium on Mac Catalyst → fallback only
 
 **Why:** User request — captured for team memory. Guides Bobbie and all agents on which E2E testing tool to use per platform target.
+
+### ### 2026-03-09T04:04:44Z: Comet.Sample iOS Simulator E2E Results
+
+**Owner:** Bobbie (Test Engineer)  
+**Status:** Verified  
+**Decision:** Comet.Sample is substantially functional on iOS Simulator (Release build). 45 of 46 demo pages navigate without crash. Interactive tests (state, binding, diffing, tab switching, stepper) all work correctly.
+
+**Test Results:** 45/46 pages ✅; 15 interactive tests ✅
+
+**Key Findings:**
+1. **State reactivity works.** Counter increment test: (0) → (1) ✅
+2. **Data binding works.** Text update, font size update, toggle entry/label ✅
+3. **View diffing works.** "Insane Diff" toggle swaps UI tree correctly ✅
+4. **Tab navigation works.** TabView switching verified ✅
+5. **Stepper controls work.** Increment/decrement inputs working ✅
+
+**Bug Found:**
+- **P1 RadioButtonSample crash** — `InvalidCastException` in `RadioButtonHandler.get_VirtualView()`. Root cause: Comet's RadioButton view doesn't implement `IRadioButton`, causing MAUI's handler cast to fail. Needs handler mapping or interface implementation in Controls.
+
+**Caveats:**
+- **Debug build crash:** CometApp roots rejected by shared DEBUG host (`UseCometSampleDebugHost` rejects `Comet.Samples.MyApp`). Release build only.
+- **WDA session instability:** WebDriverAgent crashes mid-session on `page_source` calls (~50% failure) but single-action calls stable. Infrastructure issue, not app.
+
+**Verdict: ✅ PASS (1 bug to fix)**
+
+### ### 2026-03-09T04:04:44Z: CometFeatureShowcase & CometTaskApp E2E Results
+
+**Owner:** Holden (Lead Architect)  
+**Status:** Verified  
+**Decision:** CometFeatureShowcase (iOS) passes all 5 feature tests. CometTaskApp (Mac Catalyst) passes 3 of 4 functional areas; TabView accessibility issue noted.
+
+**CometFeatureShowcase Results:**
+- **BindableLayout:** ✅ Items render; Add/Remove buttons work
+- **Converters:** ✅ All 7 converter cards render correctly
+- **Animation:** ✅ All 5 animations (FadeIn, FadeOut, Scale, Rotate, Combined) trigger ✅
+- **TabView:** ✅ Tab switching works across 5 tabs
+- **Scroll:** ✅ Infinite scroll mechanics work (CollectionView scrolling verified)
+
+**CometTaskApp Results (Mac Catalyst):**
+- **Launch:** ✅ FIXED — `UseCometSampleDebugHost<TaskApp>()` was rejecting CometApp subclass. Changed to `UseCometSampleDebugHost(TaskApp.CreateRootView)` factory pattern (file: `sample/CometTaskApp/TaskApp.cs`)
+- **Tasks page:** ✅ Search, 6 filter pills, stats counters, task list all work
+- **Add task:** ✅ Form fields accessible; navigation to new task works
+- **Tab navigation:** ⚠️ PARTIAL — TabView headers not in Mac Catalyst accessibility tree under debug host. Stats/Settings tabs unreachable via Appium in DEBUG. Workaround: Release build (uses native tab bar rendering).
+
+**Issues Identified:**
+1. **Fixed:** CometTaskApp debug-mode crash (committed fix)
+2. **Known:** Debug-host TabView accessibility limitation on Mac Catalyst
+3. **Pattern:** Deprecated animation APIs in CometFeatureShowcase (FadeTo, ScaleTo, RotateTo) should migrate to async variants in .NET 10
+
+**Verdict: ✅ PASS (1 bug fixed; 1 accessibility gap noted)**
+
+### ### 2026-03-09T04:04:44Z: CometAllTheLists, CometWeather, CometProjectManager E2E Results
+
+**Owner:** Naomi (Source Generator Dev)  
+**Status:** Verified  
+**Decision:** CometAllTheLists has 1 critical bug (AddressBook); CometWeather and CometProjectManager are fully functional.
+
+**CometAllTheLists Results (Release build):**
+- **Shopping tab:** ✅ 8+ products render; premium/standard templates work
+- **Collections tab:** ✅ 23+ items visible; scrollable
+- **Inbox tab:** ✅ 6 messages with metadata (sender, subject, timestamp)
+- **Streaming tab:** ✅ 5 sections (Recommended, Newly Added, Action, Drama, Comedy); shows scroll indicators
+- **Contacts tab:** ❌ **CRASH** — App terminates on navigation
+
+**Bug Found:**
+- **P1 AddressBookPage crash** — `GetHashCode() % colors.Length` produces negative index. `String.GetHashCode()` returns negative values; `%` operator preserves sign in C#. Stack trace: `IndexOutOfRangeException` at `AddressBookPage.cs:103`. Fix: `Math.Abs(name.GetHashCode()) % colors.Length`.
+
+**CometWeather Results (Debug build):**
+- **Home tab:** ✅ Current weather (Redmond, WA, 70°F, Mostly Sunny); 24-hour forecast visible
+- **Favorites tab:** ✅ 15 cities grid with temps + country codes; scrollable
+- **Settings tab:** ✅ Profile, Units, Theme sections render; but not tappable via Appium (missing AutomationId on containers)
+
+**CometProjectManager Results (Release build):**
+- **Main view:** ✅ Date header, category pills, projects, tasks all render
+- **Categories:** ✅ 4 pills (work, education, self, relationships) work
+- **Projects:** ✅ BALANCE, PERSONAL, FITNESS, FAMILY AND FRIENDS render with descriptions
+- **Tasks:** ✅ 12 tasks with toggle switches; all interactable
+
+**Issues Identified:**
+1. **P1 AddressBook GetHashCode:** Blocks Contacts tab; assigned to Amos
+2. **P2 Debug build rejects CometApp:** `UseCometSampleDebugHost<T>()` fails for CometApp subclasses (CometAllTheLists crashes in DEBUG). Workaround: Release build only or use factory pattern.
+3. **P3 CometWeather Settings:** Missing AutomationId on tappable containers (prevents Appium automation of radio-style options)
+
+**Verdict: ⚠️ PASS WITH BLOCKERS (1 P1 bug to fix)**
+
+### ### 2026-03-09T04:04:44Z: Sample Build Audit — All 10 Projects
+
+**Owner:** Amos (Controls & API Dev)  
+**Status:** Complete  
+**Decision:** All 10 samples build successfully on net10.0-maccatalyst (Release) after 3 fixes applied.
+
+**Build Results: 10/10 ✅**
+
+| Sample | Build | Errors | Warnings | Notes |
+|--------|-------|--------|----------|-------|
+| CometMauiApp | ✅ | 0 | 0 | Clean |
+| Comet.Sample | ✅ | 0 | 4 | DatePicker fixed |
+| CometBaristaNotes | ✅ | 0 | 0 | Clean |
+| CometFeatureShowcase | ✅ | 0 | 0 | Clean |
+| CometAllTheLists | ✅ | 0 | 0 | Clean |
+| CometTaskApp | ✅ | 0 | 0 | Clean |
+| CometProjectManager | ✅ | 0 | 0 | Clean |
+| CometWeather | ✅ | 0 | 0 | Clean |
+| CometStressTest | ✅ | 0 | 0 | DatePicker fixed |
+| MauiReference | ✅ | 0 | 2 | CommunityToolkit + DisplayAlert fixed |
+
+**Fixes Applied:**
+
+1. **Comet.Sample DatePickerSample.cs** — `State<DateTime>` → `State<DateTime?>` (source generator produces nullable binding)
+2. **CometStressTest ControlTestPage.cs** — Same DatePicker pattern fix
+3. **MauiReference ManageMetaPage.xaml** — `ValidateOnUnfocusing` → `ValidateOnUnfocused` (CommunityToolkit.Maui 14.x enum rename)
+
+**Key Learning — DatePicker Pattern:**
+The source generator produces `DatePicker(Binding<DateTime?> ...)` because `IDatePicker.Date` is `DateTime?`. Any sample using `State<DateTime>` (non-nullable) for DatePicker will fail with CS1503. **Enforce `State<DateTime?>` for all DatePicker state in samples and templates.**
+
+**Cross-Cutting Pattern:**
+- **.NET 10 MAUI obsolete APIs:** `DisplayAlert()` → `DisplayAlertAsync()`; `DisplayActionSheet()` → `DisplayActionSheetAsync()`. Watch for these in all new samples.
+- **CommunityToolkit.Maui 14.x:** `ValidationFlags.ValidateOnUnfocusing` → `ValidateOnUnfocused`.
+
+**Test Suite:** 748 total (729 passed, 19 skipped, 0 failed) — all fixes confirmed safe.
+
+**Verdict: ✅ COMPLETE (all builds green)**
+
