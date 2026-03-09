@@ -1,8 +1,8 @@
 ---
-updated_at: 2026-03-09T010022Z
-focus_area: "CometMauiApp ONLY — demonstrate evolved Comet API (Component<S>, SetState, Render, themes)"
+updated_at: 2026-03-09T013300Z
+focus_area: "Factory methods — P1 dealbreaker requirement (AC-13). Naomi: implement source generation. Holden: update acceptance criteria."
 north_star: ".squad/FRAMEWORK_COMPARISON_AND_PROPOSAL.md"
-active_agents: []
+active_agents: ["naomi-factory-methods", "holden-ac13"]
 p0_status: "FIXED — Re-entrancy guard + reconciliation identity fix. 720/739 tests passing (0 failures)."
 ---
 
@@ -15,6 +15,20 @@ Read this before doing ANY work. It defines the entire Comet MVU evolution.
 
 **Current scope (per David):** CometMauiApp ONLY. All other samples are deferred.
 
+## PRIORITY: Factory Methods (AC-13)
+
+**Status:** David declared factory methods a **dealbreaker requirement** (2026-03-09T01:33:00Z).
+
+**What:** Factory methods (no `new` keyword for controls). Syntax: `VStack { }` not `new VStack { }`.
+
+**Why:** Core PRD requirement (FRAMEWORK_COMPARISON_AND_PROPOSAL.md, lines 228, 432, 1253-1254). Signature MauiReactor DX improvement.
+
+**Agents Spawned:**
+- **Naomi:** Implement factory method source generation (background, claude-sonnet-4.5)
+- **Holden:** Update P1 acceptance criteria to add AC-13 (background, claude-sonnet-4.5)
+
+**Next:** CometMauiApp uses factory syntax once AC-13 implementation is complete.
+
 ## Goal
 
 Update `sample/CometMauiApp` to demonstrate the evolved Comet API surface:
@@ -23,7 +37,7 @@ Update `sample/CometMauiApp` to demonstrate the evolved Comet API surface:
 - `Render()` method (replaces `[Body]`)  
 - `Reactive<T>` state wrappers
 - Theme system (MD3 tokens, `ControlStyle<T>`)
-- Factory methods and `On`-prefixed event extensions
+- **Factory methods** and `On`-prefixed event extensions
 - Typed navigation via Shell wrapper
 
 The app must build, launch, and be verified end-to-end with Appium (interactive flows, not just screenshots).
@@ -49,5 +63,7 @@ All reviewer-approved. 625+ tests passing.
 3. Render-only ≠ done
 4. Samples must match real apps, never fabricate UI
 5. Current scope: CometMauiApp ONLY
-6. Plan lives in `.squad/plan.md`
+6. **NEW (2026-03-09): Factory methods are a dealbreaker (AC-13)**
+7. Plan lives in `.squad/plan.md`
+
 

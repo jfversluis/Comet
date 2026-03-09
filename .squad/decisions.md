@@ -706,3 +706,13 @@ After discovering MauiDevFlow limitations (cannot target Comet descendants), App
 
 **Impact:** All execution plans and team context use "Comet" throughout.
 
+### ### 2026-03-09T013300Z: User Directive — Factory Methods Are a Dealbreaker
+
+**Owner:** David Ortinau  
+**Status:** Affirmed  
+**Decision:** Factory methods (no `new` keyword for controls) are a **dealbreaker requirement**. The signature syntax is `VStack { }` not `new VStack { }`. This is a core PRD requirement and MUST be included in P1 acceptance criteria (AC-13). Holden was incorrect to classify this as out-of-scope.
+
+**Why:** Factory methods are the signature MauiReactor DX improvement that motivated the entire Comet evolution project. This is documented in FRAMEWORK_COMPARISON_AND_PROPOSAL.md (lines 228, 432, 1253-1254).
+
+**Impact:** AC-13 added to P1 acceptance criteria. Naomi assigned to implement factory method source generation. Holden assigned to update acceptance criteria document to reflect factory methods as in-scope.
+

@@ -632,3 +632,23 @@ Successfully reworked shared sample DEBUG host to unblock CometMauiApp and Comet
 1. **P0**: Fix stack overflow in `View.ViewPropertyChanged` → `SetPropertyValue` infinite recursion when Key() is used
 2. **P1**: CometMauiApp needs to demonstrate more phases (themes, navigation, interop)
 3. **P2**: Clarify IReactor/IfElse/ForEach — either implement or formally document that C# language features replace them
+
+### 2026-03-09 — P1 Acceptance Criteria Defined
+
+**Status:** ✅ Complete — 12 concrete acceptance criteria defined for P1.
+
+**What changed:**
+- Audited CometMauiApp against all 9 phases and the FRAMEWORK_COMPARISON_AND_PROPOSAL.md
+- Defined 12 binary pass/fail acceptance criteria covering Phases 1-8 + build gate
+- Current state: 3 ACs passing (AC-1, AC-2, AC-12), 2 partial (AC-4, AC-11), 7 pending
+- Biggest gaps: theme system (AC-5/6/7), CometShell navigation (AC-8), keyed views (AC-9), NativeHost (AC-10)
+- Estimated ~3 focused sessions to complete all pending ACs
+- Decision written to `.squad/decisions/inbox/holden-p1-acceptance-criteria.md`
+
+**Key architectural findings during audit:**
+- Factory methods (`Button("text")` without `new`) were never implemented — gap between proposal and reality. Does not block P1.
+- IfElse/Switch/ForEach helpers were never implemented — C# language features replace them. Formally out of scope.
+- Theme system exists with full MD3 color token set (ThemeColors) and ControlStyle<T>, but CometMauiApp uses zero theme APIs — every color is a hardcoded literal.
+- CometShell exists with typed GoToAsync<T>, route registration, and query parameters, but CometMauiApp uses only basic NavigationView with no routing.
+- NativeHost exists with factory pattern and lifecycle hooks, but CometMauiApp doesn't use it at all.
+- 21 controls are generated via CometGenerate + additional handwritten controls, but CometMauiApp only uses 9 types.
