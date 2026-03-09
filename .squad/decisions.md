@@ -607,3 +607,102 @@ However, neither sample has retained launch/render artifacts under `/Users/david
 
 **Impact:** P0 boundary locked. Comet framework responsibility ends at property exposure. Interactive work deferred to MauiDevFlow team.
 
+### ### 2026-03-09T010022Z: Amos — P0 Stack Overflow Fix: Re-entrancy Guard + Reconciliation Identity
+
+**Owner:** Amos (Controls & API Dev)  
+**Status:** Implemented  
+**Decision:** Fixed P0 stack overflow in `ViewPropertyChanged` → `SetEnvironment` infinite recursion with two surgical changes:
+
+1. **Re-entrancy guard via HashSet** — Added `_propertiesBeingUpdated` field (HashSet<string>) in View.cs. When `ViewPropertyChanged` recursively updates a property on the same view instance, the recursive call is silently skipped. The guard is per-property, not global, so independent property updates can proceed.
+
+2. **Key-aware reconciliation identity fix** — Modified DatabindingExtensions.cs keyed child reconciliation: for non-Component keyed matches, skip `DiffUpdate()` and directly reuse the old view instance. This preserves handler subscriptions and view identity across reconciliation passes.
+
+**Test Impact:**
+- **Before:** 215 tests pass, then process crashes with StackOverflowException
+- **After:** 720 tests passed, 19 skipped, 0 failed (739 total)
+- **Isolated crash suites:** KeyAwareReconciliationTests (9 tests) and ComponentMergeTests (11 tests) now fully pass
+- **Regressions:** 0
+
+**Rationale for per-property guard:** A single boolean flag would block legitimate concurrent updates on different properties. The per-property granularity allows SetState() to batch mutations independently while preventing runaway recursion on the same property path.
+
+**Impact:** Framework now passes full validation gate. No regressions in any existing tests. P0 blocker cleared.
+
+### ### 2026-03-08T223800Z: User Directive — CometMauiApp Scope Only
+
+**Owner:** David Ortinau  
+**Status:** Affirmed  
+**Decision:** Current scope is **CometMauiApp ONLY** for framework API validation. All other samples (CometBaristaNotes, CometTaskApp, CometAllTheLists, etc.) are deferred. Do not claim phases 1-8 complete until CometMauiApp validates the evolved API surface and P0 is fixed.
+
+**Why:** Prior work on multi-sample evolution revealed architectural gaps (CometBaristaNotes crashing on first tap, fabricated UI) that required stopping the larger effort. Narrowing to a single high-confidence sample allows focus.
+
+**What CometMauiApp must demonstrate:**
+- `Component<TState>` and `Component<TState, TProps>`
+- `SetState(...)` for state mutations
+- `Render()` method (replaces `[Body]`)
+- `Reactive<T>` state wrappers
+- Theme system (MD3 tokens, `ControlStyle<T>`)
+- Factory methods and On-prefixed event extensions
+
+**Impact:** Deferred samples are not blocked; they simply remain out of scope until CometMauiApp validation completes and feedback is absorbed.
+
+### ### 2026-03-08T223500Z: User Directive — Plan Location: .squad/plan.md
+
+**Owner:** David Ortinau  
+**Status:** Affirmed  
+**Decision:** Team plan must live in `.squad/plan.md` (persistent shared memory), not in ephemeral session-state files. Session-state artifacts lose context across session boundaries and are not visible to other agents.
+
+**Why:** Comet is a multi-session, multi-agent project. `.squad/` is the team's persistent memory. The plan belongs there, not in temporary session files that may be deleted or lost.
+
+**Impact:** Plan is now discoverable and survives agent hand-offs.
+
+### ### 2026-03-08T223400Z: User Directive — CometMauiApp Ground Truth
+
+**Owner:** David Ortinau  
+**Status:** Affirmed  
+**Decision:** CometMauiApp must be a faithful Comet MVU conversion of a real minimal app. No AI-fabricated UI, educational scaffolding, or invented pages. The original `sample/CometMauiApp` was a minimal starter template; it should remain simple and true to that purpose.
+
+**Why:** User requirement for quality and trust. Prior work on CometBaristaNotes demonstrated the risk of AI fabricating app content that doesn't match the original.
+
+**Impact:** CometMauiApp remains a clean template for framework API demonstration, not a feature-rich showcase.
+
+### ### 2026-03-08T223200Z: User Directive — Render-Only Is Not Done
+
+**Owner:** David Ortinau  
+**Status:** Affirmed  
+**Decision:** A sample is **not validated** as complete unless real end-to-end flows are exercised — taps, navigation, state changes. "Build + launch + render" is a milestone, not a finish line. A sample that can be tapped to crash is not approved.
+
+**Why:** User observation: CometBaristaNotes was reported "done" (built, launched, rendered) but crashed on the first user tap.
+
+**Validation ladder:**
+- ✅ Build
+- ✅ Launch
+- ✅ Render
+- ❌ Interactive flows (taps, navigation, state changes)
+
+**Impact:** All future sample validation must include interactive testing, not just rendering verification.
+
+### ### 2026-03-08T223000Z: User Directive — Runtime Verification Tooling Priority
+
+**Owner:** David Ortinau  
+**Status:** Affirmed  
+**Decision:** Runtime verification tools for interactive testing, in priority order:
+1. maui-ai-debugging
+2. MauiDevFlow
+3. Appium (fallback)
+
+After discovering MauiDevFlow limitations (cannot target Comet descendants), Appium is now the standard interactive verification path, not just a fallback.
+
+**Why:** Multiple interactive testing attempts showed MauiDevFlow insufficient for Comet's descendant property inspection. Appium successfully automated taps, navigation, and state changes.
+
+**Impact:** Use the appium-automation skill when interactive testing is needed and MauiDevFlow cannot deliver.
+
+### ### 2026-03-08T223000Z: User Directive — No Renaming Comet to Orbit
+
+**Owner:** David Ortinau  
+**Status:** Affirmed  
+**Decision:** The project remains **Comet**. There is no rename to "Orbit" or other alternatives.
+
+**Why:** User decision made early in session.
+
+**Impact:** All execution plans and team context use "Comet" throughout.
+

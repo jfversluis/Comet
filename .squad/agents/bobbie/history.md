@@ -217,3 +217,31 @@ Theme system validated with 34 tests. Confirmed concrete `Theme` base class, `Th
 
 **Result:** P0 boundary locked for production. Interactive work deferred to MauiDevFlow team.
 
+
+### Stack Overflow Baseline (Pre-Fix)
+
+**Date:** 2026-03-09
+**Context:** Establishing baseline crash point before Amos fixes P0 stack overflow bug.
+
+**Full suite results:**
+- **215 tests passed** before test host process crashed with `Stack overflow.`
+- **1 test skipped**
+- **Test Run Aborted** — process killed, remaining tests never executed
+- Last passing test: `Comet.Tests.PickerTests.IPickerSelectedIndexProperty`
+- Crash happens on the next test after PickerTests complete
+
+**Crashing test classes (confirmed individually):**
+- `KeyAwareReconciliationTests` (9 [Fact]/[Theory] methods) — 0 pass, immediate stack overflow
+- `ComponentMergeTests` (11 [Fact]/[Theory] methods) — 0 pass, immediate stack overflow
+
+**Total test methods in repo:** ~715 [Fact]/[Theory] annotations
+
+**Recursive call cycle causing the overflow:**
+```
+View.ViewPropertyChanged → View.ContextPropertyChanged → ContextualObjectExtensions.SetEnvironment
+→ UI.Init callback → ReflectionExtensions.SetPropertyValue → EnvironmentData.SetValue
+→ ContextualObject.SetValue → BindingObject.SetProperty → BindingObject.CallPropertyChanged
+→ StateManager.OnPropertyChanged → (back to) View.ViewPropertyChanged
+```
+
+**Root cause location:** Infinite recursion in the environment property change notification path. `ViewPropertyChanged` triggers `SetEnvironment` which sets a value, which fires `PropertyChanged`, which calls `ViewPropertyChanged` again — no recursion guard.
