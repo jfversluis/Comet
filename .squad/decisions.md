@@ -1097,3 +1097,30 @@ xcrun simctl install 3F542DD1-6303-4C0B-8D81-83C4B2D1D680 app.ipa
 - agent-98: 777ec83d
 - agent-100: e93b3311
 - agent-99: f127329d
+
+---
+
+## 2026-03-09T16:13:06Z: Consolidate Style Systems
+
+**Author:** Holden (Lead Architect)  
+**Status:** Proposed  
+**Context:** Style & Theme Comparison Analysis (`docs/STYLE_THEME_COMPARISON.md`)
+
+### Decision
+
+Comet should consolidate its three overlapping style abstractions into two clearly differentiated APIs:
+
+1. **`ControlStyle<T>`** — the environment-driven, per-control-type style for theme integration
+2. **`Style<T>`** — the functional action-based style for ad-hoc reusable style bundles
+
+The legacy `Style` class (with `ButtonStyle`, `TextStyle`, `SliderStyle`, `NavbarStyle`, `ProgressBarStyle` properties) and `MaterialStyle` should be deprecated and migrated to use `ControlStyle<T>` internally.
+
+### Rationale
+
+The comparison analysis revealed that MauiReactor achieves equivalent functionality with a single `OnApply()` + `ThemeKey()` pattern. Comet's three overlapping systems (legacy `Style`, `ControlStyle<T>`, `Style<T>`) create unnecessary cognitive load. The legacy system's `StyleAwareValue<ControlState, T>` multi-state capability should be ported to `ControlStyle<T>` rather than maintained as a separate system.
+
+### Impact
+
+- Breaking change for code using `new Style()` or `MaterialStyle` directly
+- No impact on fluent extension methods (`.Background()`, `.FontSize()`, etc.)
+- No impact on `Theme`/`ThemeColors`/`ControlStyle<T>` (these are the promoted APIs)
