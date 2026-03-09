@@ -668,3 +668,13 @@ After N state changes, the native `UITextField` (Picker's platform view) has N `
 
 ### Key Learning
 `AppendToMapping` is NOT idempotent — it fires on every `SetVirtualView()` call, not just on initial handler connection. Any event subscriptions in mapper callbacks MUST track and unsubscribe previous handlers to prevent accumulation. The `ConditionalWeakTable` pattern allows tracking per-native-view without preventing GC.
+
+### P0 Stack Overflow Fix — ViewPropertyChanged Re-entrancy (2025-07)
+
+**Bug:** `ViewPropertyChanged` → `SetPropertyValue` (reflection) → property setter → `SetPropertyInContext` → `SetEnvironment` → `ContextPropertyChanged` → `ViewPropertyChanged` = infinite recursion. Crashed 8 tests and killed the test suite after ~117 tests.
+
+**Fix 1 — Re-entrancy guard in View.cs:** Added `HashSet<string> _propertiesBeingUpdated` field. In `ViewPropertyChanged`, check `_propertiesBeingUpdated.Add(property)` before calling `SetPropertyValue`; remove in `finally`. Breaks the cycle without affecting other property updates.
+
+**Fix 2 — Key-aware reconciliation identity preservation in DatabindingExtensions.cs:** The keyed reconciliation was calling `DiffUpdate(newChild, matchedOld)` which returns the NEW instance for non-Components (transferring handler from old to new via `UpdateFromOldView`). Tests expected `Assert.Same()` on old instances. Fixed by splitting keyed match logic: Components still go through `DiffUpdate` (which returns old via `TryMergeComponents`); non-Component views skip `DiffUpdate` and directly swap the old instance into the new container, preserving handler and identity.
+
+**Result:** 739 total tests — 720 passed, 19 skipped, 0 failed. All KeyAwareReconciliation (9/9 + 1 skipped) and ComponentMerge (11/11) tests pass.
