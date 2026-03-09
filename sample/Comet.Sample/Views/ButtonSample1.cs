@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using static Comet.CometControls;
 
 namespace Comet.Samples
 {
-	public class ButtonSample1 : View
+	public class ButtonSample1 : Component
 	{
 		readonly State<int> count = 0;
 
-		[Body]
-		View body() => new VStack
-		{
-			new Button("Increment Value", () => count.Value ++ ),
-			new Text(() => $"Value: {count.Value}"),
-		};
+				public override View Render() => VStack(
+			Button("Increment Value", () => count.Value ++ ),
+			Text(() => $"Value: {count.Value}")
+		);
 
 	}
 }

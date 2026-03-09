@@ -5,6 +5,7 @@ using Comet.Samples.Models;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Hosting;
+using static Comet.CometControls;
 
 namespace Comet.Samples
 {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using System.Text;
 using Microsoft.Maui.Graphics;
+using static Comet.CometControls;
 
 
 /*
@@ -30,20 +31,19 @@ struct ContentView: View {
 
 namespace Comet.Samples.Comparisons
 {
-	public class Section3 : View
+	public class Section3 : Component
 	{
-		[Body]
-		View body() =>
-				 new VStack(alignment: LayoutAlignment.Start){
-					new Text("Turtle Rock"),
-					new HStack {
-						new Text("Joshua Tree National Park")
+				public override View Render() =>
+				 VStack(LayoutAlignment.Start,
+					Text("Turtle Rock"),
+					HStack(
+						Text("Joshua Tree National Park")
 							.Background(Colors.Salmon),
 						new Spacer(),
-						new Text("California")
-							.Background(Colors.Green),
-					}
-				 }.Margin();
+						Text("California")
+							.Background(Colors.Green)
+					)
+				 ).Margin();
 
 	}
 }

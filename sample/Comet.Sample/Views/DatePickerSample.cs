@@ -1,7 +1,9 @@
 ﻿using System;
+using static Comet.CometControls;
+
 namespace Comet.Samples
 {
-	public class DatePickerSample : View
+	public class DatePickerSample : Component
 	{
 		readonly State<DateTime?> currentDate = DateTime.Today;
 		public DatePickerSample()
@@ -9,13 +11,11 @@ namespace Comet.Samples
 			currentDate.PropertyChanged += CurrentDate_PropertyChanged;
 		}
 
-		[Body]
-		View body() => new VStack
-		{
-			new DatePicker(currentDate, minimumDate: new DateTime(2015, 10, 1),
+				public override View Render() => VStack(
+			DatePicker(currentDate, minimumDate: new DateTime(2015, 10, 1),
 				maximumDate: new DateTime(2018, 10, 01)).Format("dd/MM/yyyy")
 			.Frame(width: 200)
-		};
+		);
 
 
 

@@ -377,3 +377,26 @@ View.ViewPropertyChanged → View.ContextPropertyChanged → ContextualObjectExt
 - Appium `--tap` on "Coffee Lab" back button unreliable — use coordinate taps.
 - Swipe gestures on SwipeView items are not automatable via Appium.
 - MAUI Slider and Toggle Switch remain Appium automation gaps (upstream issue, not Comet bug).
+
+### Comet.Sample Migration — 85 Files Migrated to Evolved API (2026-07-25)
+
+**Status:** ✅ COMPLETE — Build clean, 729/729 tests pass
+
+- **Scope:** 85 .cs files across 7 folders (Views/, CommunityQuestions/, Comparisons/, GitHubIssues/, Graphics/, LiveStreamIssues/, root MyApp.cs).
+- **Transformations applied:**
+  - `class X : View` → `class X : Component` with `public override View Render()` (83 classes)
+  - `[Body] View body()` → `public override View Render()` (all [Body] attributes removed)
+  - `Body = () => expr` / `Body = MethodName;` in constructors → collapsed into `Render()`
+  - `new Text("x")` → `Text("x")` (factory methods for 17 generated controls)
+  - `new VStack { ... }` → `VStack(...)`, `new HStack { ... }` → `HStack(...)` etc. (7 container types)
+  - `using static Comet.CometControls;` added to 85 files
+- **Exceptions kept `new` (correct):**
+  - `Grid(rows:, columns:)` → kept `new Grid(rows:, columns:) { }` because factory only takes `params View[]`
+  - LINQ `.Select()` / lambda children in containers → kept `new VStack { }` form (Section5, ViewLayoutTestCase)
+  - Custom subclasses (BorderedEntry : HStack, Separator : ShapeView) → kept inheritance, still applied inner factory methods
+  - Non-factory types (Image, Spacer, ListView, SectionedListView, ShapeView, VGrid, TabView, etc.) → kept `new`
+- **CometApp files** (MyApp.cs, SampleApp.cs) → kept CometApp inheritance, applied factory method replacements
+- **8 skip files:** Models/Song.cs, ApiAudit/ApiAuditManager.cs, Views/MenuItem.cs, Views/LabelSamples.cs, Graphics/SimpleFingerPaint.cs, Graphics/BindableFingerPaint.cs, 3 fully-commented-out files
+- **Grid factory gap:** The `CometControls.Grid(params View[])` factory doesn't accept `rows:/columns:` named params. Files using Grid layout definitions must use `new Grid(rows:, columns:) { }` constructor form. This is a genuine API gap — consider adding overloads.
+- **Build verification:** `dotnet build sample/Comet.Sample/Comet.Sample.csproj -c Release -f net10.0-maccatalyst` → 0 errors, 0 warnings
+- **Test verification:** `dotnet test tests/Comet.Tests/Comet.Tests.csproj --no-build -c Release` → 729 passed, 0 failed, 19 skipped (pre-existing)

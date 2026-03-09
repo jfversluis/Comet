@@ -1,9 +1,9 @@
 ﻿using System;
+using static Comet.CometControls;
+
 namespace Comet.Samples
 {
-	// Legacy [Body] sample retained for backward compatibility.
-	// For the evolved Component/Render surface, see sample/CometMauiApp and docs/migration-guide.md.
-	public class BindingSample : View
+	public class BindingSample : Component
 	{
 		class MyBindingObject : BindingObject
 		{
@@ -34,34 +34,30 @@ namespace Comet.Samples
 				Text = "Bar",
 				CanEdit = true,
 			};
-			Body = Build;
+			
 		}
 
-		View Build() =>
-			new NavigationView{ new ScrollView
-			{
-				new VStack
-				{
+		public override View Render() =>
+			NavigationView(ScrollView(
+				VStack(
 					(state.CanEdit
-						? (View) new TextField(state.Text)
-						: new Text(() => $"{state.Text}: multiText")), // Formatted Text will warn you. This should be done by TextBinding
-					new Text(state.Text),
-					new HStack
-					{
-						new Button("Toggle Entry/Label",
+						? (View) TextField(state.Text)
+						: Text(() => $"{state.Text}: multiText")), // Formatted Text will warn you. This should be done by TextBinding
+					Text(state.Text),
+					HStack(
+						Button("Toggle Entry/Label",
 							() => state.CanEdit = !state.CanEdit),
-						new Button("Update Text",
+						Button("Update Text",
 							() => state.Text = $"Click Count: {clickCount.Value++}"),
-						new Button("Update FontSize",
+						Button("Update FontSize",
 							() => {
 								var font = View.GetGlobalEnvironment<float?>(EnvironmentKeys.Fonts.Size) ?? 14;
 								var size = font + 5;
 								View.SetGlobalEnvironment (EnvironmentKeys.Fonts.Size, size);
-							}),
-					},
-					new Toggle(state.CanEdit)
-				}
-			}
-		};
+							})
+					),
+					Toggle(state.CanEdit)
+				)
+			));
 	}
 }
