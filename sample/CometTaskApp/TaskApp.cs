@@ -6,8 +6,12 @@ namespace CometTaskApp;
 /// </summary>
 public class TaskApp : CometApp
 {
-	[Body]
-	View body() =>
+	public TaskApp()
+	{
+		Body = CreateRootView;
+	}
+
+	public static View CreateRootView() =>
 		new TabView
 		{
 			new TaskListPage().Title("Tasks"),
@@ -23,7 +27,7 @@ public static class MauiProgram
 		var builder = MauiApp.CreateBuilder();
 
 #if DEBUG
-		builder.UseCometSampleDebugHost<TaskApp>();
+		builder.UseCometSampleDebugHost(TaskApp.CreateRootView);
 #else
 		builder.UseCometApp<TaskApp>();
 #endif
