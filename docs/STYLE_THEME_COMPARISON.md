@@ -53,32 +53,32 @@
 **Comet:**
 ```csharp
 // Foreground (text) color
-new Text("Hello")
+Text("Hello")
     .Color(Colors.Blue)
 
 // Background color
-new Text("Hello")
+Text("Hello")
     .Background(Colors.LightGray)
 
 // Background with hex string
-new Text("Hello")
+Text("Hello")
     .Background("#FF5733")
 
 // Background with Paint
-new Text("Hello")
+Text("Hello")
     .Background(new SolidPaint(Colors.Blue))
 
 // Theme-aware color from semantic tokens
-new Text("Hello")
+Text("Hello")
     .ThemeForeground(EnvironmentKeys.ThemeColor.OnSurface)
     .ThemeBackground(EnvironmentKeys.ThemeColor.Surface)
 
 // Both background + foreground from theme
-new Button("OK")
+Button("OK")
     .ThemeColors(EnvironmentKeys.ThemeColor.Primary, EnvironmentKeys.ThemeColor.OnPrimary)
 
 // Using ThemeColor selector function
-new Text("Hello")
+Text("Hello")
     .ThemeColor(theme => theme.PrimaryColor)
     .ThemeTextColor(theme => theme.TextColor)
 ```
@@ -117,22 +117,22 @@ Text("Hello")
 
 **Comet:**
 ```csharp
-new Text("Title")
+Text("Title")
     .FontSize(24)
     .FontWeight(FontWeight.Bold)
     .FontFamily("Helvetica")
     .FontSlant(FontSlant.Italic)
 
 // Predefined text styles via StyleId
-new Text("Heading").StyleAsH1()
-new Text("Body").StyleAsBody1()
-new Text("Small").StyleAsCaption()
+Text("Heading").StyleAsH1()
+Text("Body").StyleAsBody1()
+Text("Small").StyleAsCaption()
 
 // Font cascade — set once, applies to children
-new VStack {
-    new Text("Child 1"),
-    new Text("Child 2"),
-}.FontSize(16).FontWeight(FontWeight.Medium)
+VStack(
+    Text("Child 1"),
+    Text("Child 2")
+).FontSize(16).FontWeight(FontWeight.Medium)
 ```
 
 **MauiReactor:**
@@ -176,22 +176,22 @@ Text("Custom").font(.custom("Helvetica", size: 24))
 **Comet:**
 ```csharp
 // Margin with uniform value
-new Text("Hello").Margin(10)
+Text("Hello").Margin(10)
 
 // Margin with individual sides
-new Text("Hello").Margin(left: 5, top: 10, right: 5, bottom: 10)
+Text("Hello").Margin(left: 5, top: 10, right: 5, bottom: 10)
 
 // Margin with Thickness
-new Text("Hello").Margin(new Thickness(5, 10, 5, 10))
+Text("Hello").Margin(new Thickness(5, 10, 5, 10))
 
 // Default margin (10dp)
-new Text("Hello").Margin()
+Text("Hello").Margin()
 
 // Padding
-new VStack { ... }.Padding(new Thickness(16))
+VStack(...).Padding(new Thickness(16))
 
 // Frame constraints
-new Text("Hello").Frame(width: 200, height: 50)
+Text("Hello").Frame(width: 200, height: 50)
 ```
 
 **MauiReactor:**
@@ -229,24 +229,24 @@ Text("Hello")
 **Comet:**
 ```csharp
 // Rounded border with stroke
-new Text("Card")
+Text("Card")
     .RoundedBorder(radius: 12, color: Colors.Grey, strokeSize: 1)
 
 // Separate border + clip
-new Text("Card")
+Text("Card")
     .ClipShape(new RoundedRectangle(12))
     .Border(new RoundedRectangle(12).Stroke(Colors.Grey, 1))
 
 // Shadow
-new Text("Card")
+Text("Card")
     .Shadow(Colors.Black, radius: 4, x: 0, y: 2)
 
 // Shadow with Paint
-new Text("Card")
+Text("Card")
     .Shadow(paint: new SolidPaint(Colors.Grey), radius: 8, x: 2, y: 4)
 
 // Border control with StrokeColor and StrokeThickness
-new Border { new Text("Content") }
+Border( Text("Content") )
     .CornerRadius(8)
     .StrokeColor(Colors.Blue)
     .StrokeThickness(2)
@@ -308,7 +308,7 @@ var headerStyle = new Style<Text>(t => t
 );
 
 // Apply explicitly
-new Text("Title").StyleApply(headerStyle);
+Text("Title").StyleApply(headerStyle);
 
 // Register as implicit (auto-applies to all Text views)
 headerStyle.RegisterImplicit();
@@ -397,9 +397,9 @@ style.Button = new ButtonStyle {
 };
 
 // Material button variants
-new Button("Outlined").StyleAsOutlined()
-new Button("Contained").StyleAsContained()
-new Button("Text").StyleAsText()
+Button("Outlined").StyleAsOutlined()
+Button("Contained").StyleAsContained()
+Button("Text").StyleAsText()
 ```
 
 **MauiReactor:**
@@ -673,19 +673,19 @@ VStack { ... }
 readonly State<bool> isActive = false;
 
 [Body]
-View body() => new VStack {
+View body() => VStack(
     // Reactive binding — auto-updates when state changes
-    new Text("Status")
+    Text("Status")
         .Color(() => isActive.Value ? Colors.Green : Colors.Red)
         .FontWeight(() => isActive.Value ? FontWeight.Bold : FontWeight.Regular),
 
     // AppThemeValue for light/dark conditional
-    new Text("Themed")
+    Text("Themed")
         .Background(AppThemeValue.Get(light: Colors.White, dark: Colors.Black)),
 
     // ControlState-aware styling (in legacy Style system)
     // ButtonStyle supports Default, Hovered, Pressed, Disabled states
-};
+);
 ```
 
 **MauiReactor:**
@@ -727,7 +727,7 @@ var body: some View {
 **Comet:**
 ```csharp
 // Transform properties (no implicit animation — must be driven externally)
-new Text("Hello")
+Text("Hello")
     .Rotation(45)
     .Scale(1.2)
     .TranslationX(50)
@@ -771,7 +771,7 @@ withAnimation(.easeInOut(duration: 0.3)) {
 **Comet:**
 ```csharp
 // Via MAUI's DeviceInfo at runtime
-new Text("Hello")
+Text("Hello")
     .FontSize(DeviceInfo.Platform == DevicePlatform.iOS ? 17 : 14)
 
 // Via platform-specific files (Directory.Build.targets convention)
@@ -890,12 +890,12 @@ var headerStyle = new Style<Text>(t => t
     .FontWeight(FontWeight.Bold)
     .Color(Colors.DarkBlue));
 
-new Text("Title")
+Text("Title")
     .StyleApply(baseStyle)
     .StyleApply(headerStyle); // Both applied, later wins on conflicts
 
 // Apply legacy Style to a view subtree
-new VStack { ... }.ApplyStyle(myGlobalStyle);
+VStack(...).ApplyStyle(myGlobalStyle);
 
 // Combine ControlStyle + explicit overrides (explicit always wins)
 // ControlStyle<Button> sets Background=Blue via environment
@@ -1175,7 +1175,7 @@ public interface IButtonStyle
 public record ButtonStyleConfiguration(View Label, bool IsPressed, bool IsHovered, bool IsEnabled);
 
 // Usage
-new Button("OK").ButtonStyle(new PrimaryButtonStyle())
+Button("OK").ButtonStyle(new PrimaryButtonStyle())
 ```
 
 **Why:** Bridges the gap between Comet's existing `ControlState` enum and interactive styling. Currently, `StyleAwareValue<ControlState, T>` in the legacy system is the only way to differentiate pressed/hovered states, and it's not exposed through the modern `ControlStyle<T>` API.
@@ -1188,10 +1188,10 @@ new Button("OK").ButtonStyle(new PrimaryButtonStyle())
 
 **Example:**
 ```csharp
-new VStack {
-    new Button("A"),
-    new Button("B"),
-}.ButtonStyle(myCustomStyle) // All buttons in this VStack get the style
+VStack(
+    Button("A"),
+    Button("B")
+).ButtonStyle(myCustomStyle) // All buttons in this VStack get the style
 ```
 
 **Why:** SwiftUI's `.buttonStyle()` propagation through the view hierarchy is one of its most elegant patterns. Comet's `ApplyTheme()` does this for entire themes but not for individual control styles.
