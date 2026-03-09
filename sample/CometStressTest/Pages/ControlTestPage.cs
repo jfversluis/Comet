@@ -9,7 +9,7 @@ public class ControlTestPage : View
 	readonly State<double> sliderValue = new State<double>(0.5);
 	readonly State<double> stepperValue = new State<double>(5);
 	readonly State<int> clickCount = new State<int>(0);
-	readonly State<DateTime> selectedDate = new State<DateTime>(DateTime.Today);
+	readonly State<DateTime?> selectedDate = new State<DateTime?>(DateTime.Today);
 
 	[Body]
 	View body() => new ScrollView

@@ -3,7 +3,7 @@ namespace Comet.Samples
 {
 	public class DatePickerSample : View
 	{
-		readonly State<DateTime> currentDate = DateTime.Today;
+		readonly State<DateTime?> currentDate = DateTime.Today;
 		public DatePickerSample()
 		{
 			currentDate.PropertyChanged += CurrentDate_PropertyChanged;
@@ -21,7 +21,7 @@ namespace Comet.Samples
 
 		private void CurrentDate_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			Console.WriteLine((sender as State<DateTime>)?.Value);
+			Console.WriteLine((sender as State<DateTime?>)?.Value);
 		}
 	}
 }
