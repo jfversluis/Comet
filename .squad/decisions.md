@@ -1414,3 +1414,24 @@ The `MonitorChanges/StopMonitoringChanges` mechanism on `ContextualObject` captu
 
 - State-dependent style resolution (pressed/hovered/focused) captures values per handler-map invocation but does NOT dynamically update as control state changes (future work: wire control state tracking)
 - The `MonitorChanges` mechanism uses a thread-local lock; style resolution must happen on the same thread as the handler mapper (which is the main thread, so this is safe)
+
+---
+
+### 2026-03-10: CometControlsGallery — Comprehensive Sample Implementation Complete
+**Owner:** Holden  
+**Status:** Implemented  
+**Decision:** The CometControlsGallery sample is complete and delivered. A comprehensive reference app exercising all Comet controls, layouts, lists, and the style/theme system within a pure CometApp + TabView architecture.
+**Architecture:**
+  - 4-tab layout (Controls, Layouts, Lists, Theme) using Comet's TabView
+  - Component<TState> for stateful pages, plain View for static content
+  - SectionCard modifier for grouped control demonstrations
+  - Full control coverage: Button, Text, TextField, Slider, Toggle, CheckBox, RadioGroup, DatePicker, TimePicker, Stepper, SearchBar, SecureField, and more
+  - Theme integration demonstrating Material Design 3 semantics
+**Deliverables:**
+  - 26 files, ~1,400 lines of implementation
+  - Zero build errors; fully verified on macCatalyst
+  - Commit: ac307b93
+**Impact:**
+  - Single authoritative reference for developers learning Comet
+  - Validates all framework capabilities in realistic context
+  - No new regressions; existing tests unaffected
