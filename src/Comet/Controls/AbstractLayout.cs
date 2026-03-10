@@ -42,11 +42,13 @@ namespace Comet
 			InvalidateMeasurement();
 		}
 
-		// Override to prevent cascading LayoutSubviews to children.
-		// Child positioning is handled by LayoutManager via CrossPlatformArrange.
+		// Override to prevent the base View.LayoutSubviews cascade which gives
+		// every child the parent's full frame. Instead, route through
+		// CrossPlatformArrange so the LayoutManager positions children correctly.
 		public override void LayoutSubviews(Rect frame)
 		{
 			this.SetFrameFromPlatformView(frame);
+			CrossPlatformArrange(frame);
 		}
 
 		protected virtual Thickness GetDefaultPadding() => this.GetEnvironment<Thickness>(nameof(Styles.Style.LayoutPadding));
