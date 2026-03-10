@@ -37,27 +37,27 @@ namespace Comet.Tests
 		// ================================================================
 
 		[Fact]
-		public void ControlState_Disabled_Is1()
+		public void ControlState_Pressed_Is1()
 		{
-			Assert.Equal(1, (int)ControlState.Disabled);
+			Assert.Equal(1, (int)ControlState.Pressed);
 		}
 
 		[Fact]
-		public void ControlState_Pressed_Is2()
+		public void ControlState_Hovered_Is2()
 		{
-			Assert.Equal(2, (int)ControlState.Pressed);
+			Assert.Equal(2, (int)ControlState.Hovered);
 		}
 
 		[Fact]
-		public void ControlState_Hovered_Is4()
+		public void ControlState_Focused_Is4()
 		{
-			Assert.Equal(4, (int)ControlState.Hovered);
+			Assert.Equal(4, (int)ControlState.Focused);
 		}
 
 		[Fact]
-		public void ControlState_Focused_Is8()
+		public void ControlState_Disabled_Is8()
 		{
-			Assert.Equal(8, (int)ControlState.Focused);
+			Assert.Equal(8, (int)ControlState.Disabled);
 		}
 
 		// ================================================================
@@ -114,10 +114,10 @@ namespace Comet.Tests
 
 		[Theory]
 		[InlineData(ControlState.Default, 0)]
-		[InlineData(ControlState.Disabled, 1)]
-		[InlineData(ControlState.Pressed, 2)]
-		[InlineData(ControlState.Hovered, 4)]
-		[InlineData(ControlState.Focused, 8)]
+		[InlineData(ControlState.Pressed, 1)]
+		[InlineData(ControlState.Hovered, 2)]
+		[InlineData(ControlState.Focused, 4)]
+		[InlineData(ControlState.Disabled, 8)]
 		public void ControlState_AllValuesArePowersOfTwo(ControlState state, int expected)
 		{
 			Assert.Equal(expected, (int)state);

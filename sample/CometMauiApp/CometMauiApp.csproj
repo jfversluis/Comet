@@ -11,7 +11,7 @@
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<ApplicationTitle>Comet Counter</ApplicationTitle>
+		<ApplicationTitle>Comet Styles</ApplicationTitle>
 		<ApplicationId>com.companyname.cometmauiapp</ApplicationId>
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
 		<ApplicationVersion>1</ApplicationVersion>

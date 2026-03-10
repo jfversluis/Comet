@@ -1,196 +1,251 @@
 using System;
 using Comet;
+using Comet.Styles;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 using static Comet.CometControls;
 
 namespace CometMauiApp
 {
-	public class CounterState
+	// ── Custom ViewModifier ──────────────────────────────────────
+	// A reusable "card" appearance that can be applied to any view.
+	public class CardModifier : ViewModifier
 	{
-		public int Count { get; set; }
-
-		public int Step { get; set; } = 1;
-
-		public bool CelebrateMilestones { get; set; } = true;
+		public override View Apply(View view)
+		{
+			view
+				.Background(new SolidPaint(ColorTokens.Surface.Resolve(ThemeManager.Current())))
+				.ClipShape(new RoundedRectangle(16))
+				.Padding(new Thickness(20));
+			return view;
+		}
 	}
 
-	public class MainPage : Component<CounterState>
+	// ── State ────────────────────────────────────────────────────
+	public class StyleDemoState
 	{
-		readonly Reactive<string> status = "Ready to count with Comet.";
+		public int TapCount { get; set; }
+		public bool IsActionEnabled { get; set; } = true;
+	}
+
+	// ── Main Page ────────────────────────────────────────────────
+	public class MainPage : Component<StyleDemoState>
+	{
+		static readonly CardModifier Card = new();
 
 		public override View Render()
 		{
-			var accent = State.CelebrateMilestones ? Color.FromArgb("#6750A4") : Color.FromArgb("#1D3557");
-			var background = Color.FromArgb("#F5F7FB");
-			var banner = State.Count == 0
-				? "Tap Increment to drive the first update."
-				: State.CelebrateMilestones && State.Count % 5 == 0
-					? $"Milestone hit: {State.Count} total taps."
-					: $"The evolved MVU surface has rendered {State.Count} updates.";
-
 			return NavigationView(
 				ScrollView(
-					VStack(20,
-						BuildHeroCard(accent, banner),
-						BuildActionCard(accent),
-						BuildStatusCard(accent)
+					VStack(24,
+						BuildTokenShowcase(),
+						BuildButtonStyleShowcase(),
+						BuildViewModifierShowcase(),
+						BuildControlStateShowcase(),
+						BuildInfoCard()
 					)
 					.Padding(new Thickness(24))
 				)
-				.Background(background)
+				.Background(ColorTokens.Background)
 			)
-			.Title("Comet Counter");
+			.Title("Style System");
 		}
 
-		View BuildHeroCard(Color accent, string banner)
+		// ── 1. Token Usage ───────────────────────────────────────
+		// Direct use of ColorTokens and TypographyTokens on views.
+		View BuildTokenShowcase()
 		{
 			return Border(
 				VStack(12,
-					Text("Comet Counter")
-						.FontSize(30)
-						.FontWeight(FontWeight.Bold)
-						.Color(Colors.White)
-						.SemanticHeadingLevel(SemanticHeadingLevel.Level1),
+					Text("Token Usage")
+						.Typography(TypographyTokens.TitleLarge)
+						.Color(ColorTokens.OnSurface),
 
-					Text("Component<TState> + Render() + SetState()")
-						.FontSize(16)
-						.Color(Colors.White),
-
-					Text($"Count: {State.Count}")
-						.FontSize(42)
-						.FontWeight(FontWeight.Bold)
-						.Color(Colors.White),
-
-					Text(banner)
-						.FontSize(14)
-						.Color(Colors.White)
-				)
-			)
-			.Background(accent)
-			.CornerRadius(24)
-			.Padding(new Thickness(24));
-		}
-
-		View BuildActionCard(Color accent)
-		{
-			return Border(
-				VStack(18,
-					Text("Adjust the update loop")
-						.FontSize(20)
-						.FontWeight(FontWeight.Bold)
-						.Color(Color.FromArgb("#1F1F1F")),
-
-					Text($"Step size: {State.Step}")
-						.FontSize(14)
-						.Color(Color.FromArgb("#4E5B6A")),
-
-					Slider(State.Step, 1, 5)
-						.MinimumTrackColor(accent)
-						.MaximumTrackColor(Color.FromArgb("#D0D7E2"))
-						.OnValueChanged(value => SetState(s => s.Step = Math.Max(1, (int)Math.Round(value))))
-						.AutomationId("counter-step-slider"),
+					Text("Colors and typography resolve from the active theme.")
+						.LineBreakMode(LineBreakMode.WordWrap)
+						.Typography(TypographyTokens.BodyMedium)
+						.Color(ColorTokens.OnSurfaceVariant),
 
 					HStack(12,
-						Toggle(State.CelebrateMilestones)
-							.OnColor(accent)
-							.OnToggled(isOn => {
-								SetState(s => s.CelebrateMilestones = isOn);
-								status.Value = isOn
-									? "Milestone celebrations are enabled."
-									: "Milestone celebrations are paused.";
-							})
-							.AutomationId("counter-celebrate-toggle"),
+						Border(
+							Text("Primary")
+								.Color(ColorTokens.OnPrimary)
+								.FontSize(13)
+								.HorizontalTextAlignment(TextAlignment.Center)
+						)
+						.Background(ColorTokens.Primary)
+						.CornerRadius(12)
+						.Padding(new Thickness(16, 10))
+						.Frame(width: 100),
 
-						Text(State.CelebrateMilestones
-								? "Celebrate every fifth increment."
-								: "Run quiet updates for raw counter flow.")
-							.FontSize(13)
-							.Color(Color.FromArgb("#4E5B6A"))
-							.VerticalTextAlignment(TextAlignment.Center)
-					),
+						Border(
+							Text("Secondary")
+								.Color(ColorTokens.OnSecondary)
+								.FontSize(13)
+								.HorizontalTextAlignment(TextAlignment.Center)
+						)
+						.Background(ColorTokens.Secondary)
+						.CornerRadius(12)
+						.Padding(new Thickness(16, 10))
+						.Frame(width: 100),
 
-					HStack(12,
-						Button("Increment", Increment)
-							.Background(accent)
-							.Padding(new Thickness(12, 0))
-							.Color(Colors.White)
-							.Frame(height: 48)
-							.CornerRadius(18)
-							.SemanticHint("Adds the selected step size to the counter")
-							.AutomationId("counter-increment-button"),
-
-						Button("Decrement", Decrement)
-							.Background(Color.FromArgb("#DCE3F2"))
-							.Padding(new Thickness(12, 0))
-							.Color(Color.FromArgb("#1D3557"))
-							.Frame(height: 48)
-							.CornerRadius(18)
-							.AutomationId("counter-decrement-button"),
-
-						Button("Reset", Reset)
-							.Background(Color.FromArgb("#F2E8E8"))
-							.Padding(new Thickness(12, 0))
-							.Color(Color.FromArgb("#8C3A3A"))
-							.Frame(height: 48)
-							.CornerRadius(18)
-							.AutomationId("counter-reset-button")
+						Border(
+							Text("Error")
+								.Color(ColorTokens.OnError)
+								.FontSize(13)
+								.HorizontalTextAlignment(TextAlignment.Center)
+						)
+						.Background(ColorTokens.Error)
+						.CornerRadius(12)
+						.Padding(new Thickness(16, 10))
+						.Frame(width: 100)
 					)
 				)
 			)
-			.Background(Colors.White)
-			.CornerRadius(24)
-			.Padding(new Thickness(20));
+			.Modifier(Card);
 		}
 
-		View BuildStatusCard(Color accent)
+		// ── 2. Built-in Button Styles ────────────────────────────
+		// ButtonStyles.Filled, .Outlined, .Text, .Elevated applied via .ButtonStyle().
+		View BuildButtonStyleShowcase()
 		{
-			var nextMilestone = ((State.Count / 5) + 1) * 5;
-			var milestoneText = State.CelebrateMilestones
-				? $"Next milestone: {nextMilestone}"
-				: "Milestones are currently disabled.";
-
 			return Border(
-				VStack(10,
-					Text("What this sample is showing")
-						.FontSize(20)
-						.FontWeight(FontWeight.Bold)
-						.Color(Color.FromArgb("#1F1F1F")),
+				VStack(12,
+					Text("Built-in Button Styles")
+						.Typography(TypographyTokens.TitleLarge)
+						.Color(ColorTokens.OnSurface),
 
-					Text("The page itself is a Component<CounterState>. Buttons mutate state with SetState(...), while the status line below uses Reactive<T> for lightweight updates.")
-						.FontSize(14)
-						.Color(Color.FromArgb("#4E5B6A")),
+					Text("Each button uses a different IControlStyle<Button> from ButtonStyles.")
+						.Typography(TypographyTokens.BodyMedium)
+						.Color(ColorTokens.OnSurfaceVariant),
 
-					Text(() => status.Value)
-						.FontSize(14)
-						.Color(accent),
+					Button("Filled Button", () => SetState(s => s.TapCount++))
+						.ButtonStyle(ButtonStyles.Filled)
+						.AutomationId("btn-filled"),
 
-					Text(milestoneText)
-						.FontSize(14)
-						.Color(Color.FromArgb("#4E5B6A"))
+					Button("Outlined Button", () => SetState(s => s.TapCount++))
+						.ButtonStyle(ButtonStyles.Outlined)
+						.AutomationId("btn-outlined"),
+
+					Button("Text Button", () => SetState(s => s.TapCount++))
+						.ButtonStyle(ButtonStyles.Text)
+						.AutomationId("btn-text"),
+
+					Button("Elevated Button", () => SetState(s => s.TapCount++))
+						.ButtonStyle(ButtonStyles.Elevated)
+						.AutomationId("btn-elevated"),
+
+					Text($"Total taps: {State.TapCount}")
+						.Typography(TypographyTokens.LabelLarge)
+						.Color(ColorTokens.Primary)
 				)
 			)
-			.Background(Colors.White)
-			.CornerRadius(24)
-			.Padding(new Thickness(20));
+			.Modifier(Card);
 		}
 
-		void Increment()
+		// ── 3. ViewModifier ──────────────────────────────────────
+		// Shows the reusable CardModifier applied to a section, plus a composed modifier.
+		View BuildViewModifierShowcase()
 		{
-			SetState(s => s.Count += s.Step);
-			status.Value = $"Incremented by {State.Step}. Current count: {State.Count}.";
+			var highlightCard = Card.Then(new HighlightModifier());
+
+			return Border(
+				VStack(12,
+					Text("ViewModifier")
+						.Typography(TypographyTokens.TitleLarge)
+						.Color(ColorTokens.OnSurface),
+
+					Text("The CardModifier is reused across every section. Below, a composed modifier (Card + Highlight) colors the border with the primary token.")
+						.Typography(TypographyTokens.BodyMedium)
+						.Color(ColorTokens.OnSurfaceVariant),
+
+					Border(
+						Text("Card + Highlight composed modifier")
+							.Typography(TypographyTokens.BodyLarge)
+							.Color(ColorTokens.OnPrimaryContainer)
+					)
+					.Modifier(highlightCard)
+				)
+			)
+			.Modifier(Card);
 		}
 
-		void Decrement()
+		// ── 4. Control State ─────────────────────────────────────
+		// Toggle enables/disables a button to show disabled state rendering.
+		View BuildControlStateShowcase()
 		{
-			SetState(s => s.Count = Math.Max(0, s.Count - s.Step));
-			status.Value = $"Decremented by {State.Step}. Current count: {State.Count}.";
+			return Border(
+				VStack(12,
+					Text("Control State")
+						.Typography(TypographyTokens.TitleLarge)
+						.Color(ColorTokens.OnSurface),
+
+					Text("Toggle the switch to enable or disable the button. The filled style renders a muted appearance when disabled.")
+						.Typography(TypographyTokens.BodyMedium)
+						.Color(ColorTokens.OnSurfaceVariant),
+
+					HStack(12,
+						Toggle(State.IsActionEnabled)
+							.OnColor(ColorTokens.Primary.Resolve(ThemeManager.Current()))
+							.OnToggled(isOn => SetState(s => s.IsActionEnabled = isOn))
+							.AutomationId("toggle-enabled"),
+
+						Text(State.IsActionEnabled ? "Enabled" : "Disabled")
+							.Typography(TypographyTokens.LabelLarge)
+							.Color(ColorTokens.OnSurface)
+							.VerticalTextAlignment(TextAlignment.Center)
+					),
+
+					Button("Stateful Button", () => SetState(s => s.TapCount++))
+						.ButtonStyle(ButtonStyles.Filled)
+						.IsEnabled(State.IsActionEnabled)
+						.AutomationId("btn-stateful")
+				)
+			)
+			.Modifier(Card);
 		}
 
-		void Reset()
+		// ── 5. Info ──────────────────────────────────────────────
+		View BuildInfoCard()
 		{
-			SetState(s => s.Count = 0);
-			status.Value = "Counter reset to zero.";
+			return Border(
+				VStack(10,
+					Text("What this sample demonstrates")
+						.Typography(TypographyTokens.TitleMedium)
+						.Color(ColorTokens.OnSurface),
+
+					Text("• Token<T> — ColorTokens.Primary, TypographyTokens.TitleLarge")
+						.Typography(TypographyTokens.BodySmall)
+						.Color(ColorTokens.OnSurfaceVariant),
+					Text("• Theme — Defaults.Light applied at startup via Theme.Current")
+						.Typography(TypographyTokens.BodySmall)
+						.Color(ColorTokens.OnSurfaceVariant),
+					Text("• ButtonStyles — Filled, Outlined, Text, Elevated")
+						.Typography(TypographyTokens.BodySmall)
+						.Color(ColorTokens.OnSurfaceVariant),
+					Text("• ViewModifier — CardModifier reused across sections")
+						.Typography(TypographyTokens.BodySmall)
+						.Color(ColorTokens.OnSurfaceVariant),
+					Text("• ControlState — IsEnabled toggle shows disabled rendering")
+						.Typography(TypographyTokens.BodySmall)
+						.Color(ColorTokens.OnSurfaceVariant)
+				)
+			)
+			.Modifier(Card);
+		}
+	}
+
+	// ── Highlight Modifier ───────────────────────────────────────
+	// Composes with CardModifier to add a primary container background.
+	public class HighlightModifier : ViewModifier
+	{
+		public override View Apply(View view)
+		{
+			view
+				.Background(new SolidPaint(ColorTokens.PrimaryContainer.Resolve(ThemeManager.Current())))
+				.ClipShape(new RoundedRectangle(12))
+				.Padding(new Thickness(16, 12));
+			return view;
 		}
 	}
 }

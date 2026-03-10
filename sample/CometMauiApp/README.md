@@ -1,18 +1,20 @@
-# Comet Counter
+# Comet Style System Showcase
 
-This sample refreshes the starter app to show the evolved Comet MVU surface while keeping the app rooted in `CometApp`.
+This sample demonstrates Comet's new token-based style and theme system built on top of the MVU `Component<TState>` surface.
 
 ## What it demonstrates
 
-- `Component<CounterState>` with `Render()`
-- `SetState(...)` for batched state mutations
-- `Reactive<string>` for lightweight reactive status text
-- Current MAUI 10-safe control choices (`Border`, `Slider`, `Toggle`, `NavigationView`)
+- **Theme Definition** — `Defaults.Light` applied at startup via `Theme.Current`, providing Material 3 color, typography, spacing, and shape tokens
+- **Token Usage** — `ColorTokens.Primary`, `TypographyTokens.TitleLarge` used directly on views
+- **Built-in Button Styles** — `ButtonStyles.Filled`, `.Outlined`, `.Text`, `.Elevated` applied via `.ButtonStyle()`
+- **ViewModifier** — Custom `CardModifier` reused across sections; `ComposedModifier` chains Card + Highlight
+- **Control State** — Toggle enables/disables a button to show disabled-state rendering via `IsEnabled`
+- **Typography** — `.Typography(TypographyTokens.BodyMedium)` applies size, weight, and family from the theme
 
 ## Key files
 
-- `MyApp.cs` — keeps `CometApp` as the root application and hosts the counter page
-- `MainPage.cs` — evolved counter sample using `Component<CounterState>`
+- `MyApp.cs` — sets `Theme.Current = Defaults.Light` at app startup
+- `MainPage.cs` — style system showcase using `Component<StyleDemoState>`
 
 ## Build
 
@@ -24,6 +26,13 @@ dotnet build src/Comet/Comet.csproj -c Release
 dotnet build sample/CometMauiApp/CometMauiApp.csproj -c Release -f net10.0-maccatalyst
 ```
 
-## Why the app class still inherits `CometApp`
+## Style system entry points
 
-`UseCometApp<TApp>()` still expects an `IApplication` implementation. The evolved surface usually starts at the page/component level, while the application root remains `CometApp`.
+| API | Purpose |
+|-----|---------|
+| `Theme.Current = Defaults.Light` | Sets the active theme globally |
+| `ColorTokens.Primary` | Strongly-typed color token that resolves from the active theme |
+| `TypographyTokens.TitleLarge` | Typography token with size, weight, family |
+| `.ButtonStyle(ButtonStyles.Filled)` | Applies a state-aware IControlStyle to a button |
+| `.Modifier(new CardModifier())` | Applies a reusable ViewModifier to any view |
+| `.Typography(token)` | Shorthand to apply all font properties from a token |

@@ -128,7 +128,7 @@ namespace Comet.Tests
 				Body = () => new VStack
 				{
 					(child = new Text("Hello"))
-				}.Theme(scopedTheme)
+				}.UseTheme(scopedTheme)
 			};
 
 			var handler = parent.SetViewHandlerToGeneric();
@@ -155,7 +155,7 @@ namespace Comet.Tests
 					new VStack
 					{
 						(scopedChild = new Text("Scoped"))
-					}.Theme(scopedTheme),
+					}.UseTheme(scopedTheme),
 					(unscopedSibling = new Text("Global"))
 				}
 			};
@@ -183,7 +183,7 @@ namespace Comet.Tests
 					new VStack
 					{
 						new Text("Hello")
-					}.Theme(scopedTheme)
+					}.UseTheme(scopedTheme)
 				})
 			};
 
@@ -202,7 +202,7 @@ namespace Comet.Tests
 			var theme = CreateDarkTheme();
 			var view = new VStack { new Text("Hello") };
 
-			view.Theme(theme);
+			view.UseTheme(theme);
 
 			// The theme should be stored in the view's environment
 			var resolved = ThemeManager.Current(view);
@@ -213,7 +213,7 @@ namespace Comet.Tests
 		public void ThemeExtension_IsFluent()
 		{
 			var theme = CreateDarkTheme();
-			var stack = new VStack { new Text("Hello") }.Theme(theme);
+			var stack = new VStack { new Text("Hello") }.UseTheme(theme);
 
 			Assert.IsType<VStack>(stack);
 		}

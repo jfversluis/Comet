@@ -389,7 +389,7 @@ namespace Comet.Tests
 
 	public class BrandTheme : Theme
 	{
-		public static readonly Color BrandPrimary = Colors.DeepPink;
+		public static readonly Color BrandPrimary = Microsoft.Maui.Graphics.Colors.DeepPink;
 
 		public BrandTheme()
 		{

@@ -59,7 +59,7 @@ namespace Comet.Styles
 			.Background(new SolidPaint(_background))
 			.Color(_foreground)
 			.Opacity(_opacity)
-			.ClipShape(new Comet.Graphics.RoundedRectangle(20))
+			.ClipShape(new RoundedRectangle(20))
 			.Padding(new Thickness(24, 12));
 	}
 
@@ -236,7 +236,7 @@ namespace Comet.Styles
 			.Background(new SolidPaint(_background))
 			.Color(_foreground)
 			.Opacity(_opacity)
-			.ClipShape(new Comet.Graphics.RoundedRectangle(20))
+			.ClipShape(new RoundedRectangle(20))
 			.Shadow(Colors.Black.WithAlpha(0.15f), radius: _shadowRadius, x: 0, y: _shadowRadius / 2)
 			.Padding(new Thickness(24, 12));
 	}

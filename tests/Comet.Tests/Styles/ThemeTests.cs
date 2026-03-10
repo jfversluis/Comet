@@ -130,7 +130,7 @@ namespace Comet.Tests
 
 			theme.SetControlStyle<Button, ButtonConfiguration>(style);
 
-			var retrieved = theme.GetControlStyle<Button, ButtonConfiguration>();
+			var retrieved = theme.GetNewControlStyle<Button>();
 			Assert.Same(style, retrieved);
 		}
 
@@ -139,7 +139,7 @@ namespace Comet.Tests
 		{
 			var theme = CreateTestTheme();
 
-			var result = theme.GetControlStyle<Button, ButtonConfiguration>();
+			var result = theme.GetNewControlStyle<Button>();
 			Assert.Null(result);
 		}
 
@@ -153,7 +153,7 @@ namespace Comet.Tests
 			theme.SetControlStyle<Button, ButtonConfiguration>(style1);
 			theme.SetControlStyle<Button, ButtonConfiguration>(style2);
 
-			var retrieved = theme.GetControlStyle<Button, ButtonConfiguration>();
+			var retrieved = theme.GetNewControlStyle<Button>();
 			Assert.Same(style2, retrieved);
 		}
 
@@ -167,8 +167,8 @@ namespace Comet.Tests
 			theme.SetControlStyle<Button, ButtonConfiguration>(buttonStyle);
 			theme.SetControlStyle<Toggle, ToggleConfiguration>(toggleStyle);
 
-			Assert.Same(buttonStyle, theme.GetControlStyle<Button, ButtonConfiguration>());
-			Assert.Same(toggleStyle, theme.GetControlStyle<Toggle, ToggleConfiguration>());
+			Assert.Same(buttonStyle, theme.GetNewControlStyle<Button>());
+			Assert.Same(toggleStyle, theme.GetNewControlStyle<Toggle>());
 		}
 
 		// ================================================================
@@ -180,13 +180,16 @@ namespace Comet.Tests
 		{
 			var baseTheme = CreateTestTheme("Base", Colors.Purple);
 
-			var derived = baseTheme with
+			var derived = new Theme
 			{
 				Name = "Derived",
 				Colors = baseTheme.Colors with
 				{
 					Primary = Colors.Teal,
 				},
+				Typography = baseTheme.Typography,
+				Spacing = baseTheme.Spacing,
+				Shapes = baseTheme.Shapes,
 			};
 
 			Assert.Equal("Derived", derived.Name);
@@ -200,20 +203,34 @@ namespace Comet.Tests
 		public void Theme_WithExpression_DerivedDoesNotShareMutableState()
 		{
 			var baseTheme = CreateTestTheme("Light");
-			var derived = baseTheme with { Name = "Dark" };
+			var derived = new Theme
+			{
+				Name = "Dark",
+				Colors = baseTheme.Colors,
+				Typography = baseTheme.Typography,
+				Spacing = baseTheme.Spacing,
+				Shapes = baseTheme.Shapes,
+			};
 
 			// Setting a control style on derived should not affect base
 			derived.SetControlStyle<Button, ButtonConfiguration>(new TestButtonStyle());
 
-			Assert.Null(baseTheme.GetControlStyle<Button, ButtonConfiguration>());
-			Assert.NotNull(derived.GetControlStyle<Button, ButtonConfiguration>());
+			Assert.Null(baseTheme.GetNewControlStyle<Button>());
+			Assert.NotNull(derived.GetNewControlStyle<Button>());
 		}
 
 		[Fact]
 		public void Theme_WithExpression_SharesUnchangedTokenSets()
 		{
 			var baseTheme = CreateTestTheme("Base");
-			var derived = baseTheme with { Name = "Derived" };
+			var derived = new Theme
+			{
+				Name = "Derived",
+				Colors = baseTheme.Colors,
+				Typography = baseTheme.Typography,
+				Spacing = baseTheme.Spacing,
+				Shapes = baseTheme.Shapes,
+			};
 
 			// Typography, Spacing, Shapes should be the same reference
 			Assert.Same(baseTheme.Typography, derived.Typography);

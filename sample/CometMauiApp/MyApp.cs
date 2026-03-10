@@ -1,4 +1,5 @@
 using Comet;
+using Comet.Styles;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Hosting;
 
@@ -28,6 +29,10 @@ namespace CometMauiApp
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 			});
+
+			// Apply the built-in light theme at startup.
+			// Defaults.Light includes Material 3 color, typography, spacing, and shape tokens.
+			Theme.Current = Defaults.Light;
 
 	#if DEBUG
 			builder.EnableSampleRuntimeDebugging();

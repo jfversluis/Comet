@@ -132,13 +132,17 @@ namespace Comet.Tests
 			var modifier = new TextColorModifier(Colors.Green);
 			var button = new Button("Click");
 
+			// Capture color before applying
+			var colorBefore = button.GetEnvironment<Color>(EnvironmentKeys.Colors.Color);
+
 			// Apply through the base class Apply(View) method
 			var result = ((ViewModifier)modifier).Apply(button);
 
 			Assert.Same(button, result);
-			// Button should not have the color set
-			var color = button.GetEnvironment<Color>(EnvironmentKeys.Colors.Color);
-			Assert.Equal(default(Color), color);
+			// Button color should not have been changed to Green by the Text modifier
+			var colorAfter = button.GetEnvironment<Color>(EnvironmentKeys.Colors.Color);
+			Assert.Equal(colorBefore, colorAfter);
+			Assert.NotEqual(Colors.Green, colorAfter);
 		}
 
 		[Fact]
