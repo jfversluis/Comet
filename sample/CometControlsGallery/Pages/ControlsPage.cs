@@ -13,7 +13,7 @@ namespace CometControlsGallery.Pages
 		public int TapCount { get; set; }
 		public string TextValue { get; set; } = "";
 		public string SecureText { get; set; } = "";
-		public string EditorText { get; set; } = "Multi-line text editor";
+		public string EditorText { get; set; } = "";
 		public string SearchText { get; set; } = "";
 		public bool ToggleValue { get; set; }
 		public bool CheckValue { get; set; }
@@ -23,20 +23,21 @@ namespace CometControlsGallery.Pages
 		public double StepperValue { get; set; } = 5;
 		public DateTime? DateValue { get; set; } = DateTime.Today;
 		public TimeSpan? TimeValue { get; set; } = new TimeSpan(14, 30, 0);
+		public double ProgressValue { get; set; } = 0.6;
 	}
 
 	public class ControlsPage : Component<ControlsState>
 	{
 		static readonly SectionCard Card = new();
 
-		View BuildSection(string title, string subtitle, params View[] content)
+		View BuildSection(string title, string description, params View[] content)
 		{
 			var items = new List<View>
 			{
 				Text(title)
 					.Typography(TypographyTokens.TitleLarge)
 					.Color(ColorTokens.OnSurface),
-				Text(subtitle)
+				Text(description)
 					.Typography(TypographyTokens.BodyMedium)
 					.Color(ColorTokens.OnSurfaceVariant)
 					.LineBreakMode(LineBreakMode.WordWrap)
@@ -45,104 +46,103 @@ namespace CometControlsGallery.Pages
 			return Border(VStack(12, items.ToArray())).Modifier(Card);
 		}
 
-		public override View Render()
+		View BuildRadioGroup()
 		{
-			return ScrollView(
-				VStack(24,
-					BuildButtonsSection(),
-					BuildTextInputSection(),
-					BuildSelectionSection(),
-					BuildNumericSection(),
-					BuildDateTimeSection(),
-					BuildDisplaySection()
-				)
-				.Padding(new Thickness(24))
-			)
-			.Background(ColorTokens.Background);
+			var group = new RadioGroup(Orientation.Vertical);
+			group.Add(new RadioButton(() => "Small", () => State.RadioIndex == 0, () => SetState(s => s.RadioIndex = 0)));
+			group.Add(new RadioButton(() => "Medium", () => State.RadioIndex == 1, () => SetState(s => s.RadioIndex = 1)));
+			group.Add(new RadioButton(() => "Large", () => State.RadioIndex == 2, () => SetState(s => s.RadioIndex = 2)));
+			return group;
 		}
 
-		View BuildButtonsSection() =>
-			BuildSection("Buttons", "Four built-in ButtonStyles with a shared tap counter.",
-				Button("Filled", () => SetState(s => s.TapCount++))
-					.ButtonStyle(ButtonStyles.Filled),
-				Button("Outlined", () => SetState(s => s.TapCount++))
-					.ButtonStyle(ButtonStyles.Outlined),
-				Button("Text", () => SetState(s => s.TapCount++))
-					.ButtonStyle(ButtonStyles.Text),
-				Button("Elevated", () => SetState(s => s.TapCount++))
-					.ButtonStyle(ButtonStyles.Elevated),
-				Text($"Taps: {State.TapCount}")
-					.Typography(TypographyTokens.LabelLarge)
-					.Color(ColorTokens.Primary)
-			);
-
-		View BuildTextInputSection() =>
-			BuildSection("Text Input", "TextField, SecureField, TextEditor, and SearchBar.",
-				TextField(() => State.TextValue, () => "Enter text…"),
-				SecureField(() => State.SecureText, () => "Password"),
-				TextEditor(() => State.EditorText)
-					.Frame(height: 80),
-				SearchBar(() => State.SearchText, () => { }),
-				Text($"Text: {State.TextValue}")
-					.Typography(TypographyTokens.BodySmall)
-					.Color(ColorTokens.OnSurfaceVariant)
-			);
-
-		View BuildSelectionSection() =>
-			BuildSection("Selection", "Toggle, CheckBox, RadioGroup, and Picker.",
-				HStack(12,
-					Toggle(() => State.ToggleValue)
-						.OnColor(ColorTokens.Primary.Resolve(ThemeManager.Current()))
-						.OnToggled(isOn => SetState(s => s.ToggleValue = isOn)),
-					Text(State.ToggleValue ? "On" : "Off")
+		public override View Render() => ScrollView(
+			VStack(24,
+				// Buttons
+				BuildSection("Buttons", "Tap actions with Material 3 button styles.",
+					HStack(12,
+						Button("Filled", () => SetState(s => s.TapCount++))
+							.ButtonStyle(ButtonStyles.Filled),
+						Button("Outlined", () => SetState(s => s.TapCount++))
+							.ButtonStyle(ButtonStyles.Outlined)
+					),
+					HStack(12,
+						Button("Text", () => SetState(s => s.TapCount++))
+							.ButtonStyle(ButtonStyles.Text),
+						Button("Elevated", () => SetState(s => s.TapCount++))
+							.ButtonStyle(ButtonStyles.Elevated)
+					),
+					Text(() => $"Taps: {State.TapCount}")
 						.Typography(TypographyTokens.LabelLarge)
-						.Color(ColorTokens.OnSurface)
+						.Color(ColorTokens.Primary)
 				),
-				HStack(12,
-					CheckBox(() => State.CheckValue),
-					Text("Accept terms")
-						.Typography(TypographyTokens.BodyMedium)
-						.Color(ColorTokens.OnSurface)
-				),
-				Picker(State.PickerIndex, "Red", "Green", "Blue", "Yellow")
-			);
 
-		View BuildNumericSection()
-		{
-			return BuildSection("Numeric", "Slider (0–100) and Stepper (0–10).",
-				Text($"Slider: {(int)State.SliderValue}")
-					.Typography(TypographyTokens.LabelLarge)
-					.Color(ColorTokens.Primary),
-				Slider(() => State.SliderValue, () => 0.0, () => 100.0),
-				HStack(12,
-					Text($"Stepper: {State.StepperValue}")
-						.Typography(TypographyTokens.LabelLarge)
-						.Color(ColorTokens.Primary),
-					Stepper(() => State.StepperValue, () => 0.0, () => 10.0, () => 1.0)
-				)
-			);
-		}
-
-		View BuildDateTimeSection() =>
-			BuildSection("Date & Time", "DatePicker and TimePicker.",
-				HStack(16,
-					DatePicker(() => State.DateValue),
-					TimePicker(() => State.TimeValue)
-				)
-			);
-
-		View BuildDisplaySection() =>
-			BuildSection("Display", "Image, ActivityIndicator, and ProgressBar.",
-				Image("https://aka.ms/dotnet-bot-image")
-					.Frame(width: 120, height: 120),
-				HStack(12,
-					ActivityIndicator(() => true),
-					Text("Loading…")
-						.Typography(TypographyTokens.BodyMedium)
+				// Text Input
+				BuildSection("Text Input", "Fields for text entry, passwords, and search.",
+					TextField(() => State.TextValue, () => "Enter text\u2026")
+						.OnTextChanged(v => SetState(s => s.TextValue = v ?? "")),
+					SecureField(() => State.SecureText, () => "Password")
+						.OnTextChanged(v => SetState(s => s.SecureText = v ?? "")),
+					TextEditor(() => State.EditorText)
+						.Frame(height: 80)
+						.OnTextChanged(v => SetState(s => s.EditorText = v ?? "")),
+					SearchBar(() => State.SearchText, () => { })
+						.OnTextChanged(v => SetState(s => s.SearchText = v ?? "")),
+					Text(() => string.IsNullOrEmpty(State.TextValue) ? "" : $"Entered: {State.TextValue}")
+						.Typography(TypographyTokens.BodySmall)
 						.Color(ColorTokens.OnSurfaceVariant)
 				),
-				ProgressBar(() => 0.6),
-				ProgressBar(() => 0.3)
-			);
+
+				// Selection
+				BuildSection("Selection", "Toggles, checkboxes, and pickers.",
+					HStack(12,
+						Toggle(() => State.ToggleValue)
+							.OnToggled(isOn => SetState(s => s.ToggleValue = isOn)),
+						Text(() => State.ToggleValue ? "On" : "Off")
+							.Typography(TypographyTokens.BodyLarge)
+							.Color(ColorTokens.OnSurface)
+					),
+					HStack(12,
+						CheckBox(() => State.CheckValue),
+						Text("Accept terms")
+							.Typography(TypographyTokens.BodyLarge)
+							.Color(ColorTokens.OnSurface)
+					),
+					Picker((Binding<int>)(() => State.PickerIndex), "Red", "Green", "Blue")
+						.OnSelectedIndexChanged(i => SetState(s => s.PickerIndex = i))
+				),
+
+				// Numeric
+				BuildSection("Numeric", "Sliders and steppers for numeric input.",
+					Text(() => $"Slider: {(int)State.SliderValue}")
+						.Typography(TypographyTokens.BodyLarge)
+						.Color(ColorTokens.OnSurface),
+					Slider(() => State.SliderValue, () => 0.0, () => 100.0)
+						.OnValueChanged(v => SetState(s => s.SliderValue = v)),
+					Text(() => $"Stepper: {State.StepperValue}")
+						.Typography(TypographyTokens.BodyLarge)
+						.Color(ColorTokens.OnSurface),
+					Stepper(() => State.StepperValue, () => 0.0, () => 10.0, () => 1.0)
+				),
+
+				// Date & Time
+				BuildSection("Date & Time", "Date and time selection controls.",
+					HStack(12,
+						DatePicker(() => State.DateValue),
+						TimePicker(() => State.TimeValue)
+					)
+				),
+
+				// Display
+				BuildSection("Display", "Read-only display controls and indicators.",
+					Image("https://aka.ms/dotnet-bot-image")
+						.Frame(width: 120, height: 120),
+					ActivityIndicator(() => true),
+					ProgressBar(() => State.ProgressValue),
+					Text("Loading\u2026")
+						.Typography(TypographyTokens.LabelLarge)
+						.Color(ColorTokens.Primary)
+				)
+			).Padding(new Thickness(20))
+		).Background(ColorTokens.Background);
 	}
 }

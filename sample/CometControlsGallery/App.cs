@@ -1,5 +1,6 @@
 using Comet;
 using Comet.Styles;
+using CometControlsGallery.Pages;
 using Microsoft.Maui.Hosting;
 using static Comet.CometControls;
 
@@ -14,10 +15,10 @@ namespace CometControlsGallery
 
 		public static View CreateRootView() =>
 			TabView(
-				("Controls", new Pages.ControlsPage()),
-				("Layouts", new Pages.LayoutsPage()),
-				("Lists", new Pages.ListsPage()),
-				("Theme", new Pages.ThemePage())
+				("Controls", new ControlsPage()),
+				("Layouts", new LayoutsPage()),
+				("Lists", new ListsPage()),
+				("Theme", new ThemePage())
 			);
 
 		public static MauiApp CreateMauiApp()

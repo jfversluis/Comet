@@ -42,6 +42,13 @@ namespace Comet
 			InvalidateMeasurement();
 		}
 
+		// Override to prevent cascading LayoutSubviews to children.
+		// Child positioning is handled by LayoutManager via CrossPlatformArrange.
+		public override void LayoutSubviews(Rect frame)
+		{
+			this.SetFrameFromPlatformView(frame);
+		}
+
 		protected virtual Thickness GetDefaultPadding() => this.GetEnvironment<Thickness>(nameof(Styles.Style.LayoutPadding));
 
 		Size lastMeasureSize;
