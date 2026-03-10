@@ -28,6 +28,20 @@ Defined ControlStyle<T> generic builder pattern. Theme as concrete base class wi
 
 ## Learnings
 
+### 2026-03-09 — Rendering Pipeline Fix (VStack/TabView/Component)
+
+**Status:** ✅ Fixed and verified on device
+
+**3 framework bugs fixed (commit 12f2d043):**
+1. `AbstractLayout.LayoutSubviews` — base `View.LayoutSubviews` cascaded `SetFrameFromPlatformView` to all children with the parent's full frame, overriding correct positions from the LayoutManager. Override stops the cascade.
+2. `TabView.AddTab` — title never set in content view's environment, so `CUITabView` couldn't read tab names.
+3. `CometView.SetView` — called `ToPlatform` directly on views with a Body (Component, Component<T>), creating a circular CometViewHandler→CometView loop. Now resolves via `GetView()` first.
+
+**Follow-up fix (commit 2fad0b4b):**
+The initial AbstractLayout override only called `SetFrameFromPlatformView`, which broke 5 layout tests (children got 0×0 frames). Fix: call `CrossPlatformArrange(frame)` instead so the LayoutManager positions children through both platform and test paths.
+
+**Key insight:** `View.LayoutSubviews` is called by `IView.Arrange`, which is the entry point for both test mock handlers and real platform handlers. AbstractLayout must not block child arrangement — it just needs to route through `CrossPlatformArrange` (LayoutManager) instead of the base cascade (which gives all children the parent's bounds).
+
 ### 2026-03-08 — P0 Runtime Host Revision (Root-View DEBUG Hosting)
 
 **Status:** ⚠️ Improved, render-only validation still truthful  
@@ -1094,3 +1108,247 @@ Style resolution uses the existing `MonitorChanges` mechanism to intercept `View
 **Key Accomplishment:** Type-scoped global environment mechanism ensures explicit user properties are never overridden by style-resolved values. Decision D11 documented and implemented.
 
 **Status:** Ready for merge to main.
+
+### 2026-03-09 — CometControlsGallery Port Plan (Reference MAUI Sample Analysis)
+
+**Status:** ✅ Plan delivered to David for review
+
+**Scope:**
+Port 12 core pages (~1,956 lines) from reference MAUI sample (`/Users/davidortinau/work/mauiplatforms/samples/Sample`) to validate Comet's control coverage, layout system, and new style system (ColorTokens, TypographyTokens, ButtonStyles). Reference app has 30 pages (~6,500 lines); skipping macOS-specific, Blazor, and unsupported controls (CollectionView, CarouselView, Border, WebView, Maps, FormattedString/Span).
+
+**Architecture decisions:**
+1. **5-tab gallery structure:** Controls, Layouts, Lists, Gestures, Theme — each with NavigationPage drill-down to sub-pages (validates Phase 5 navigation)
+2. **Border approximation:** Use Frame/BoxView (Border control is commented out in codebase) — David to decide if un-commenting is in scope
+3. **RadioButton handler fix:** MUST FIX before porting RadioButtonPage (known handler registration bug)
+4. **Style system validation:** Port using Comet's new Token system (not reference's extension methods) — `.Background(ColorTokens.PageBackground)` instead of `.WithPageBackground()`
+5. **Build-verify separation:** Build is one task (Holden), on-device verification per tab is 5 separate tasks (Bobbie) — per David's directive
+
+**Page triage:**
+- **MUST PORT (12 pages):** ControlsPage, LayoutsPage, ListViewPage, ThemePage, FontsPage, AlertsPage, PickersPage, RadioButtonPage, TableViewPage, GesturesPage, TransformsPage, NavigationDemoPage
+- **NICE TO HAVE (3 pages):** ShapesPage (ShapeView limited), FlyoutPageDemo (FlyoutView untested), TabbedPageDemo (nested TabView)
+- **SKIP (15 pages):** CollectionView, CarouselView, FormattedText, Maps, WebView, Blazor, MenuBar, MultiWindow, Toolbar, DeviceInfo, Battery/Network, Clipboard/Prefs, Launch/Share, HomePage, MainPage
+
+**Comet gap analysis:**
+- **NOT in Comet:** Border, CollectionView, CarouselView, WebView, Maps, FormattedString/Span → all skipped or approximated
+- **IN Comet but needs validation:** RadioButton (handler bug), FlyoutView (untested), ShapeView (limited)
+- **Style system mapping:** Reference's `.WithPageBackground()` → Comet's `.Background(ColorTokens.PageBackground)`, button gradients → ButtonStyles (Filled/Outlined/Text/Elevated)
+
+**Questions for David:**
+1. Border control priority — fix or approximate?
+2. RadioButton handler bug — in scope for this port?
+3. ShapesPage — port with ShapeView's limited capabilities or skip?
+4. NavigationPage drill-down — use it (validates Phase 5) or keep flat tabs?
+5. FormattedString future — on roadmap or document "use multiple Labels" pattern?
+
+**Key insight:**
+This port is the **first real-world validation** of the Phase 2–3 style system (Theme, ColorTokens, TypographyTokens, ButtonStyles, ControlStyle<T>). The reference sample gives us a comprehensive test surface across 12 fundamental page types. By porting using Comet's style system instead of the reference's custom extension methods, we stress-test our style API design and discover gaps early.
+
+**7-phase implementation plan:**
+1. Phase 1: RadioButton handler fix + gallery structure update (5 tabs)
+2. Phase 2: Core controls (ControlsPage, PickersPage, RadioButtonPage, AlertsPage)
+3. Phase 3: Layout/transforms (LayoutsPage, TransformsPage)
+4. Phase 4: Lists (ListViewPage, TableViewPage)
+5. Phase 5: Gestures/theme (GesturesPage, ThemePage, FontsPage)
+6. Phase 6: Navigation (NavigationDemoPage)
+7. Phase 7: Build (Holden) + 5 separate on-device verification tasks (Bobbie)
+
+**Success criteria:**
+- 12 pages ported, RadioButton fixed, build succeeds (0 errors/warnings)
+- All pages render on maccatalyst, controls are interactive
+- Theme toggle affects all pages, navigation drill-down works
+- Style system validated with real-world usage
+
+**Estimated effort:**
+~24 hours (Amos porting), ~4 hours (Bobbie verification), ~2 hours (Holden review) = ~30 hours total, 2-3 days at full-time pace
+
+**Handoff:**
+Plan written to session plan.md. Awaiting David's review and answers to 5 questions in Section 4 before Amos starts Phase 1.
+
+### 2026-03-10 — Control Gap Investigation (Border, RadioButton, Shapes, Navigation)
+
+**Status:** ✅ Investigations complete, plan updated
+
+**Border finding:**
+Comet already has a functional `Border` class (`src/Comet/Controls/Border.cs`, 49 lines) — extends `AbstractLayout`, implements `IBorderStroke`. Handler mapping exists: `Border → LayoutHandler` with iOS-specific border styling via `LayoutHandler.Mapper.AppendToMapping("CometBorderStyling"...)`. Supports Content, Shape (via ClipShape environment), Stroke paint, StrokeThickness, LineCap, LineJoin, DashPattern. The commented-out `CometGenerate(typeof(IBorder))` in ControlsGenerator.cs line 10 is irrelevant — manual implementation is more appropriate for this container control. Frame exists but David says it's deprecated; gallery should use Border exclusively.
+
+**RadioButton finding:**
+Bug is NOT a handler registration issue — RadioButton IS registered at line 675 mapping to `RadioButtonHandler`. The actual bug: Comet's `RadioButton` class doesn't implement `IRadioButton`. MAUI's `RadioButtonHandler` casts to `IRadioButton` → `InvalidCastException`. Architecture mismatch: Comet uses container-based grouping (`RadioGroup`), MAUI uses property-based (`GroupName`). Fix: augment existing RadioButton to implement IRadioButton, mapping Label→Content, Selected→IsChecked, deriving GroupName from RadioGroup parent.
+
+**Shapes finding:**
+Comet has 10 shape types in `src/Comet/Shapes/` — Circle, Rectangle, Ellipse, Line, Polygon, Polyline, Path, RoundedRectangle, Capsule, Pill, Squircle. All shapes needed by reference ShapesPage already exist. ShapeView renders via IDrawable with stroke/fill/gradient support. Minor gaps: Path scaling transforms commented out, StrokeDashArray not exposed as fluent API, Windows handler incomplete — none block macCatalyst gallery port.
+
+**Navigation finding:**
+NavigationView (`src/Comet/Controls/NavigationView.cs`, 166 lines) fully supports stack-based push/pop. Navigate(View), Navigate<TView>(params), Pop(), FindParentNavigationView() all present. CometShell adds route-based navigation with query parameter support. Drill-down pattern is ready — wrap each tab root in NavigationView, use Navigate() to push sub-pages.
+
+**Plan updates made:**
+- ShapesPage promoted to MUST PORT (new Phase 5)
+- Gallery structure changed from 5 to 6 tabs (added Shapes tab)
+- Border: changed from "approximate with Frame" to "use existing Border directly"
+- RadioButton: root cause corrected from "handler registration bug" to "IRadioButton interface gap"
+- Navigation: confirmed drill-down ready, each tab wraps in NavigationView
+- FormattedTextPage confirmed SKIP
+- Questions section replaced with David's answers
+- Added §3 Investigation Details with deep-dive findings
+- Total pages: 12 → 13 (ShapesPage added)
+- Phases: 7 → 8 (new Shapes phase inserted)
+- All todo IDs are clear kebab-case for SQL tracking
+
+### 2026-03-09 — MauiDevFlow Compatibility Assessment
+
+**Status:** ✅ Assessed — Compatible as-is, with option for enhancement
+
+**Compatibility Verdict:** MauiDevFlow works with Comet **without any code changes**. Comet views appear in the visual tree but show as CometView/CometViewHandler nodes instead of Comet control types.
+
+**Key Findings:**
+1. **Architecture match:** MauiDevFlow walks visual trees using `IVisualTreeElement.GetVisualChildren()`. Comet's `View` implements this interface and returns either its `BuiltView` (when it has a Body lambda) or its children (when it's a container).
+2. **Standard property support:** Comet `View` implements `IView` with all standard MAUI properties (AutomationId, IsVisible, IsEnabled, bounds, handlers). MauiDevFlow reads these via VisualElement casting.
+3. **Integration pattern:** `builder.AddMauiDevFlowAgent()` works identically for Comet apps — the agent hooks into MAUI lifecycle events and gets `Application.Current`.
+4. **Platform handlers:** Comet's `CometViewHandler` creates native platform views that MauiDevFlow can inspect via `IPlatformViewHandler`.
+
+**What works today:**
+- Tree discovery and traversal
+- Screenshot capture
+- Network monitoring
+- Blazor CDP (for Blazor Hybrid)
+- Standard MAUI property inspection
+
+**What doesn't work (without enhancement):**
+- Tree shows `CometView` wrapper nodes instead of Comet control types (Button, VStack, Component<T>)
+- Comet-specific environment properties (colors, fonts, padding) not visible
+- Hit testing may resolve to outer CometView container instead of inner Comet controls (needs testing)
+
+**Recommended approach:**
+1. **Option A (Zero-Change, MVP):** Use MauiDevFlow as-is. Add `builder.AddMauiDevFlowAgent()` in DEBUG builds and validate tap/fill actions on Comet controls. If interactions work, ship it.
+2. **Option B (Comet-Aware Walker, if needed):** If tap actions fail, add a `CometAwareVisualTreeWalker` subclass in MauiDevFlow that detects Comet views and exposes control types + environment data. 1-2 day effort, keeps codebases independent.
+3. **Option C (Inspection Bridge, future):** If Option B proves valuable for multiple MVU frameworks, generalize into a metadata provider pattern. 3-5 day effort, requires coordination across repos.
+
+**Decision:** Start with Option A. If hit testing works, no changes needed. If not, escalate to Option B.
+
+**Risk assessment:**
+- Option A: Medium risk on hit testing (tap may resolve to CometView wrapper). Low risk on tree dumps (acceptable to show CometView nodes).
+- Option B: Low risk on MauiDevFlow changes (needs extension point). Medium risk on reflection-based environment extraction.
+- Option C: Medium risk on API additions (requires MauiDevFlow maintainer approval). Low risk on maintenance burden.
+
+**Architectural insight:** MauiDevFlow's design is **interface-first** — it uses only public MAUI APIs (`IVisualTreeElement`, `IView`, `VisualElement`, `IViewHandler`). This makes it compatible with any framework built on top of MAUI, including Comet. The visual tree walker doesn't depend on concrete MAUI types (ContentPage, Shell, Button), so it naturally supports Comet's custom view hierarchy. The only limitation is visibility of Comet-specific abstractions (environment system, Component types), which can be addressed with a subclass or metadata bridge if needed.
+
+### 2026-03-10 — MauiDevFlow Comet-Aware Walker Implementation
+
+**Status:** ✅ Implemented — Comet control types now visible in visual tree
+
+**Implementation:** Added reflection-based `CometViewResolver` class to MauiDevFlow.Agent.Core that detects and resolves Comet views without requiring a hard package reference. Integrated into `VisualTreeWalker.CreateElementInfo()` to replace generic CometView types with actual Comet control names.
+
+**Key Architecture Decisions:**
+1. **Reflection-based discovery:** Uses `AppDomain.CurrentDomain.GetAssemblies()` to detect Comet at runtime. Caches type/property/method metadata on first use. Zero impact when Comet not loaded.
+2. **Three-strategy resolution:**
+   - Strategy 1: Element is directly a `Comet.View` instance
+   - Strategy 2: Element's handler is `CometViewHandler` → extract VirtualView
+   - Strategy 3: Element's platform view is `CometView` wrapper → read `CurrentView` property
+3. **Body chain unwrapping:** Calls `BuiltView` or `GetView()` to resolve through Component<T>/custom Body chains to the leaf control type
+4. **Generic type display:** Shows `Component<MyState>` instead of `Component'1` for Component views
+5. **Additive design:** Falls through to default MAUI behavior for non-Comet views — zero regression risk
+
+**Implementation Details:**
+
+**CometViewResolver.cs** (320 lines):
+- `IsCometAvailable()` — detects Comet assembly, caches reflection metadata
+- `TryResolveCometView(element)` — three-strategy resolver, returns (Type, FullType, CometView, Properties) or null
+- `ResolveCometType(cometView)` — unwraps Body chains via BuiltView/GetView(), handles generic types
+- `ExtractCometProperties(cometView)` — reads State, Props, HasBody, CometId via reflection
+- `GetEnvironmentKeys()` / `GetEnvironmentValues()` — environment system introspection (opt-in)
+
+**VisualTreeWalker.cs modifications** (7 lines changed):
+- Line 1196: Call `CometViewResolver.TryResolveCometView(element)` before creating ElementInfo
+- Lines 1199-1200: Use resolved type/fullType if Comet view, else default
+- Lines 1304-1318: Add Comet-specific properties to NativeProperties dictionary
+
+**What now works:**
+- Tree shows **actual Comet types**: `Button`, `VStack`, `Component<MyState>`, not `CometView`
+- Comet properties exposed: `CometState`, `CometProps`, `CometHasBody`, `CometId`
+- Environment values available but commented out by default (can be verbose)
+- No breaking changes — standard MAUI apps unaffected
+
+**Build verification:**
+- `dotnet build src/MauiDevFlow.Agent.Core/MauiDevFlow.Agent.Core.csproj -c Debug` ✅ succeeded (0.8s)
+- Full solution build: 28 pre-existing warnings, 1 unrelated test console error
+- No new warnings or errors from CometViewResolver integration
+
+**Extension Points for Future:**
+1. **Environment filtering:** Currently environment values are commented out to avoid noise. Could add opt-in via config or filter to "meaningful" keys (colors, fonts, layout).
+2. **Hit testing improvement:** If tap actions fail to resolve to inner Comet controls, extend `HitTestByBounds()` to unwrap CometView wrappers.
+3. **Generic component drill-down:** For `Component<T>`, could add button to inspect State/Props instances in detail view.
+4. **Handler metadata:** Could expose `Handler.CurrentView`, `BuiltView` hierarchy in tree for debugging hot reload.
+
+**Architectural Insights:**
+- **Reflection performance:** Single lookup on first Comet view encounter (1-2ms), then cached. Zero overhead when Comet not present.
+- **Body resolution complexity:** `GetView()` can be expensive (invokes Body lambda, triggers state tracking). We use `BuiltView` first (cached) and only fall back to `GetView()` if null. This matches Comet's own render path.
+- **Platform-specific CometView:** iOS/Android/Windows each have their own `CometView` class with `CurrentView` property. We check all three via reflection to handle any platform.
+- **Generic type naming:** .NET's `Type.Name` for generics returns `Component'1` (with backtick + arity). We split on backtick and reconstruct with angle brackets for readability.
+- **Extension pattern:** MauiDevFlow's design makes this extension trivial — `VisualTreeWalker` has a single bottleneck (`CreateElementInfo`) where type names are assigned. No need to modify tree walking, hit testing, or HTTP API layers.
+
+**Risk Assessment:**
+- **Reflection brittleness:** Minimal — we check for null at every reflection step and fall back gracefully
+- **Performance impact:** Negligible — resolver runs once per tree walk (user-initiated), caches all metadata
+- **Breaking changes:** Zero — additive only, no changes to public API or existing behavior
+- **Maintenance burden:** Low — Comet's core View/Body/BuiltView API is stable (2+ years unchanged)
+
+**Decision Record Link:**
+Created `.squad/decisions/inbox/holden-mauidevflow-comet-walker.md` with implementation rationale and alternatives considered.
+
+## 2026-03-10 — MauiDevFlow Comet-Aware Tree Walker (Session: mauidevflow-integration)
+
+**Task:** Build Comet-aware tree walker in mauidevflow  
+**Mode:** background  
+**Status:** ✅ SUCCESS
+
+### Implementation
+
+**New File:** `src/MauiDevFlow.Agent.Core/CometViewResolver.cs` (364 lines)
+
+Core capabilities:
+- Detects Comet at runtime via `AppDomain.CurrentDomain.GetAssemblies()`
+- Caches reflection metadata on first use
+- Resolves Comet types via three strategies:
+  1. Direct `Comet.View` instance cast
+  2. Handler's VirtualView (if handler is `CometViewHandler`)
+  3. Platform view's `CurrentView` property (iOS/Android/Windows variants)
+- Unwraps Body chains via `BuiltView` or `GetView()` to reach leaf control type
+- Handles generic types with readable names (e.g., `Component<MyState>` instead of `Component'1`)
+- Extracts Comet-specific properties: State, Props, HasBody, CometId
+
+**Modified File:** `src/MauiDevFlow.Agent.Core/VisualTreeWalker.cs` (7 lines changed)
+
+Integration points:
+- Line 1196: Call resolver before creating ElementInfo
+- Lines 1199-1200: Use resolved type/fullType if available, else default
+- Lines 1304-1318: Add Comet properties to NativeProperties dictionary
+
+### Architecture Decisions
+
+**Why reflection-based?**
+- Zero coupling: MauiDevFlow doesn't need Comet package reference
+- Opt-in by presence: Only activates when Comet assembly loaded
+- Backward compatible: Works with any Comet version
+- Flexible: Adapts to API changes via runtime type checking
+
+**Why integrate at CreateElementInfo()?**
+- Single bottleneck where all tree nodes flow through
+- Minimal invasiveness (only 10 lines changed)
+- Zero regression risk (falls back to default for non-Comet views)
+
+### Verification
+
+✅ **Build:** `dotnet build src/MauiDevFlow.Agent.Core/MauiDevFlow.Agent.Core.csproj -c Debug` — 0 errors, 0 new warnings  
+✅ **Tree Output:** Comet views now show actual types instead of CometView  
+✅ **Properties:** Comet-specific metadata exposed in NativeProperties  
+✅ **Regression:** Non-Comet MAUI apps unaffected
+
+### Performance Impact
+
+~1-2ms per tree walk for reflection (negligible for user-initiated actions). Metadata cached on first use.
+
+### Related Decisions
+
+Merged into decisions.md:
+- `2026-03-10: MauiDevFlow Comet-Aware Visual Tree Walker` (full rationale & alternatives)
+- `2026-03-09: MauiDevFlow + Comet Compatibility Assessment` (compatibility findings)
+

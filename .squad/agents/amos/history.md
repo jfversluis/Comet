@@ -932,3 +932,62 @@ Amos's API contributions (GetControlStyle, DefaultThemeStyles, control styling, 
 **Key Accomplishment:** CometMauiApp now serves as reference for adopting the full style/theme system in real apps.
 
 **Status:** Ready for merge to main.
+
+
+## Learnings
+
+### mauidevflow Integration (2026-03-10)
+
+**Pattern:**
+- mauidevflow is integrated via `builder.AddMauiDevFlowAgent()` extension method in `MauiProgram.CreateMauiApp()`
+- Comet samples use a shared `EnableSampleRuntimeDebugging()` extension that wraps the agent setup
+- All samples inherit configuration from `sample/Directory.Build.targets` which:
+  - References `Redth.MauiDevFlow.Agent` NuGet package in DEBUG builds
+  - Includes `Shared/RuntimeDebug/SampleRuntimeDebugExtensions.cs` via Compile item
+  - Sets Mac Catalyst entitlements to shared `Shared/RuntimeDebug/Entitlements.Debug.plist`
+
+**Gotchas with Comet:**
+- Comet samples use `UseCometApp<TApp>()` pattern, not standard MAUI Application
+- In DEBUG, samples use `UseCometSampleDebugHost(CreateRootView)` which wraps root view in a standard MAUI Application for better debugging
+- The `AddMauiDevFlowAgent()` call must come BEFORE `UseCometApp` or `UseCometSampleDebugHost` in the builder pipeline
+- Local project reference requires removing the NuGet package reference: `<PackageReference Remove="Redth.MauiDevFlow.Agent" />`
+
+**Integration for CometControlsGallery:**
+- Added project reference to `/Users/davidortinau/work/mauidevflow/src/MauiDevFlow.Agent` (overrides NuGet package)
+- Shared entitlements already include `com.apple.security.network.server` for Mac Catalyst
+- No code changes needed — `App.cs` already calls `builder.EnableSampleRuntimeDebugging()` which wires up the agent
+
+**Build verification:**
+- Clean build with no duplicate compile warnings after removing local Compile include (already in Directory.Build.targets)
+- Works for all samples via shared infrastructure in `sample/Directory.Build.targets`
+
+## 2026-03-10 — MauiDevFlow Integration (Session: mauidevflow-integration)
+
+**Task:** Wire mauidevflow into CometControlsGallery  
+**Mode:** background  
+**Status:** ✅ SUCCESS
+
+### Changes Made
+
+1. **Project Reference (CometControlsGallery.csproj)**
+   - Added `<PackageReference Remove="Redth.MauiDevFlow.Agent" />` to override NuGet package
+   - Added `<ProjectReference>` to local mauidevflow at `../../../mauidevflow/src/MauiDevFlow.Agent/MauiDevFlow.Agent.csproj` for DEBUG builds
+   - Inherited via `sample/Directory.Build.targets` — all samples can use the pattern
+
+2. **Code Integration**
+   - Existing `EnableSampleRuntimeDebugging()` in App.cs already calls `builder.AddMauiDevFlowAgent()`
+   - Shared entitlements include `com.apple.security.network.server` for Mac Catalyst
+   - No additional code changes needed
+
+3. **Build Verification**
+   - Clean rebuild completed with 0 warnings (removed duplicate Compile include)
+   - All samples inherit configuration automatically
+
+### Context
+
+MauiDevFlow is a developer tooling library for .NET MAUI that provides visual tree inspection, screenshot capture, and runtime debugging capabilities. The local project reference approach enables rapid iteration on mauidevflow while working on Comet samples.
+
+### Related Decision
+
+Merged into decisions.md: `2026-03-10: mauidevflow Integration via Local Project Reference`
+
