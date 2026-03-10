@@ -803,6 +803,20 @@ public partial class Component
 
 ---
 
+### 2026-03-10 — RadioButton + Gallery Port Follow-through
+
+**Status:** ✅ Complete
+
+**What landed:**
+- `RadioButton` now implements `IRadioButton` directly and bridges MAUI handler expectations through `IContentView`, `ITextStyle`, and `IButtonStroke` surface area.
+- The existing container-first `RadioGroup` model remains intact; `GroupName` is resolved from the parent group when not explicitly set, so Comet keeps its ergonomic grouping API while satisfying MAUI's handler contract.
+- New gallery pages for Shapes, Gestures, Transforms, Navigation, Fonts, and Alerts now compile cleanly in `sample/CometControlsGallery`, with root tabs wired for Shapes and Gestures and drill-down entry points from the existing category pages.
+
+**Key implementation lessons:**
+- The MAUI `RadioButtonHandler` only requires `IRadioButton.IsChecked` plus inherited content/text/stroke interfaces; the real compatibility work is filling in the inherited interfaces, not inventing a larger custom API.
+- For Comet's radio semantics, sibling uncheck behavior is safest in the Comet view layer, not in platform handlers. That preserves the `RadioGroup` contract and keeps handler reuse possible.
+- The gallery sample was already mid-migration to current Comet APIs. Finishing this work required normalizing several older sample pages (`ListViewPage`, `TableViewPage`, `LayoutsPage`, `ThemePage`, helpers) so the requested build chain could actually pass.
+
 ## 2026-03-09T14:12:00Z: Parallel Migration Orchestration Complete
 
 **Role:** Lead Architect  
@@ -1351,4 +1365,3 @@ Integration points:
 Merged into decisions.md:
 - `2026-03-10: MauiDevFlow Comet-Aware Visual Tree Walker` (full rationale & alternatives)
 - `2026-03-09: MauiDevFlow + Comet Compatibility Assessment` (compatibility findings)
-

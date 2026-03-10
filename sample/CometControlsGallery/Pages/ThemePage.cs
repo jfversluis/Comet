@@ -3,117 +3,96 @@ using Comet;
 using Comet.Styles;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
+using MauiAppTheme = Microsoft.Maui.ApplicationModel.AppTheme;
 using static Comet.CometControls;
 
 namespace CometControlsGallery.Pages
 {
-	public class ThemeState
+	public enum ThemeSelectionMode
 	{
-		public bool IsDarkTheme { get; set; }
-		public bool IsActionEnabled { get; set; } = true;
-		public int StyleTapCount { get; set; }
+		Light,
+		Dark,
+		System
 	}
 
-	public class ThemePage : Component<ThemeState>
+	public class ThemePageState
 	{
-		static readonly SectionCard Card = new();
+		public ThemeSelectionMode Mode { get; set; }
+		public bool IsDarkTheme { get; set; }
+	}
 
-		public override View Render()
-		{
-			return NavigationView(
-				ScrollView(
-					VStack(24,
-						BuildThemeToggleSection(),
-						BuildColorSwatchSection(),
-						BuildTypographySection(),
-						BuildButtonStylesSection(),
-						BuildViewModifierSection(),
-						BuildControlStateSection()
-					)
-					.Padding(new Thickness(24))
-				)
-				.Background(ColorTokens.Background)
-			)
-			.Title("Theme");
-		}
-
-		View BuildSection(string title, string description, params View[] content)
-		{
-			var items = new List<View>
-			{
-				Text(title)
-					.Typography(TypographyTokens.TitleLarge)
-					.Color(ColorTokens.OnSurface),
-				Text(description)
-					.Typography(TypographyTokens.BodyMedium)
-					.Color(ColorTokens.OnSurfaceVariant)
-					.LineBreakMode(LineBreakMode.WordWrap)
-			};
-			items.AddRange(content);
-			return Border(VStack(12, items.ToArray())).Modifier(Card);
-		}
-
-		// --- 1. Theme Toggle ---
-
-		View BuildThemeToggleSection() =>
-			BuildSection("Theme Toggle", "Switch between light and dark themes.",
-				HStack(12,
-					Toggle(State.IsDarkTheme)
-						.OnColor(ColorTokens.Primary.Resolve(ThemeManager.Current()))
-						.OnToggled(isDark => SetState(s =>
-						{
-							s.IsDarkTheme = isDark;
-							Theme.Current = isDark ? Defaults.Dark : Defaults.Light;
-						})),
-					Text(State.IsDarkTheme ? "Dark" : "Light")
-						.Typography(TypographyTokens.LabelLarge)
-						.Color(ColorTokens.OnSurface)
+	public class ThemePage : Component<ThemePageState>
+	{
+		public override View Render() =>
+			GalleryPageHelpers.Scaffold("Theme",
+				GalleryPageHelpers.Section("Theme Mode", "Toggle light, dark, or system behavior for the gallery sample.",
+					HStack(8,
+						ThemeButton("Light", ThemeSelectionMode.Light),
+						ThemeButton("Dark", ThemeSelectionMode.Dark),
+						ThemeButton("System", ThemeSelectionMode.System)
+					),
+					GalleryPageHelpers.BodyText(GetThemeLabel()),
+					Text(() => State.IsDarkTheme ? "Dark theme colors are active." : "Light theme colors are active.")
+						.Color(() => State.IsDarkTheme
+							? ColorTokens.Tertiary.Resolve(ThemeManager.Current())
+							: ColorTokens.Primary.Resolve(ThemeManager.Current())),
+					Border(Text(""))
+						.Background(() => State.IsDarkTheme
+							? ColorTokens.SecondaryContainer.Resolve(ThemeManager.Current())
+							: ColorTokens.PrimaryContainer.Resolve(ThemeManager.Current()))
+						.CornerRadius(18)
+						.Frame(height: 72)
+				),
+				BuildColorSwatchSection(),
+				BuildTypographySection(),
+				GalleryPageHelpers.Section("Fonts", "Open the fonts demo from the Theme navigation stack.",
+					GalleryPageHelpers.NavButton("Fonts →", () => Comet.NavigationView.Navigate(this, new FontsPage()))
 				)
 			);
 
-		// --- 2. Color Token Swatches ---
+		View ThemeButton(string label, ThemeSelectionMode mode) =>
+			Button(label, () => ApplyTheme(mode))
+				.ButtonStyle(State.Mode == mode ? ButtonStyles.Filled : ButtonStyles.Outlined);
 
 		View BuildColorSwatchSection() =>
-			BuildSection("Color Tokens", "Material 3 color token swatches from the current theme.",
-				// Primary group
+			GalleryPageHelpers.Section("Color Tokens", "Material 3 color token swatches from the current theme.",
 				SwatchRow(
 					TokenSwatch("Primary", ColorTokens.Primary, ColorTokens.OnPrimary),
 					TokenSwatch("OnPrimary", ColorTokens.OnPrimary, ColorTokens.Primary),
 					TokenSwatch("PrimaryCtr", ColorTokens.PrimaryContainer, ColorTokens.OnPrimaryContainer)
 				),
-				// Secondary group
 				SwatchRow(
 					TokenSwatch("Secondary", ColorTokens.Secondary, ColorTokens.OnSecondary),
 					TokenSwatch("OnSecondary", ColorTokens.OnSecondary, ColorTokens.Secondary),
 					TokenSwatch("SecondaryCtr", ColorTokens.SecondaryContainer, ColorTokens.OnSecondaryContainer)
 				),
-				// Tertiary group
 				SwatchRow(
 					TokenSwatch("Tertiary", ColorTokens.Tertiary, ColorTokens.OnTertiary),
 					TokenSwatch("OnTertiary", ColorTokens.OnTertiary, ColorTokens.Tertiary),
 					TokenSwatch("TertiaryCtr", ColorTokens.TertiaryContainer, ColorTokens.OnTertiaryContainer)
 				),
-				// Error group
 				SwatchRow(
 					TokenSwatch("Error", ColorTokens.Error, ColorTokens.OnError),
 					TokenSwatch("OnError", ColorTokens.OnError, ColorTokens.Error),
 					TokenSwatch("ErrorCtr", ColorTokens.ErrorContainer, ColorTokens.OnErrorContainer)
 				),
-				// Surface group
 				SwatchRow(
 					TokenSwatch("Surface", ColorTokens.Surface, ColorTokens.OnSurface),
 					TokenSwatch("SurfaceVar", ColorTokens.SurfaceVariant, ColorTokens.OnSurfaceVariant),
 					TokenSwatch("SurfaceCtr", ColorTokens.SurfaceContainer, ColorTokens.OnSurface)
-				),
-				// Background & Outline group
-				SwatchRow(
-					TokenSwatch("Background", ColorTokens.Background, ColorTokens.OnBackground),
-					TokenSwatch("Outline", ColorTokens.Outline, ColorTokens.Surface),
-					TokenSwatch("InverseSrf", ColorTokens.InverseSurface, ColorTokens.InverseOnSurface)
 				)
 			);
 
-		View TokenSwatch(string name, Token<Color> token, Token<Color> textToken) =>
+		View BuildTypographySection() =>
+			GalleryPageHelpers.Section("Typography", "The current typography scale from title to label sizes.",
+				TypographySample("DisplaySmall", TypographyTokens.DisplaySmall),
+				TypographySample("HeadlineSmall", TypographyTokens.HeadlineSmall),
+				TypographySample("TitleLarge", TypographyTokens.TitleLarge),
+				TypographySample("BodyLarge", TypographyTokens.BodyLarge),
+				TypographySample("LabelLarge", TypographyTokens.LabelLarge)
+			);
+
+		static View TokenSwatch(string name, Token<Color> token, Token<Color> textToken) =>
 			Border(
 				Text(name)
 					.FontSize(10)
@@ -124,31 +103,9 @@ namespace CometControlsGallery.Pages
 			.CornerRadius(8)
 			.Frame(width: 90, height: 50);
 
-		View SwatchRow(params View[] swatches) =>
-			HStack(8, swatches);
+		static View SwatchRow(params View[] swatches) => HStack(8, swatches);
 
-		// --- 3. Typography Scale ---
-
-		View BuildTypographySection() =>
-			BuildSection("Typography Scale", "Material 3 type scale from DisplayLarge to LabelSmall.",
-				TypographySample("DisplayLarge", TypographyTokens.DisplayLarge),
-				TypographySample("DisplayMedium", TypographyTokens.DisplayMedium),
-				TypographySample("DisplaySmall", TypographyTokens.DisplaySmall),
-				TypographySample("HeadlineLarge", TypographyTokens.HeadlineLarge),
-				TypographySample("HeadlineMedium", TypographyTokens.HeadlineMedium),
-				TypographySample("HeadlineSmall", TypographyTokens.HeadlineSmall),
-				TypographySample("TitleLarge", TypographyTokens.TitleLarge),
-				TypographySample("TitleMedium", TypographyTokens.TitleMedium),
-				TypographySample("TitleSmall", TypographyTokens.TitleSmall),
-				TypographySample("BodyLarge", TypographyTokens.BodyLarge),
-				TypographySample("BodyMedium", TypographyTokens.BodyMedium),
-				TypographySample("BodySmall", TypographyTokens.BodySmall),
-				TypographySample("LabelLarge", TypographyTokens.LabelLarge),
-				TypographySample("LabelMedium", TypographyTokens.LabelMedium),
-				TypographySample("LabelSmall", TypographyTokens.LabelSmall)
-			);
-
-		View TypographySample(string name, Token<FontSpec> token) =>
+		static View TypographySample(string name, Token<FontSpec> token) =>
 			VStack(4,
 				Text(name)
 					.Typography(TypographyTokens.LabelSmall)
@@ -158,91 +115,48 @@ namespace CometControlsGallery.Pages
 					.Color(ColorTokens.OnSurface)
 			);
 
-		// --- 4. Button Styles ---
-
-		View BuildButtonStylesSection() =>
-			BuildSection("Button Styles", "Filled, Outlined, Text, and Elevated button variants.",
-				HStack(8,
-					Button("Filled", () => SetState(s => s.StyleTapCount++))
-						.ButtonStyle(ButtonStyles.Filled),
-					Button("Outlined", () => SetState(s => s.StyleTapCount++))
-						.ButtonStyle(ButtonStyles.Outlined)
-				),
-				HStack(8,
-					Button("Text", () => SetState(s => s.StyleTapCount++))
-						.ButtonStyle(ButtonStyles.Text),
-					Button("Elevated", () => SetState(s => s.StyleTapCount++))
-						.ButtonStyle(ButtonStyles.Elevated)
-				),
-				Button("Disabled", () => { })
-					.ButtonStyle(ButtonStyles.Filled)
-					.IsEnabled(false),
-				Text($"Taps: {State.StyleTapCount}")
-					.Typography(TypographyTokens.LabelLarge)
-					.Color(ColorTokens.OnSurface)
-			);
-
-		// --- 5. ViewModifier Demo ---
-
-		View BuildViewModifierSection()
+		string GetThemeLabel()
 		{
-			var highlight = new HighlightModifier();
-			var composed = Card.Then(highlight);
+			var descriptor = State.Mode switch
+			{
+				ThemeSelectionMode.Light => "Light",
+				ThemeSelectionMode.Dark => "Dark",
+				_ => $"System ({(State.IsDarkTheme ? "Dark" : "Light")})"
+			};
 
-			return BuildSection("ViewModifier Composition", "Compose modifiers with .Then() for reusable styling.",
-				Border(
-					Text("Card modifier only")
-						.Typography(TypographyTokens.BodyMedium)
-						.Color(ColorTokens.OnSurface)
-				).Modifier(Card),
-				Border(
-					Text("Card + Highlight composed")
-						.Typography(TypographyTokens.BodyMedium)
-						.Color(ColorTokens.OnSurface)
-				).Modifier(composed),
-				// Scoped token override demo
-				Border(
-					Text("Scoped Override: Primary → Red")
-						.Typography(TypographyTokens.BodyMedium)
-						.Color(ColorTokens.OnPrimary)
-				)
-				.Background(ColorTokens.Primary)
-				.CornerRadius(12)
-				.Padding(new Thickness(16, 12))
-				.OverrideToken(ColorTokens.Primary, Colors.Red)
-			);
+			return $"Current theme: {descriptor}";
 		}
 
-		// --- 6. Control State Demo ---
-
-		View BuildControlStateSection() =>
-			BuildSection("Control State", "Toggle the button's enabled/disabled state.",
-				HStack(12,
-					Toggle(State.IsActionEnabled)
-						.OnColor(ColorTokens.Primary.Resolve(ThemeManager.Current()))
-						.OnToggled(isOn => SetState(s => s.IsActionEnabled = isOn)),
-					Text(State.IsActionEnabled ? "Enabled" : "Disabled")
-						.Typography(TypographyTokens.LabelLarge)
-						.Color(ColorTokens.OnSurface)
-				),
-				Button("Stateful Button", () => SetState(s => s.StyleTapCount++))
-					.ButtonStyle(ButtonStyles.Filled)
-					.IsEnabled(State.IsActionEnabled),
-				Text($"Taps: {State.StyleTapCount}")
-					.Typography(TypographyTokens.BodySmall)
-					.Color(ColorTokens.OnSurfaceVariant)
-			);
-	}
-
-	class HighlightModifier : ViewModifier
-	{
-		public override View Apply(View view)
+		void ApplyTheme(ThemeSelectionMode mode)
 		{
-			view
-				.Background(new SolidPaint(ColorTokens.PrimaryContainer.Resolve(ThemeManager.Current())))
-				.ClipShape(new RoundedRectangle(12))
-				.Padding(new Thickness(16, 12));
-			return view;
+			var requestedTheme = Microsoft.Maui.Controls.Application.Current?.RequestedTheme ?? MauiAppTheme.Light;
+			var isDark = mode == ThemeSelectionMode.Dark || (mode == ThemeSelectionMode.System && requestedTheme == MauiAppTheme.Dark);
+
+			if (Microsoft.Maui.Controls.Application.Current != null)
+			{
+				Microsoft.Maui.Controls.Application.Current.UserAppTheme = mode switch
+				{
+					ThemeSelectionMode.Light => MauiAppTheme.Light,
+					ThemeSelectionMode.Dark => MauiAppTheme.Dark,
+					_ => MauiAppTheme.Unspecified
+				};
+			}
+
+			var theme = isDark ? Defaults.Dark : Defaults.Light;
+			theme.CurrentTheme = mode switch
+			{
+				ThemeSelectionMode.Light => Comet.Styles.AppTheme.Light,
+				ThemeSelectionMode.Dark => Comet.Styles.AppTheme.Dark,
+				_ => Comet.Styles.AppTheme.System
+			};
+
+			Theme.Current = theme;
+
+			SetState(s =>
+			{
+				s.Mode = mode;
+				s.IsDarkTheme = isDark;
+			});
 		}
 	}
 }

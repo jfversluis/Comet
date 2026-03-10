@@ -40,9 +40,14 @@
 		<ProjectReference Include="..\..\src\Comet\Comet.csproj" />
 	</ItemGroup>
 
-	<PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Debug'">
-		<CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Debug.plist</CodesignEntitlements>
-	</PropertyGroup>
+	<!-- Override NuGet package with local project reference for mauidevflow -->
+	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
+		<PackageReference Remove="Redth.MauiDevFlow.Agent" />
+		<ProjectReference Include="..\..\..\mauidevflow\src\MauiDevFlow.Agent\MauiDevFlow.Agent.csproj" />
+	</ItemGroup>
+
+	<!-- Use shared Debug entitlements that include com.apple.security.network.server -->
+	<!-- This is set by sample/Directory.Build.targets for all samples in Debug mode -->
 
 	<PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Release'">
 		<CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Release.plist</CodesignEntitlements>

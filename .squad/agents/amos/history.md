@@ -988,6 +988,22 @@ Amos's API contributions (GetControlStyle, DefaultThemeStyles, control styling, 
 MauiDevFlow is a developer tooling library for .NET MAUI that provides visual tree inspection, screenshot capture, and runtime debugging capabilities. The local project reference approach enables rapid iteration on mauidevflow while working on Comet samples.
 
 ### Related Decision
-
+ 
 Merged into decisions.md: `2026-03-10: mauidevflow Integration via Local Project Reference`
 
+## Learnings
+
+### CometControlsGallery tabbed navigation integration (2026-03-10)
+
+**What changed:**
+- Reworked `sample/CometControlsGallery/App.cs` to a 6-tab root where each tab hosts a `NavigationView`, allowing drill-down flows per tab instead of flat tab content.
+- Replaced the old `ListsPage` entry point with `ListViewPage` and aligned tab/page wiring to the agreed gallery page class names.
+- Added a shared `GalleryPageHelpers` utility so the gallery pages stay visually consistent while still using `Component<TState>` MVU pages.
+
+**Key gotchas:**
+- Inside pages that use `using static Comet.CometControls;`, the `NavigationView(...)` factory method hides the `NavigationView` type, so static navigation calls must be fully qualified as `Comet.NavigationView.Navigate(...)` / `Comet.NavigationView.Pop(...)`.
+- Comet text styling uses `FontWeight(FontWeight.Bold)` rather than a `FontAttributes(...)` extension on `Text`.
+- Border stroke setup for gallery cards uses `.StrokeColor(...)` + `.StrokeThickness(...)`, and common MAUI structs like `Thickness`, `TextAlignment`, and `IImageSource` still need `using Microsoft.Maui;`.
+
+**Validation:**
+- `dotnet build sample/CometControlsGallery/CometControlsGallery.csproj -c Debug -f net10.0-maccatalyst` ✅
