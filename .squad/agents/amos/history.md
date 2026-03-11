@@ -1205,3 +1205,23 @@ Merged into decisions.md: `2026-03-10: mauidevflow Integration via Local Project
 - Agent-183 (Amos): Gallery text alignment cleanup — part of commit dbfc527e
 
 **All three agents worked in parallel on related alignment issues in the 2026-03-11 cycle.**
+
+---
+
+### 2026-03-11 — MauiDevFlow Integration Findings (Agent Holden)
+
+**Parallel work:** Holden completed deep investigation of MauiDevFlow compatibility with Comet views.
+
+**Findings:** Identified 5 root causes why MauiDevFlow's tap, scroll, and property inspection fail on Comet views:
+- Gesture checking skips Comet's `IGestureView` interface
+- Scroll targeting ignores `IScrollView` implementations
+- Platform ID generation doesn't handle Comet's non-VisualElement views
+- Type checks too narrow for Comet's model
+- MAUI interface controls (Button, Switch) already work
+
+**Comet-side fix implemented:** Auto-stamp platform views with accessibility identifiers (commit 4a9145fb).
+
+**MauiDevFlow-side (pending):** 3 targeted PRs needed for tap, scroll, and ID support.
+
+**Impact for controls work:** This improves testability and automation of Comet-based UIs. The workarounds (use MAUI interfaces for Button/Switch/Toggle) guide controls gallery testing strategy.
+

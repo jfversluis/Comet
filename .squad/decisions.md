@@ -1911,3 +1911,87 @@ Following the framework fix, sidebar controls were refactored (Button → Text +
 
 1. e7c93ce6 — Framework alignment defaults fix (5 files)
 2. dbfc527e — Sidebar UI refactor + gallery text alignment cleanup
+
+---
+
+### 2025-07-17: Visual Parity Skill POC — Comet Limitations
+
+**Owner:** Holden (Lead Architect)  
+**Date:** 2025-07-17  
+**Status:** Documented
+
+**Decision**
+
+The visual parity comparison skill is validated for basic workflow but has critical limitations on Comet views due to the CometHost barrier:
+- **MauiDevFlow property inspection fails** on Comet views
+- **Tap commands fail** on gesture-bearing Comet views
+- **Scroll commands fail** on Comet ScrollView
+- **MAUI interface controls work** (Button, Switch, Slider — these use IButton, ISwitch, etc.)
+
+**Recommended Workflow Adjustments**
+
+1. **Property comparison**: Read source files directly (ControlsPage.cs, GalleryPageHelpers.cs, App.cs) to verify color values and styling instead of using MauiDevFlow property inspection on Comet views.
+2. **Navigation**: Use `maui-devflow MAUI tree` output (which works) rather than attempting interactive tap navigation of Comet sidebar.
+3. **Scrolling**: Rely on visual tree bounds data from MAUI rather than scrolled screenshots, since Comet gallery scroll fails.
+4. **MAUI reference scroll**: Use `scroll --element {scrollview-id}` to target the specific content ScrollView instead of generic `scroll --dy`.
+
+**Impact**
+
+All squad members performing visual parity work must follow Comet-specific workarounds. The skill document should document these as known issues.
+
+---
+
+### 2026-03-11T15:59Z: MauiDevFlow + Comet Gesture/Tap Compatibility
+
+**Owner:** Holden (Lead Architect)  
+**Date:** 2026-03-11  
+**Status:** Partially Implemented  
+**Impact:** Critical — blocks automated visual parity workflow on Comet views
+
+**Context**
+
+MauiDevFlow's tap, scroll, and property inspection commands work on standard MAUI views but fail on Comet views embedded via CometHost. This blocks our automated visual parity comparison skill.
+
+**Root Causes (5 issues identified)**
+
+1. **Tap fails on Comet views with gestures** — MauiDevFlow checks `Microsoft.Maui.Controls.View.GestureRecognizers` for MAUI `TapGestureRecognizer`. Comet views use `IGestureView.Gestures` (Comet's gesture system). The switch statement skips the gesture check entirely.
+
+2. **Scroll fails** — MauiDevFlow targets `Microsoft.Maui.Controls.ScrollView`. Comet's `ScrollView` implements `IScrollView` but is NOT a MAUI ScrollView. Type check `el is VisualElement` fails for Comet views.
+
+3. **Hash-based IDs unstable** — Comet views aren't `Element` or `VisualElement`, so MauiDevFlow uses `RuntimeHelpers.GetHashCode()`. ID is stable per instance but Comet rebuilds view instances on state changes.
+
+4. **`EnsurePlatformStableId` misses Comet views** — Receives `IVisualTreeElement` (Comet.View), checks `is UIKit.UIView` — fails. Doesn't fallback to `IView.Handler.PlatformView`.
+
+5. **Controls with MAUI interfaces work** — `IButton.Clicked()`, `ISwitch.IsOn`, etc. already supported. No fix needed.
+
+**Decisions & Implementation**
+
+**1. Comet-side: Auto-stamp platform views with stable identifiers [IMPLEMENTED]**  
+Modified `ApplyInspectionMetadata()` in `AppHostBuilderExtensions.cs` to:
+- Set `AccessibilityIdentifier` (iOS) / `ContentDescription` (Android) using `View.Id` as fallback
+- Mark gesture-bearing views as `IsAccessibilityElement = true` and `UserInteractionEnabled = true`
+
+**Commit:** 4a9145fb  
+**Files:** `src/Comet/AppHostBuilderExtensions.cs`
+
+**2. MauiDevFlow: Add IGestureView tap support [PROPOSED — external repo]**  
+`HandleTap()` should check `IGestureView.Gestures` for `TapGesture` and call `.Invoke()`. ~15-line addition via reflection (no Comet dependency).
+
+**3. MauiDevFlow: Add IScrollView/IView scroll support [PROPOSED — external repo]**  
+`HandleScroll()` should check `IScrollView` interface and relax `VisualElement` type check to `IView`. Attempt native scroll via `IView.Handler.PlatformView`.
+
+**4. MauiDevFlow: Check IView.AutomationId in GenerateId [PROPOSED — external repo]**  
+`GenerateId()` should check `IView.AutomationId` (not just `VisualElement.AutomationId`) to pick up Comet's auto-stamped platform identifiers.
+
+**Impact**
+
+- **Immediate (implemented):** Comet views are better automation citizens with platform identifiers stamped
+- **Pending (external):** Full MauiDevFlow support requires 3 specific PRs to MauiDevFlow repo
+- **Current workarounds:** Button/Toggle/Switch tap works; Text with gestures and scroll remain unsupported
+
+**Remaining Workarounds**
+
+- Button/Toggle/Switch tap: Works via MAUI interfaces
+- Text with gestures: Does NOT work — must use direct HTTP POST to agent
+- Scroll: Does NOT work — no workaround
+- Tree: Works with `--depth 0` (unlimited)
