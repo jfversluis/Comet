@@ -2246,3 +2246,26 @@ This matches View.GetDesiredSize behavior — Frame size is the final size inclu
 - `dotnet test tests/Comet.Tests/Comet.Tests.csproj --no-build -c Release` → **843 passed, 3 failed (pre-existing), 19 skipped**
 
 **Decision written to:** `.squad/decisions/inbox/holden-appkit-architecture.md`
+
+### AppKit Platform Infrastructure — Phase B (2026-03-11)
+
+**Status:** ✅ Build + Launch verified
+
+**What changed:**
+- Enabled Platform.Maui.MacOS ProjectReference in `src/Comet/Comet.csproj` for `net10.0-macos` TFM
+- Bumped macOS MauiVersion from 10.0.1 to 10.0.31 to match Platform.Maui.MacOS dependency
+- Imported Platform.Maui.MacOS.targets for icon generation and Run target support
+- Added `UseCometAppMacOS<T>()` convenience extension in `AppHostBuilderExtensions.cs` (guarded by `#if __MACOS__`)
+- Created `sample/CometMacApp/` — minimal Comet app targeting net10.0-macos with AppKit entry point
+
+**Critical learnings:**
+1. **MAUI SingleProject strips macOS platform files:** Files under `Platforms/macOS/` are silently removed from Compile items by the MAUI SDK during build. The MSBuild diagnostic shows them as "Discarded". Workaround: place entry point files (`Main.cs`, `MauiMacOSApp.cs`) at the project root, not under `Platforms/`.
+2. **OutputType=Exe is required** for the macOS SDK to produce a `.app` bundle. Without it, you get a bare DLL with no native app bundle.
+3. **MauiVersion must align across the dependency chain.** Platform.Maui.MacOS pins a specific MAUI version; Comet's macOS TFM must match or NuGet will error with NU1605 (package downgrade).
+4. **Platform.Maui.MacOS.targets must be imported** by consuming projects — it provides XProtect workarounds, icon generation from MauiIcon SVGs, and `_MacOSFixRunArguments` for `dotnet build -t:Run` to find the correct .app bundle.
+
+**Verification:**
+- Build: `dotnet build sample/CometMacApp/CometMacApp.csproj -c Debug` → ✅
+- Run: `dotnet build sample/CometMacApp/CometMacApp.csproj -t:Run -f net10.0-macos -c Debug` → ✅ (PID verified)
+- Tests: 846 passed, 0 failed, 19 skipped (unchanged baseline)
+- Other TFMs: maccatalyst builds clean with 0 errors

@@ -18,6 +18,10 @@ using Microsoft.Maui.Platform;
 using Microsoft.Maui.Graphics.Win2D;
 #endif
 
+#if __MACOS__
+using Microsoft.Maui.Platform.MacOS.Hosting;
+#endif
+
 namespace Comet
 {
 	public static class AppHostBuilderExtensions
@@ -49,6 +53,19 @@ namespace Comet
 			builder.UseCometHandlers();
 			return builder;
 		}
+#if __MACOS__
+		/// <summary>
+		/// Registers a Comet app for macOS AppKit. Combines Platform.Maui.MacOS setup
+		/// (UseMauiAppMacOS) with Comet handler overrides (UseCometHandlers).
+		/// </summary>
+		public static MauiAppBuilder UseCometAppMacOS<TApp>(this MauiAppBuilder builder)
+			where TApp : class, IApplication
+		{
+			builder.UseMauiAppMacOS<TApp>();
+			builder.UseCometHandlers();
+			return builder;
+		}
+#endif
 		public static MauiAppBuilder UseCometHandlers(this MauiAppBuilder builder)
 		{
 

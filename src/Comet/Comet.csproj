@@ -5,7 +5,7 @@
 	<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
 	<UseMaui Condition="!$(TargetFramework.Contains('-macos'))">true</UseMaui>
 	<!-- net10.0-macos does not use UseMaui; define MauiVersion explicitly so PackageReference resolves -->
-	<MauiVersion Condition="$(TargetFramework.Contains('-macos')) AND '$(MauiVersion)' == ''">10.0.1</MauiVersion>
+	<MauiVersion Condition="$(TargetFramework.Contains('-macos')) AND '$(MauiVersion)' == ''">10.0.31</MauiVersion>
 	<SingleProject>true</SingleProject>
 	<ImplicitUsings>disable</ImplicitUsings>
 
@@ -22,12 +22,13 @@
 	<PackageReference Include="System.Collections.Immutable" Version="9.0.4" />
   </ItemGroup>
 
-  <!-- Platform.Maui.MacOS provides the AppKit handler bridge for net10.0-macos.
-       Uncomment the ProjectReference once Platform.Maui.MacOS is published to NuGet
-       or available as a local project for development. -->
-  <!-- <ItemGroup Condition="$(TargetFramework.Contains('-macos'))">
+  <!-- Platform.Maui.MacOS provides the AppKit handler bridge for net10.0-macos. -->
+  <ItemGroup Condition="$(TargetFramework.Contains('-macos'))">
 	<ProjectReference Include="..\..\..\mauiplatforms\src\Platform.Maui.MacOS\Platform.Maui.MacOS.csproj" />
-  </ItemGroup> -->
+  </ItemGroup>
+
+  <Import Project="..\..\..\mauiplatforms\src\Platform.Maui.MacOS\build\Platform.Maui.MacOS.targets"
+          Condition="$(TargetFramework.Contains('-macos'))" />
 
   <ItemGroup>
 	<ProjectReference Include="..\Comet.SourceGenerator\Comet.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false">
