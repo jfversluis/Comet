@@ -1619,3 +1619,61 @@ The `MonitorChanges/StopMonitoringChanges` mechanism on `ContextualObject` captu
 **Scope:**
 Currently applied to CometControlsGallery. Can be extended to other samples if needed by adding the same PackageReference Remove + ProjectReference pattern.
 
+
+---
+
+### 2026-03-08: CometControlsGallery — .NET 10 Deprecated API Migration
+
+**Owner:** Amos (Controls & API Dev)  
+**Date:** 2026-03-08  
+**Status:** Implemented
+
+**Context:** .NET MAUI 10 deprecates ListView, TableView, and Cell-based types. CometControlsGallery relied on these. David requested visual parity with the reference sample.
+
+**Decision:**
+1. Remove deprecated pages (ListViewPage.cs, TableViewPage.cs)
+2. Create replacements: CollectionViewPage.cs (VStack + ScrollView list patterns), SettingsPage.cs (settings-style layouts)
+3. Polish all pages: 1px gray borders (0.3 opacity) on cards, corner radius 8px, 24px scaffold padding, 20px section spacing
+4. Update App.cs navigation: "ListView" → "Collection View", "TableView" → "Settings"
+
+**Rationale:** API currency prevents future breakage. Visual consistency via unified GalleryPageHelpers patterns. Developers see .NET 10-safe patterns. VStack + ScrollView workaround until Comet has native CollectionView.
+
+**Impact:** 0 build errors, 4 pre-existing warnings. All 12 gallery pages now consistent. Removed 2 files, added 2 new files, modified 5 files.
+
+**Follow-up:** When Comet gains native CollectionView, update CollectionViewPage.cs to use it instead of VStack + ScrollView.
+
+---
+
+### 2026-03-08: Gallery Navigation Page Contracts
+
+**Owner:** Amos (Controls & API Dev)  
+**Date:** 2026-03-08  
+**Status:** Affirmed
+
+**Decision:** Keep App.cs wired to the full agreed page class navigation graph. Provide in-sample placeholder implementations for any referenced gallery pages absent at integration time so the sample remains buildable.
+
+**Rationale:** Allows App.cs to stay stable against page contracts while individual pages evolve independently. Placeholders can be replaced later without further navigation rewiring.
+
+**Impact:** App.cs remains resilient to page evolution; integration is unblocked.
+
+---
+
+### 2026-03-11T02:27: User Directive — Visual Parity Standards
+
+**By:** David Ortinau (via Copilot)  
+**Date:** 2026-03-11  
+**Status:** Affirmed
+
+**Directives:**
+1. NEVER use emojis for icons — use the same icon assets as the Target Sample (TS) at ~/work/mauiplatforms/samples/Sample
+2. All pages must achieve visual parity with TS
+3. Layouts should be left/start aligned, NOT centered
+4. Do at least 3 comparison passes per issue — fix, verify, fix remaining, verify again
+5. Retain comparison screenshots for review
+6. If a Comet control/layout/feature doesn't do what it needs, implement the missing API/feature before proceeding
+7. Use Opus 4.6 for the extra LLM brainpower on this work
+
+**Rationale:** Quality bar for gallery visual parity. Team output has been below expectations. This directive raises standards and ensures developer trust.
+
+**Impact:** Gallery overhaul (Amos + Holden) now proceeds with clear visual parity standards and additional LLM capacity.
+
