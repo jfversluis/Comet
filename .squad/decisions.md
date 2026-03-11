@@ -1758,3 +1758,26 @@ Comet's `RoundedRectangle(float cornerRadius)` only supports uniform corner radi
 - 846 tests pass, 0 regressions
 - Android and Windows CometHostHandlers have the same pattern and should be updated if resize issues are reported on those platforms
 
+
+---
+
+### 2026-03-11: Wave 4 Gallery Pages — API Disambiguation Patterns
+
+**Owner:** Amos (Controls & API Dev)  
+**Date:** 2026-03-11  
+**Status:** Implemented
+
+**Decision 1: Always Fully Qualify Comet.GestureStatus**  
+When writing Comet gallery pages that import both `Comet` and `Microsoft.Maui` namespaces, always fully qualify `Comet.GestureStatus` — it collides with `Microsoft.Maui.GestureStatus`.
+
+**Decision 2: Use Named Parameter `scale:` for ScaleTo**  
+Always use the named parameter `scale:` when calling `ScaleTo(scale: 1.5, duration: 0.5, easing: easing)`. The call `ScaleTo(1.5, 0.5, easing)` is ambiguous between the uniform-scale and separate-scaleXY overloads.
+
+**Decision 3: Use SetState Instead of Invalidate on Component**  
+Use `SetState(s => { })` instead of `Invalidate()` on `Component<T>`. Component has no Invalidate method; an empty SetState triggers a re-render via the StateManager.
+
+**Decision 4: GraphicsView Inline Draw Lambdas**  
+Comet's GraphicsView accepts `Action<ICanvas, RectF>` directly in its constructor, so no separate IDrawable class is needed for gallery demos.
+
+**Impact:** Wave 4 pages (Gestures, Graphics, Transforms, Theme) completed with 846 tests passing. 4 API gotchas documented to prevent reoccurrence in future gallery work.
+
