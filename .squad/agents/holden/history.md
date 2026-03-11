@@ -1402,3 +1402,24 @@ Merged into decisions.md:
 **Key insight:** The layout alignment chain is: VStack/HStack constructor → LayoutManager `_defaultAlignment` → `SetFrameFromPlatformView(defaultH, defaultV)` → `GetHorizontalLayoutAlignment(container, default)`. If no explicit alignment is set on a view, no style override exists, and no container-type style is set, the default flows all the way through. Center at any level causes centering.
 
 **Alignment resolution order:** (1) View's own environment `HorizontalLayoutAlignment`, (2) Container-type style (e.g., `"VStack.HorizontalLayoutAlignment"`), (3) Layout manager default, (4) `SetFrameFromPlatformView` parameter default.
+
+### 2026-03-11 — Sidebar UI Refactor Following Alignment Fix (Agent 182)
+
+**Status:** ✅ Complete — committed as dbfc527e
+
+**What:** Replaced centered Button controls in sidebar with left-aligned Text + OnTap gesture recognizer. Added explicit `TextAlignment.Start` to category headers.
+
+**Why:** Following the framework-level alignment fix (e7c93ce6), the sidebar controls now inherit the Fill layout alignment by default. Buttons were still centered as a visual hack. This refactor removes the hack and uses the new defaults.
+
+**Files changed:**
+- Sidebar layout controls — Button → Text + gesture
+- Category headers — added `TextAlignment.Start`
+
+**Validation:** Gallery builds cleanly. No test regressions.
+
+**Parallel agent work:**
+- Agent-181 (Holden): Framework defaults fix — commit e7c93ce6
+- Agent-182 (Holden): Sidebar refactor — part of commit dbfc527e
+- Agent-183 (Amos): Gallery text alignment cleanup — part of commit dbfc527e
+
+**All three agents worked in parallel on related alignment issues in the 2026-03-11 cycle.**

@@ -1183,3 +1183,25 @@ Merged into decisions.md: `2026-03-10: mauidevflow Integration via Local Project
 - Fully qualify MAUI types to avoid Comet name conflicts
 
 **Status:** COMPLETE. All gallery pages functional. Ready for merge to main.
+
+### 2026-03-11 — Gallery Text Alignment Cleanup (Agent 183)
+
+**Status:** ✅ Complete — committed as dbfc527e
+
+**What:** Fixed 19 explicit `TextAlignment.Center` instances across 7 gallery pages. Removed emoji from HomePage.
+
+**Why:** Following the framework-level alignment fix (e7c93ce6), gallery pages still had explicit center text alignment. This cleanup aligns gallery code with the new framework defaults.
+
+**Scope:**
+- 19 explicit TextAlignment.Center removals
+- 7 gallery pages updated
+- HomePage emoji removed for consistency
+
+**Validation:** Gallery builds cleanly. All 846 tests pass, 0 regressions.
+
+**Parallel agent work:**
+- Agent-181 (Holden): Framework defaults fix — commit e7c93ce6
+- Agent-182 (Holden): Sidebar UI refactor — part of commit dbfc527e
+- Agent-183 (Amos): Gallery text alignment cleanup — part of commit dbfc527e
+
+**All three agents worked in parallel on related alignment issues in the 2026-03-11 cycle.**
