@@ -27,7 +27,10 @@ namespace CometControlsGallery.Pages
 			GalleryPageHelpers.Scaffold("Controls",
 				GalleryPageHelpers.Section("Buttons", "Interactive buttons, icon treatments, and progress feedback.",
 					Button("Tap me", () => SetState(s => s.ClickCount++))
-						.ButtonStyle(ButtonStyles.Filled),
+						.Color(Colors.White)
+						.Background(Color.FromArgb("#6750A4"))
+						.ClipShape(new RoundedRectangle(20))
+						.Padding(new Thickness(24, 12)),
 					ProgressBar(() => Math.Min(1, State.ClickCount / 10.0)),
 					GalleryPageHelpers.Caption($"Clicks: {State.ClickCount} / 10"),
 					Button("Gradient Button", () => SetState(s => s.ClickCount += 2))
