@@ -1423,3 +1423,21 @@ Merged into decisions.md:
 - Agent-183 (Amos): Gallery text alignment cleanup — part of commit dbfc527e
 
 **All three agents worked in parallel on related alignment issues in the 2026-03-11 cycle.**
+
+### 2025-07-17 — Fix NavigationView Title One-Step-Behind Bug
+
+**Status:** ✅ Complete — committed as da4092d6
+
+**What:** Fixed bug where NavigationView title showed the PREVIOUS page's title instead of the current one when navigating via sidebar.
+
+**Root cause:** The gallery's SidebarLayout used two separate state variables: `selectedIndex` and `selectedTitle`. When `selectedIndex.Value` changed, it triggered a full body rebuild (tracked as a global property). When `selectedTitle.Value` changed afterward, the implicit `State<T>→Binding<T>` conversion captured it as a binding (not global), so `State.UpdateValue` returned true and NO full rebuild occurred. The platform vc.Title was never refreshed from the second state change.
+
+**Fix:** Two-part:
+1. Gallery app: removed `selectedTitle` state; derive title from `navItems[idx].Title` directly — eliminates the timing issue
+2. Framework handler: added title refresh in `ConnectHandler` on `NavigationViewHandler.iOS.cs` — defense in depth for handler transfers
+
+**Files changed:**
+- `sample/CometControlsGallery/App.cs` — removed selectedTitle state, derive title from navItems
+- `src/Comet/Handlers/Navigation/NavigationViewHandler.iOS.cs` — added rootViewController field, title update in ConnectHandler
+
+**Validation:** 846 tests pass, gallery builds clean on maccatalyst.
