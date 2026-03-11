@@ -1820,3 +1820,36 @@ Use `Component<TState>` when the page has a Refresh button or interactive state 
 
 **Impact:** Wave 6 pages (GroupedLists, WebView, DeviceInfo, BatteryNetwork) completed with 846 tests passing. Platform service access pattern documented for all future gallery work involving device capabilities.
 
+
+---
+
+### 2026-03-11: Wave 7 Gallery Pages — Platform Feature Access Patterns
+
+**Owner:** Amos (Controls & API Dev)  
+**Date:** 2026-03-11  
+**Status:** Implemented
+
+**Decision 1: Access MenuBar/ToolbarItems via Underlying MAUI ContentPage**  
+When Comet pages need to manipulate MAUI ContentPage features not directly exposed in the Comet View API (MenuBarItems, ToolbarItems), access the underlying page via:
+```csharp
+var page = Application.Current?.Windows?[0]?.Page as ContentPage;
+```
+After mutating `page.MenuBarItems` or `page.ToolbarItems`, force native re-render with:
+```csharp
+page.Handler?.UpdateValue(nameof(ContentPage.MenuBarItems));
+page.Handler?.UpdateValue(nameof(ContentPage.ToolbarItems));
+```
+
+**Rationale:** Comet Views wrap inside a single MAUI ContentPage (via CometHost). MenuBarItems and ToolbarItems are ContentPage-level concepts, not View-level. This pattern is the simplest bridge until Comet adds first-class MenuBar/Toolbar APIs.
+
+**Decision 2: Use Component<TState> Render Method, Not [Body]**  
+When implementing Component<T> pages, define a `public override View Render()` method, not `[Body] View body()`. The [Body] attribute applies to View subclasses, not Component subclasses.
+
+**Decision 3: Slider Binding Requires All Lambda Parameters**  
+`Slider(() => val, () => min, () => max).OnValueChanged(...)` — all three parameters must be lambdas. Mixing `Func<T>` and literal doubles causes binding errors at runtime.
+
+**Decision 4: Fully Qualify MAUI Types in Gallery Code**  
+When importing both `Comet` and `Microsoft.Maui.Controls`, use fully qualified names for MAUI types (e.g., `Microsoft.Maui.Controls.MenuBarItem`, `Microsoft.Maui.Controls.MenuFlyoutItem`) to avoid conflicts with Comet's own types.
+
+**Impact:** Wave 7 (final) pages (Clipboard, LaunchShare, MenuBar, Toolbar, MultiWindow, TabbedPage, FlyoutPage, Map) completed with 846 tests passing. All stub pages eliminated. Gallery now production-ready with 33 fully functional pages demonstrating all major Comet and MAUI APIs.
+

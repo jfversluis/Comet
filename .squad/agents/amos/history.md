@@ -1130,3 +1130,56 @@ Merged into decisions.md: `2026-03-10: mauidevflow Integration via Local Project
 - Platform services (IBattery, IConnectivity, IDeviceInfo, etc.) accessed via `IPlatformApplication.Current?.Services`
 
 **Build:** 0 errors. Tests: 846 passed, 0 failed.
+
+### Gallery Wave 7 (FINAL) — Clipboard, LaunchShare, MenuBar, Toolbar, MultiWindow, plus TabbedPage, FlyoutPage, Map (2026-03-12)
+
+**What:** Replaced all 8 remaining stub pages with fully functional implementations matching Target Sample (TS):
+- **ClipboardStoragePage** — 3 sections: Clipboard (copy/paste via IClipboard), Preferences (save/load/clear via IPreferences), Secure Storage (store/retrieve via ISecureStorage). Uses `Component<ClipboardStorageState>` with async clipboard operations.
+- **LaunchSharePage** — 3 sections: Browser & Launcher (open URL via IBrowser, launch file via ILauncher+IFilePicker), Share (text sharing via IShare), File Picker (pick and display file info). Uses `Component<LaunchShareState>`.
+- **MenuBarPage** — Demonstrates runtime menu bar manipulation. Since MenuBarItems are a MAUI ContentPage feature (not directly on Comet Views), accesses the underlying ContentPage via `Application.Current.Windows[0].Page`. Buttons add custom menus, submenus, override Edit menu, clear all. Uses `page.Handler?.UpdateValue(nameof(ContentPage.MenuBarItems))` to force re-render.
+- **ToolbarPage** — Add/remove toolbar items at runtime via underlying MAUI ContentPage. Text items, disabled items, SF Symbol icon items (6 icon grid), remove last, clear all. Shows current item list with descriptions.
+- **MultiWindowPage** — Open new windows via `Application.Current.OpenWindow()`. 4 window style variants (default, unified, compact, expanded), Shell sidebar demo, close window button. Window count tracking.
+- **TabbedPageDemoPage** — 3 tab simulation: Overview (feature list), Settings (toggle/slider controls), Stats (stat cards + progress bar).
+- **FlyoutPageDemoPage** — Sidebar+detail mail simulation. 6 mail folders, click to show random messages with sender avatars and previews.
+- **MapPage** — Location selector with 6 cities, blue map placeholder, feature list (pins, circles, polylines, polygons), add pin button. Notes MapView limitation.
+
+**Key Comet API patterns learned:**
+- `Component<T>` requires `public override View Render()` — NOT `[Body] View body()`
+- MenuBarItems/ToolbarItems accessed via MAUI ContentPage: `Application.Current.Windows[0].Page as ContentPage`
+- After modifying `page.MenuBarItems`, call `page.Handler?.UpdateValue(nameof(ContentPage.MenuBarItems))` to force native menu rebuild
+- `Slider(() => val, () => 0.0, () => 100.0)` — all 3 params need lambdas (can't mix Func and literal double)
+- `Slider.OnValueChanged()` (not `.OnChanged()`) is the correct extension method
+- `ProgressBar` with literal: `new ProgressBar(() => 0.73)` — must use `new` keyword, not factory method
+- `FlyoutBehavior` enum is in `Microsoft.Maui` namespace (not `Microsoft.Maui.Controls`)
+- `HStack(0, ...)` needs `(float?)` cast: `HStack((float?)0, ...)`
+- MAUI's `KeyboardAcceleratorModifiers` is not directly accessible from Comet gallery; Comet has its own `KeyboardAccelerator` in `Comet` namespace via MauiCompatibility.cs
+- For MAUI Controls types (MenuBarItem, MenuFlyoutItem, etc.), use fully qualified `Microsoft.Maui.Controls.MenuBarItem` to avoid conflicts with Comet's own types
+
+**Build:** 0 errors. Tests: 846 passed, 0 failed.
+**All stub pages eliminated.** Final wave complete.
+
+---
+
+### Gallery Wave 7 (FINAL) — Clipboard, LaunchShare, MenuBar, Toolbar, MultiWindow, plus TabbedPage, FlyoutPage, Map (2026-03-12)
+
+**Completion:** All stub pages eliminated. Controls gallery is production-ready.
+
+**What:** Replaced all 8 remaining stub pages with fully functional implementations matching Target Sample (TS):
+- **ClipboardStoragePage** — 3 sections: Clipboard (copy/paste via IClipboard), Preferences (save/load/clear via IPreferences), Secure Storage (store/retrieve via ISecureStorage). Uses `Component<ClipboardStorageState>` with async clipboard operations.
+- **LaunchSharePage** — 3 sections: Browser & Launcher (open URL via IBrowser, launch file via ILauncher+IFilePicker), Share (text sharing via IShare), File Picker (pick and display file info). Uses `Component<LaunchShareState>`.
+- **MenuBarPage** — Demonstrates runtime menu bar manipulation. Since MenuBarItems are a MAUI ContentPage feature (not directly on Comet Views), accesses the underlying ContentPage via `Application.Current.Windows[0].Page`. Buttons add custom menus, submenus, override Edit menu, clear all. Uses `page.Handler?.UpdateValue(nameof(ContentPage.MenuBarItems))` to force re-render.
+- **ToolbarPage** — Add/remove toolbar items at runtime via underlying MAUI ContentPage. Text items, disabled items, SF Symbol icon items (6 icon grid), remove last, clear all. Shows current item list with descriptions.
+- **MultiWindowPage** — Open new windows via `Application.Current.OpenWindow()`. 4 window style variants (default, unified, compact, expanded), Shell sidebar demo, close window button. Window count tracking.
+- **TabbedPageDemoPage** — 3 tab simulation: Overview (feature list), Settings (toggle/slider controls), Stats (stat cards + progress bar).
+- **FlyoutPageDemoPage** — Sidebar+detail mail simulation. 6 mail folders, click to show random messages with sender avatars and previews.
+- **MapPage** — Location selector with 6 cities, blue map placeholder, feature list (pins, circles, polylines, polygons), add pin button. Notes MapView limitation.
+
+**Build:** 0 errors. Tests: 846 passed, 0 failed.
+
+**Key patterns documented in decisions.md:**
+- MenuBar/ToolbarItems accessed via MAUI ContentPage escape hatch
+- Component<T> uses `public override View Render()` method
+- Slider requires all three params as lambdas
+- Fully qualify MAUI types to avoid Comet name conflicts
+
+**Status:** COMPLETE. All gallery pages functional. Ready for merge to main.
