@@ -1007,3 +1007,30 @@ Merged into decisions.md: `2026-03-10: mauidevflow Integration via Local Project
 
 **Validation:**
 - `dotnet build sample/CometControlsGallery/CometControlsGallery.csproj -c Debug -f net10.0-maccatalyst` ✅
+
+### CometControlsGallery: Deprecated API migration to .NET 10 (2025-03-08)
+
+**What:** Migrated CometControlsGallery from deprecated ListView/TableView to CollectionView/Settings patterns. Removed ListViewPage.cs and TableViewPage.cs, created CollectionViewPage.cs and SettingsPage.cs with no deprecated APIs.
+
+**Why:** .NET 10 deprecates ListView, TableView, TextCell, SwitchCell, EntryCell, ImageCell, ViewCell, and Cell. David flagged the gallery as "looking like crap" and wanted visual parity with the MAUI reference sample at /Users/davidortinau/work/mauiplatforms/samples/ControlGallery.
+
+**Pattern:** CollectionViewPage uses VStack with scrollable item list (Comet doesn't have CollectionView control yet). Each item has a 4px colored left accent bar (Spacer), icon (24px), title (15px bold), and description (12px gray). SettingsPage uses VStack + Section cards with text rows and toggle rows, separated by 1px gray dividers.
+
+**Visual polish applied across all pages:**
+- GalleryPageHelpers.Scaffold() uses 24px page padding and 20px section spacing
+- GalleryPageHelpers.Section() adds 1px gray border (0.3 opacity) to section cards
+- SectionCard uses 8px rounded corners (down from 16px) to match reference sample tighter visual rhythm
+- All pages use consistent ColorTokens and TypographyTokens for text styling
+
+**Key files:**
+- `sample/CometControlsGallery/Pages/CollectionViewPage.cs` — new collection demo with 8 DemoItems, colored accent bars
+- `sample/CometControlsGallery/Pages/SettingsPage.cs` — new settings-style layout with Account, Preferences, About sections
+- `sample/CometControlsGallery/App.cs` — nav items updated to reference CollectionViewPage and SettingsPage
+- `sample/CometControlsGallery/Pages/GalleryPageHelpers.cs` — added border stroke + adjusted padding
+- `sample/CometControlsGallery/SectionCard.cs` — reduced corner radius from 16 to 8
+- `sample/CometControlsGallery/Pages/AlertsPage.cs` — migrated to use GalleryPageHelpers.Section()
+- `sample/CometControlsGallery/Pages/FontsPage.cs` — migrated to use GalleryPageHelpers.Section()
+
+**Build verification:** `dotnet build sample/CometControlsGallery/CometControlsGallery.csproj -c Debug -f net10.0-maccatalyst` — 0 errors, 4 warnings (pre-existing nullability warnings in App.cs).
+
+**Decision:** Since Comet doesn't yet have a CollectionView control, we used VStack + ScrollView to demonstrate list patterns without deprecated ListView. This keeps the gallery .NET 10-compliant while demonstrating the same visual patterns developers would use in a real app.

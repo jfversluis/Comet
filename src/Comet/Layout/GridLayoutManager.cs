@@ -55,6 +55,15 @@ namespace Comet.Layout
 		{
 			var available = new Size(widthConstraint, heightConstraint);
 			var layout = grid;
+			var childCount = layout.Count;
+
+			// Invalidate stale constraints if children changed
+			if (_constraints.Count > 0 && _constraints.Count != childCount)
+				Invalidate();
+
+			if (childCount == 0)
+				return Size.Zero;
+
 			if (_constraints.Count == 0)
 			{
 				var maxRow = 0;
@@ -86,7 +95,7 @@ namespace Comet.Layout
 				_lastSize = available;
 			}
 
-			for (var index = 0; index < _constraints.Count; index++)
+			for (var index = 0; index < _constraints.Count && index < layout.Count; index++)
 			{
 				var position = _constraints[index];
 				var view = layout[index];
@@ -135,7 +144,6 @@ namespace Comet.Layout
 					view.MeasurementValid = true;
 				}
 				view.Measure(w, h);
-				//view.SetFrameFromPlatformView(new Rect(x, y, w, h));
 			}
 
 			return new Size(_width, _height);
@@ -146,13 +154,21 @@ namespace Comet.Layout
 			var layout = grid;
 			var measured = bounds.Size;
 			var size = bounds.Size;
+
+			// Invalidate stale constraints if children changed
+			if (_constraints.Count > 0 && _constraints.Count != layout.Count)
+				Invalidate();
+
+			if (layout.Count == 0)
+				return measured;
+
 			if (_gridX == null || !_lastSize.Equals(size))
 			{
 				ComputeGrid(size.Width, size.Height);
 				_lastSize = size;
 			}
 
-			for (var index = 0; index < _constraints.Count; index++)
+			for (var index = 0; index < _constraints.Count && index < layout.Count; index++)
 			{
 				var position = _constraints[index];
 				var view = layout[index];

@@ -14,16 +14,10 @@ public string Status { get; set; } = "No alert shown yet.";
 
 public class AlertsPage : Component<AlertsPageState>
 {
-static readonly SectionCard Card = new();
-
 		public override Comet.View Render()
 {
-return NavigationView(
-ScrollView(
-VStack(24,
-BuildSection(
-"Alerts",
-"Drive platform alerts through the active MAUI page.",
+return GalleryPageHelpers.Scaffold("Alerts",
+				GalleryPageHelpers.Section("Alerts", "Drive platform alerts through the active MAUI page.",
 Button("Display Alert", ShowSimpleAlert)
 .ButtonStyle(ButtonStyles.Filled),
 Button("Display Confirm", ShowConfirmAlert)
@@ -42,28 +36,7 @@ Text(() => State.Status)
 .CornerRadius(14)
 .Padding(new Thickness(16))
 )
-)
-.Padding(new Thickness(24))
-)
-.Background(ColorTokens.Background)
-)
-.Title("Alerts");
-}
-
-		Comet.View BuildSection(string title, string description, params Comet.View[] content)
-{
-			var items = new List<Comet.View>
-{
-Text(title)
-.Typography(TypographyTokens.TitleLarge)
-.Color(ColorTokens.OnSurface),
-Text(description)
-.Typography(TypographyTokens.BodyMedium)
-.Color(ColorTokens.OnSurfaceVariant)
-.LineBreakMode(LineBreakMode.WordWrap)
-};
-items.AddRange(content);
-return Border(VStack(16, items.ToArray())).Modifier(Card);
+);
 }
 
 async void ShowSimpleAlert()

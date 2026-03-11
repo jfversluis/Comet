@@ -14,8 +14,8 @@ namespace CometControlsGallery.Pages
 
 		public static View Scaffold(string title, params View[] sections) =>
 			ScrollView(
-				VStack(24, sections)
-					.Padding(new Thickness(20))
+				VStack(20, sections)
+					.Padding(new Thickness(24))
 			)
 			.Background(ColorTokens.Background)
 			.Title(title);
@@ -28,6 +28,7 @@ namespace CometControlsGallery.Pages
 				Text(description)
 					.Typography(TypographyTokens.BodyMedium)
 					.Color(ColorTokens.OnSurfaceVariant)
+					.LineBreakMode(LineBreakMode.WordWrap)
 			};
 
 			views.AddRange(content);
@@ -35,6 +36,8 @@ namespace CometControlsGallery.Pages
 			return Border(
 				VStack(12, views.ToArray())
 			)
+			.StrokeColor(new Color(128, 128, 128, 0.3f))
+			.StrokeThickness(1)
 			.Modifier(Card);
 		}
 

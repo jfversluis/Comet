@@ -11,7 +11,7 @@ namespace CometControlsGallery
 		{
 			view
 				.Background(new SolidPaint(ColorTokens.Surface.Resolve(ThemeManager.Current())))
-				.ClipShape(new RoundedRectangle(16))
+				.ClipShape(new RoundedRectangle(8))
 				.Padding(new Thickness(20));
 			return view;
 		}

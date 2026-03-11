@@ -9,6 +9,9 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using static Comet.CometControls;
+#if DEBUG
+using MauiDevFlow.Agent;
+#endif
 using MauiApplication = Microsoft.Maui.Controls.Application;
 using MauiContentPage = Microsoft.Maui.Controls.ContentPage;
 using MauiWindow = Microsoft.Maui.Controls.Window;
@@ -41,6 +44,10 @@ namespace CometControlsGallery
 
 			builder.UseMauiApp<App>();
 			builder.UseCometHandlers();
+
+#if DEBUG
+			builder.AddMauiDevFlowAgent();
+#endif
 
 #if MACCATALYST
 			builder.ConfigureLifecycleEvents(events =>
@@ -88,8 +95,8 @@ namespace CometControlsGallery
 			new NavItem { Title = "Shapes", Icon = "🔷", Category = "Shapes & Visuals", CreatePage = () => new ShapesPage() },
 			new NavItem { Title = "Transforms", Icon = "🔄", Category = "Shapes & Visuals", CreatePage = () => new TransformsPage() },
 			new NavItem { Title = "Gestures", Icon = "👆", Category = "Shapes & Visuals", CreatePage = () => new GesturesPage() },
-			new NavItem { Title = "ListView", Icon = "📋", Category = "Lists & Collections", CreatePage = () => new ListViewPage() },
-			new NavItem { Title = "TableView", Icon = "📊", Category = "Lists & Collections", CreatePage = () => new TableViewPage() },
+			new NavItem { Title = "Collection View", Icon = "📋", Category = "Lists & Collections", CreatePage = () => new CollectionViewPage() },
+			new NavItem { Title = "Settings", Icon = "⚙️", Category = "Lists & Collections", CreatePage = () => new SettingsPage() },
 			new NavItem { Title = "Theme", Icon = "🎨", Category = "Settings", CreatePage = () => new ThemePage() },
 			new NavItem { Title = "Navigation Demo", Icon = "🧭", Category = "Settings", CreatePage = () => new NavigationDemoPage() },
 		};
@@ -150,26 +157,21 @@ namespace CometControlsGallery
 				var isSelected = selectedIndex.Value == index;
 
 				items.Add(
-					HStack(spacing: 8,
-						Text(item.Icon).FontSize(14),
-						Text(item.Title)
-							.FontSize(14)
-							.Color(isSelected ? new Color(88, 86, 214) : new Color(60, 60, 67))
-					)
-					.Padding(new Thickness(16, 8))
-					.Background(isSelected ? new Color(88, 86, 214, 25) : Colors.Transparent)
-					.OnTap(_ =>
+					Button($"{item.Icon}  {item.Title}", () =>
 					{
 						selectedIndex.Value = index;
 						selectedTitle.Value = navItems[index].Title;
 					})
+					.FontSize(14)
+					.Color(isSelected ? new Color(88, 86, 214) : new Color(60, 60, 67))
+					.Background(isSelected ? new Color(88, 86, 214, 25) : new Color(242, 242, 247))
+					.Padding(new Thickness(16, 8))
+					.Frame(height: 36)
 				);
 			}
 
-			return ScrollView(
-				VStack((float?)0, items.ToArray())
-			)
-			.Background(new Color(242, 242, 247));
+			return VStack((float?)0, items.ToArray())
+				.Background(new Color(242, 242, 247));
 		}
 	}
 }
