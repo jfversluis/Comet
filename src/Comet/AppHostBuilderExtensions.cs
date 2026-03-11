@@ -28,10 +28,12 @@ namespace Comet
 		static readonly ConditionalWeakTable<UIKit.UITextField, EventHandler> _pickerEditingDidEndHandlers = new();
 		static readonly ConditionalWeakTable<UIKit.UITextField, EventHandler> _entryEditingChangedHandlers = new();
 		static readonly ConditionalWeakTable<UIKit.UITextView, EventHandler> _editorChangedHandlers = new();
+		static readonly ConditionalWeakTable<UIKit.UISearchBar, EventHandler<UIKit.UISearchBarTextChangedEventArgs>> _searchBarTextChangedHandlers = new();
 #elif ANDROID
 		static readonly ConditionalWeakTable<object, object> _pickerTextChangedHandlers = new();
 		static readonly ConditionalWeakTable<object, object> _entryTextChangedHandlers = new();
 		static readonly ConditionalWeakTable<object, object> _editorTextChangedHandlers = new();
+		static readonly ConditionalWeakTable<object, object> _searchBarTextChangedHandlers = new();
 #endif
 		static void AddHandlers(this IMauiHandlersCollection collection, Dictionary<Type, Type> handlers) => handlers.ForEach(x => collection.AddHandler(x.Key, x.Value));
 		public static MauiAppBuilder UseCometApp<TApp>(this MauiAppBuilder builder)
@@ -640,6 +642,45 @@ namespace Comet
 					try { callback(editor.Text ?? string.Empty); }
 					catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[Comet] Editor TextChanged callback failed: {ex.Message}"); }
 				};
+#endif
+			});
+
+			// Apply OnTextChanged callback to SearchBar via handler mapper
+			SearchBarHandler.Mapper.AppendToMapping("CometSearchBarTextChanged", (handler, view) =>
+			{
+				if (view is not View cometView)
+					return;
+				var callback = cometView.GetEnvironment<Action<string>>(EnvironmentKeys.Entry.TextChanged);
+				if (callback == null)
+					return;
+				var searchBar = handler.PlatformView;
+				if (searchBar == null)
+					return;
+#if __IOS__ || MACCATALYST
+				if (_searchBarTextChangedHandlers.TryGetValue(searchBar, out var oldHandler))
+				{
+					searchBar.TextChanged -= oldHandler;
+					_searchBarTextChangedHandlers.Remove(searchBar);
+				}
+				EventHandler<UIKit.UISearchBarTextChangedEventArgs> newHandler = (s, e) =>
+				{
+					try { callback(e.SearchText ?? string.Empty); }
+					catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[Comet] SearchBar TextChanged callback failed: {ex.Message}"); }
+				};
+				_searchBarTextChangedHandlers.AddOrUpdate(searchBar, newHandler);
+				searchBar.TextChanged += newHandler;
+#elif ANDROID
+				if (_searchBarTextChangedHandlers.TryGetValue(searchBar, out var oldObj))
+				{
+					_searchBarTextChangedHandlers.Remove(searchBar);
+				}
+				EventHandler<global::AndroidX.AppCompat.Widget.SearchView.QueryTextChangeEventArgs> newAndroidHandler = (s, e) =>
+				{
+					try { callback(e.NewText ?? string.Empty); }
+					catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[Comet] SearchBar TextChanged callback failed: {ex.Message}"); }
+				};
+				_searchBarTextChangedHandlers.AddOrUpdate(searchBar, newAndroidHandler);
+				searchBar.QueryTextChange += newAndroidHandler;
 #endif
 			});
 
