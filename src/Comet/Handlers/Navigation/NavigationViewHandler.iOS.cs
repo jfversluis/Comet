@@ -16,6 +16,12 @@ namespace Comet.Handlers
 		{
 			var vc = new Comet.iOS.CometViewController { MauiContext = MauiContext, CurrentView = VirtualView.Content };
 			var nav = VirtualView;
+
+			// Set title from NavigationView (content view may not carry the title)
+			var navTitle = nav.GetTitle();
+			if (!string.IsNullOrEmpty(navTitle))
+				vc.Title = navTitle;
+
 			if (nav.Navigation != null)
 			{
 				viewController = vc;
@@ -40,6 +46,11 @@ namespace Comet.Handlers
 			{
 				navigationController.PopToRootViewController(false);
 				vc.CurrentView = newContent;
+				// Update title from the current NavigationView — the content view
+				// may not carry the title in its own environment.
+				var title = VirtualView?.GetTitle();
+				if (!string.IsNullOrEmpty(title))
+					vc.Title = title;
 			});
 			navigationController.PushViewController(vc, true);
 

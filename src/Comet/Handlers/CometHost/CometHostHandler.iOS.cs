@@ -53,7 +53,7 @@ public partial class CometHostHandler : ViewHandler<CometHost, CometHostHandler.
 			
 			var platformView = viewToRender.ToPlatform(MauiContext);
 			if (platformView != null)
-				PlatformView.SetContent(platformView, viewToRender);
+				PlatformView.SetContent(platformView, viewToRender, cometView, MauiContext);
 		}
 		catch (Exception ex)
 		{
@@ -65,17 +65,23 @@ public partial class CometHostHandler : ViewHandler<CometHost, CometHostHandler.
 	{
 		UIView _contentView;
 		IView _virtualView;
+		Comet.View _rootCometView;
+		IMauiContext _mauiContext;
 
 		public CometHostContainerView()
 		{
 			ClipsToBounds = true;
 		}
 
-		public void SetContent(UIView platformView, IView virtualView)
+		public void SetContent(UIView platformView, IView virtualView, Comet.View rootCometView = null, IMauiContext mauiContext = null)
 		{
 			_contentView?.RemoveFromSuperview();
 			_contentView = platformView;
 			_virtualView = virtualView;
+			if (rootCometView != null)
+				_rootCometView = rootCometView;
+			if (mauiContext != null)
+				_mauiContext = mauiContext;
 			if (_contentView != null)
 			{
 				_contentView.AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
@@ -89,6 +95,8 @@ public partial class CometHostHandler : ViewHandler<CometHost, CometHostHandler.
 			_contentView?.RemoveFromSuperview();
 			_contentView = null;
 			_virtualView = null;
+			_rootCometView = null;
+			_mauiContext = null;
 		}
 
 		public override void LayoutSubviews()
@@ -96,6 +104,16 @@ public partial class CometHostHandler : ViewHandler<CometHost, CometHostHandler.
 			base.LayoutSubviews();
 			if (_contentView == null || Bounds.Width <= 0 || Bounds.Height <= 0)
 				return;
+
+			// Re-resolve the virtual view from the root Comet View in case its
+			// body was rebuilt (state change). Without this, _virtualView references
+			// a disposed Grid and resize layout breaks.
+			if (_rootCometView != null)
+			{
+				var currentView = _rootCometView.GetView();
+				if (currentView != null && currentView != _virtualView)
+					_virtualView = currentView;
+			}
 
 			_virtualView?.Measure(Bounds.Width, Bounds.Height);
 			_virtualView?.Arrange(new Microsoft.Maui.Graphics.Rect(0, 0, Bounds.Width, Bounds.Height));

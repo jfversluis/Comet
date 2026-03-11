@@ -448,11 +448,12 @@ namespace Comet
 			
 			// Only call UpdateFromOldView if we're actually returning a different view
 			// (for Components, newView and oldView are now the same instance)
+			// Run synchronously so handler transfer completes before ResetView
+			// disposes the old view (async dispatch caused a race condition where
+			// old handlers were already null by the time transfer ran).
 			if (mergedComponent == null || !reusedOldComponentInstance)
 			{
-				ThreadHelper.RunOnMainThread(() => {
-					newView.UpdateFromOldView(oldView);
-				});
+				newView.UpdateFromOldView(oldView);
 			}
 
 			return newView;
