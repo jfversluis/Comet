@@ -860,6 +860,9 @@ namespace Comet
 #if __MOBILE__
 				{typeof(ScrollView), typeof(Handlers.ScrollViewHandler) },
 				{typeof(ShapeView), typeof(Handlers.ShapeViewHandler)},
+#elif __MACOS__
+				{typeof(ScrollView), typeof(Handlers.ScrollViewHandler) },
+				{typeof(ShapeView), typeof(Handlers.ShapeViewHandler)},
 #else
 				
 				{typeof(ScrollView), typeof(Microsoft.Maui.Handlers.ScrollViewHandler) },
@@ -867,6 +870,9 @@ namespace Comet
 
 
 #if __IOS__
+				{typeof(NavigationView), typeof (Handlers.NavigationViewHandler)},
+				{typeof(View), typeof(CometViewHandler)},
+#elif __MACOS__
 				{typeof(NavigationView), typeof (Handlers.NavigationViewHandler)},
 				{typeof(View), typeof(CometViewHandler)},
 #else

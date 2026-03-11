@@ -2201,3 +2201,48 @@ This matches View.GetDesiredSize behavior — Frame size is the final size inclu
 3. **CUIScrollView** (b2013962): Added SafeAreaInsetsDidChange override for safe area change re-layout
 
 **Note:** Step 8's text "buttercream." may appear truncated within its row — this is a separate text measurement issue within HStack, not related to ScrollView clipping.
+### 2026-03-11 — AppKit Platform Infrastructure (Phase A)
+
+**Status:** ✅ Complete — macOS TFM compiles, all existing tests pass
+
+**Context:** David directed the team to proceed with AppKit support, overriding the previous assessment. Working in the `Comet-AppKit` worktree on branch `squad/comet-appkit-platform`.
+
+**What was built:**
+
+1. **Build infrastructure:**
+   - Added `net10.0-macos` to `Comet.csproj` TFMs with `SupportedOSPlatformVersion 14.0`
+   - `UseMaui` conditioned to exclude macOS (MAUI workload doesn't support AppKit)
+   - `MauiVersion` defined explicitly for macOS TFM
+   - `Directory.Build.targets` updated with `*.MacOS.cs` / `MacOS/` file filtering
+   - Platform.Maui.MacOS project reference stubbed (commented, ready to enable)
+
+2. **Handler stubs (10 `.MacOS.cs` files):**
+   - All 10 Comet handler types have macOS partial class implementations
+   - Pattern: `ViewHandler<CometType, NSView>` using AppKit native types
+   - CometViewHandler uses CometNSView (our NSView subclass with IReloadHandler)
+   - ScrollViewHandler wraps NSScrollView
+   - TabViewHandler uses CUITabNSView (NSSegmentedControl + content area)
+   - NavigationViewHandler uses custom NSView container with push/pop actions
+   - CollectionView/ListView/CometHost/MauiViewHost/NativeHost all have AppKit stubs
+
+3. **Platform native views (4 files in `Platform/MacOS/`):**
+   - `CometNSView.cs` — NSView + IReloadHandler, mirrors `CometView.cs` (iOS)
+   - `CUITabNSView.cs` — Tab container with NSSegmentedControl, mirrors `CUITabView.cs`
+   - `HandlerExtensions.cs` — Gesture add/remove stubs
+   - `MacOSViewExtensions.cs` — `ToMacOSPlatform()` bridge method
+
+4. **Handler registration:** AppHostBuilderExtensions.cs updated with `#elif __MACOS__` branches
+
+**Key technical insights:**
+- `__MACOS__` is auto-defined by the macOS workload for `net10.0-macos`
+- MAUI's core assemblies resolve for macOS even without `UseMaui=true` (platform-agnostic lib)
+- The source generator runs identically for macOS — zero changes needed
+- AppKit's NSView uses `Layout()` not `LayoutSubviews()`, `NeedsLayout = true` not `SetNeedsLayout()`
+- No `ToPlatformColor()` extension on macOS without Platform.Maui.MacOS; used `CGColor.CreateSrgb()` instead
+
+**Validation:**
+- `dotnet build src/Comet/Comet.csproj -c Release -f net10.0-macos` → **Build succeeded**
+- `dotnet build src/Comet/Comet.csproj -c Release -f net10.0-maccatalyst` → **Build succeeded** (no regression)
+- `dotnet test tests/Comet.Tests/Comet.Tests.csproj --no-build -c Release` → **843 passed, 3 failed (pre-existing), 19 skipped**
+
+**Decision written to:** `.squad/decisions/inbox/holden-appkit-architecture.md`
