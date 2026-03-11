@@ -1073,3 +1073,23 @@ Merged into decisions.md: `2026-03-10: mauidevflow Integration via Local Project
 - ShapeView `WithDash` helper: `shape.SetEnvironment("StrokeDashPattern", float[], false)`
 
 **Build:** 0 errors. Tests: 846 passed, 0 failed.
+
+### Gallery Wave 4 — Gestures, Graphics, Transforms, Theme (2026-03-11)
+
+**What:** Rewrote four gallery pages to match Target Sample (TS) at `/Users/davidortinau/work/mauiplatforms/samples/Sample/Pages/`:
+- **GesturesPage** — 5 sections matching TS exactly: TapGestureRecognizer (blue box, tap count + color toggle), PanGestureRecognizer (green box in gray container with drag translation), SwipeGestureRecognizer (light blue box with directional swipe detection), PinchGestureRecognizer (purple box with scale tracking), PointerGestureRecognizer (steel blue box with hover/move/exit detection and color change).
+- **GraphicsPage** — 4 `GraphicsView` sections with inline `Draw` lambdas: Basic Shapes (circle, ellipse, rectangle, rounded rect, line with labels), Color Palette (9-color swatch grid), Chart Demo (10-bar chart with axes, labels, title), Nested Shapes & Text (dark bg with overlapping semi-transparent circles, text, outlined buttons).
+- **TransformsPage** — 3 sections: Basic Transforms (DodgerBlue box with TranslateTo/ScaleTo/RotateTo/FadeTo buttons + Reset All), AnchorX/AnchorY (MediumPurple box with 3 anchor preset buttons triggering rotation), Composite Animation (Coral box with combined translate+scale+rotate+fade using autoReverse).
+- **ThemePage** — Simple layout matching TS: title, platform/user/effective theme info label, themed label (responds to dark/light), themed color box, 3 buttons (Force Light, Force Dark, Follow System) that set `Application.Current.UserAppTheme`.
+
+**Key Comet API patterns learned:**
+- `Comet.GestureStatus` must be fully qualified when `Microsoft.Maui` is also imported (ambiguous `GestureStatus`)
+- `ScaleTo(double, double, Easing)` is ambiguous with `ScaleTo(double, double, double, Easing)` — use named parameter `scale:` to disambiguate
+- `Component<T>` has no `Invalidate()` method — use `SetState(s => { })` as a no-op re-render trigger
+- Comet's `GraphicsView` has `Draw` property (`Action<ICanvas, RectF>`) — use inline lambda, no separate IDrawable class needed
+- `.Frame(height: N)` on GraphicsView sets the drawing area height
+- `PointerGesture` uses `Action<View, Point>` callbacks — `(_, point)` pattern works cleanly
+- `SwipeGesture` attached via `.AddGesture(new SwipeGesture(action) { Direction = ... })` — one per direction
+- Comet animations (`TranslateTo`, `RotateTo`, etc.) return `T` synchronously (not Task) — fire-and-forget pattern
+
+**Build:** 0 errors. Tests: 846 passed, 0 failed.
