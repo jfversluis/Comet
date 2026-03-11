@@ -1698,3 +1698,22 @@ Rewrote the CometControlsGallery sidebar and core pages to match the Target Samp
 ## Impact
 
 All team members should use the new `Section(title, ...content)` signature going forward. The old `Section(title, description, ...content)` still compiles but the description is silently discarded.
+# Decision: SearchBar OnTextChanged Handler Mapper
+
+**Author:** Amos (Controls & API Dev)
+**Date:** 2026-03-09
+**Status:** Implemented
+
+## Context
+
+Comet's SearchBar had no `OnTextChanged` handler mapper in `AppHostBuilderExtensions.cs`. Entry and Editor both had platform-specific handler mappers that wire up native text change events to the Comet `OnTextChanged` callback. SearchBar was missing this, meaning the `.OnTextChanged()` extension was a no-op at runtime — users could type in the SearchBar but the callback never fired.
+
+## Decision
+
+Added `SearchBarHandler.Mapper.AppendToMapping("CometSearchBarTextChanged", ...)` following the same pattern as Entry/Editor:
+- **iOS/macCatalyst:** Subscribe to `UISearchBar.TextChanged` event, using `ConditionalWeakTable` for handler deduplication.
+- **Android:** Subscribe to `AndroidX.AppCompat.Widget.SearchView.QueryTextChange` event (note: must use `global::AndroidX` prefix to avoid `Comet.Android` namespace collision).
+
+## Impact
+
+Any Comet SearchBar using `.OnTextChanged()` now fires the callback on every keystroke across all platforms. This is required for real-time search/filter UIs like the PickersPage fruit search.
