@@ -82,6 +82,7 @@ namespace CometControlsGallery
 	{
 		readonly State<int> selectedIndex = 0;
 		readonly State<string> selectedTitle = "Controls";
+		NavigationView? _mainNav;
 
 		static readonly List<NavItem> navItems = new()
 		{
@@ -107,13 +108,14 @@ namespace CometControlsGallery
 			var sidebar = BuildSidebar();
 			var detail = navItems[selectedIndex.Value].CreatePage();
 
+			_mainNav = NavigationView(detail)
+				.Title(selectedTitle.Value);
+
 			return Grid(
 				new object[] { 280, "*" },
 				null,
 				sidebar.Cell(row: 0, column: 0),
-				NavigationView(detail)
-					.Title(selectedTitle.Value)
-					.Cell(row: 0, column: 1)
+				_mainNav.Cell(row: 0, column: 1)
 			);
 		}
 
@@ -159,6 +161,7 @@ namespace CometControlsGallery
 				items.Add(
 					Button($"{item.Icon}  {item.Title}", () =>
 					{
+						_mainNav?.PopToRoot();
 						selectedIndex.Value = index;
 						selectedTitle.Value = navItems[index].Title;
 					})

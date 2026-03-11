@@ -249,7 +249,7 @@ namespace Comet
 			{
 				((NavigationView)this).SetPerformNavigate(nav);
 				((NavigationView)this).SetPerformPop(nav);
-
+				((NavigationView)this).SetPerformContentReset(nav);
 			}
 			var oldView = view.ViewHandler;
 			this.ReloadHandler = view.ReloadHandler;

@@ -36,6 +36,11 @@ namespace Comet.Handlers
 				navigationController.PushViewController(newVc, true);
 			});
 			nav.SetPerformPop(() => navigationController.PopViewController(true));
+			nav.SetPerformContentReset((newContent) =>
+			{
+				navigationController.PopToRootViewController(false);
+				vc.CurrentView = newContent;
+			});
 			navigationController.PushViewController(vc, true);
 
 			// Add leading bar button (hamburger icon) if configured
