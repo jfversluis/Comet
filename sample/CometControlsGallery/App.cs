@@ -100,6 +100,7 @@ namespace CometControlsGallery
 			new NavItem { Title = "Collection View", Category = "Lists & Collections", CreatePage = () => new CollectionViewPage() },
 			new NavItem { Title = "CarouselView", Category = "Lists & Collections", CreatePage = () => new CarouselViewPage() },
 			new NavItem { Title = "ListView", Category = "Lists & Collections", CreatePage = () => new ListViewPage() },
+			new NavItem { Title = "Grouped Lists", Category = "Lists & Collections", CreatePage = () => new GroupedListsPage() },
 			new NavItem { Title = "TableView", Category = "Lists & Collections", CreatePage = () => new TableViewPage() },
 			// Drawing & Visual
 			new NavItem { Title = "Graphics", Category = "Drawing & Visual", CreatePage = () => new GraphicsPage() },
