@@ -826,30 +826,40 @@ namespace Comet
 			var isEnabled = view.IsEnabled;
 			var isVisible = view.IsVisible;
 			var inputTransparent = view.InputTransparent;
+			var hasGestures = view is IGestureView gv && gv.Gestures?.Count > 0;
+
+			// Use explicit AutomationId if set, otherwise fall back to View.Id
+			// so every Comet view gets a stable platform identifier for
+			// automation tools (MauiDevFlow, Appium, accessibility inspectors).
+			var platformId = !string.IsNullOrWhiteSpace(automationId)
+				? automationId
+				: view.Id;
 
 #if __IOS__ || MACCATALYST
 			if (handler.PlatformView is UIKit.UIView platformView)
 			{
-				if (!string.IsNullOrWhiteSpace(automationId))
-				{
-					platformView.AccessibilityIdentifier = automationId;
+				if (!string.IsNullOrWhiteSpace(platformId))
+					platformView.AccessibilityIdentifier = platformId;
+
+				if (!string.IsNullOrWhiteSpace(automationId) || hasGestures)
 					platformView.IsAccessibilityElement = true;
-				}
 
 				platformView.Hidden = !isVisible;
 				platformView.UserInteractionEnabled = isEnabled && !inputTransparent;
+				if (hasGestures)
+					platformView.UserInteractionEnabled = true;
 			}
 #elif ANDROID
 			if (handler.PlatformView is global::Android.Views.View platformView)
 			{
-				if (!string.IsNullOrWhiteSpace(automationId))
-					platformView.ContentDescription = automationId;
+				if (!string.IsNullOrWhiteSpace(platformId))
+					platformView.ContentDescription = platformId;
 
 				platformView.Enabled = isEnabled;
 				platformView.Visibility = isVisible
 					? global::Android.Views.ViewStates.Visible
 					: global::Android.Views.ViewStates.Gone;
-				platformView.Clickable = !inputTransparent;
+				platformView.Clickable = !inputTransparent || hasGestures;
 			}
 #endif
 		}

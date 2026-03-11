@@ -1441,3 +1441,84 @@ Merged into decisions.md:
 - `src/Comet/Handlers/Navigation/NavigationViewHandler.iOS.cs` — added rootViewController field, title update in ConnectHandler
 
 **Validation:** 846 tests pass, gallery builds clean on maccatalyst.
+
+### 2025-07-17 — Visual Parity POC: Controls Page Comparison
+
+**Status:** ✅ Complete — diff report produced
+
+**What:** First proof-of-concept run of the visual parity comparison skill. Compared the Comet Controls Gallery (MacCatalyst, port 10224) against the MAUI macOS reference app (SampleMac, port 10223) on the Controls page.
+
+**Workflow observations:**
+- `maui-devflow list` correctly discovered both apps. Agent verification via `maui-devflow MAUI status` confirmed identities.
+- `maui-devflow MAUI tree` works for both apps — Comet tree shows full view hierarchy including Text, Button, Slider, etc. with bounds data.
+- `maui-devflow MAUI screenshot` works for both apps — reliable image capture.
+- `maui-devflow MAUI element` works for Comet views — returns type, bounds, text, CometId.
+- `maui-devflow MAUI property` **fails** for Comet views — returns "Property not found" for all standard properties (TextColor, BackgroundColor, HorizontalOptions, WidthRequest). Only works on MAUI reference app elements. Root cause: CometHost barrier — Comet views don't expose MAUI property accessors through the agent protocol.
+- `maui-devflow MAUI tap` **fails** for Comet sidebar items — hit-test resolves only CometHost/ContentPage, not descendant Comet views.
+- `maui-devflow MAUI scroll` **fails** for Comet gallery — "Failed to scroll" on all attempts. 
+- MAUI reference scrolling worked (`Scrolled by dx=0, dy=-600`) but content didn't visibly change in subsequent screenshots — may need element-targeted scrolling.
+
+**Findings (5 Critical, 6 Medium, 4 Minor, 13 Matches):**
+- Buttons render as solid filled purple instead of system outlined style
+- "Button with Image" buttons are full-width with no images (MAUI has natural-width with star icons)
+- Sidebar has no icons (MAUI has SF Symbol icons on every item)
+- Page background is lavender #F0F0F5 instead of white
+- RadioButton section uses simulated Text+OnTap instead of actual RadioButton controls
+- Sidebar accent color is purple (#5856D6) instead of blue
+- Gradient Button has wrong gradient (solid purple vs red-to-blue)
+
+**Key insight:** The visual parity skill workflow is sound but heavily limited by MauiDevFlow's inability to interact with Comet views (property inspection, tap, scroll all fail). The comparison must rely on: (1) screenshots + vision, (2) tree/element data for bounds and type info, (3) source code inspection for exact values. Property-level comparison requires reading the Comet source files directly rather than querying at runtime.
+
+**Deliverable:** `/Users/davidortinau/.copilot/session-state/b26a6593-f539-47de-8f7b-3bd72e7ad681/files/visual-parity/controls/diff-report.md`
+
+### MauiDevFlow Gesture/Tap Investigation (Phase 9)
+
+**Date**: 2025-07-08
+
+**Problem**: MauiDevFlow's tap/scroll/property commands fail on Comet views embedded via CometHost. Screenshots work, but interaction fails. This is a critical blocker for automated visual parity workflows.
+
+**Root Cause Analysis — Five Issues Found**:
+
+1. **Text tap "Unhandled IView type: Comet.Text"**: MauiDevFlow's `HandleTap` checks `Microsoft.Maui.Controls.View.GestureRecognizers` for MAUI `TapGestureRecognizer`, but Comet views use `IGestureView.Gestures` (Comet's own gesture system). The MAUI `View` type check fails because `Comet.View` does NOT extend `Microsoft.Maui.Controls.View`. Native fallback (`TryNativeTapOnHandler`) also fails because UILabel isn't a UIControl.
+
+2. **Button tap WORKS**: `Comet.Button` implements `IButton`, and MauiDevFlow's handler has `case IButton iBtn: iBtn.Clicked();` which works correctly. Same for Toggle/Switch via ISwitch.
+
+3. **Scroll "No scrollable view found on page"**: MauiDevFlow uses `FindDescendant<ScrollView>()` looking for `Microsoft.Maui.Controls.ScrollView`, but Comet's `ScrollView` is `Comet.ScrollView` (implements `IScrollView` but not MAUI ScrollView). Also, the scroll handler checks `el is VisualElement` which fails for Comet views.
+
+4. **ID instability after state changes**: Comet views are not MAUI `Element` instances, so IDs are based on `RuntimeHelpers.GetHashCode()`. After state changes that rebuild the view tree, instances are replaced with new hash codes. IDs also use `EnsurePlatformStableId()` which checks for `UIKit.UIView` but receives a `Comet.View` object (not a platform view).
+
+5. **Tree depth**: With `--depth 3`, tree stops at CometHost. With `--depth 0` (unlimited), full Comet view tree IS visible.
+
+**Key Architecture Understanding**:
+- MauiDevFlow communicates via HTTP (agent runs inside the app, CLI sends POST requests)
+- Tap: `POST /api/action/tap { elementId }` → finds element → switch on type → invoke
+- Scroll: `POST /api/action/scroll { elementId, deltaX, deltaY }` → finds scrollable → scroll
+- Element resolution: `VisualTreeWalker.GetElementById()` walks `IVisualTreeElement.GetVisualChildren()` recursively
+- ID priority: AutomationId (VisualElement only) → Element.Id (Element only) → EnsurePlatformStableId → RuntimeHelpers.GetHashCode
+- Comet views fall to hash-based IDs because they're not `Element` or `VisualElement`
+
+**What Works**: Tree walking, screenshot, Button/Toggle/Switch/CheckBox tap (via MAUI interfaces), element finding (when tree is fresh)
+
+**What Fails**: Text/Label tap with gestures, scroll, ID stability across state changes
+
+**Comet-Side Fix Implemented**: Modified `ApplyInspectionMetadata` in `AppHostBuilderExtensions.cs`:
+- Always stamps platform `AccessibilityIdentifier` (iOS) / `ContentDescription` (Android) with `View.Id` as fallback (was only set when explicit AutomationId present)
+- Sets `IsAccessibilityElement = true` for views with gestures
+- Ensures `UserInteractionEnabled = true` for views with gestures
+- Makes `Clickable = true` on Android for gesture views
+
+**MauiDevFlow Fixes Needed** (documented in decision):
+1. Add `IGestureView` check in `HandleTap` to invoke Comet's `TapGesture.Invoke()`
+2. Add `IScrollView` check in `HandleScroll` for Comet ScrollView
+3. Enhance `GenerateId` to check `IView.AutomationId` (not just `VisualElement.AutomationId`)
+4. Enhance `EnsurePlatformStableId` to get platform view via `IView.Handler.PlatformView`
+
+**Key Files**:
+- MauiDevFlow tap handler: `~/work/MauiDevFlow/src/MauiDevFlow.Agent.Core/DevFlowAgentService.cs:1091-1224`
+- MauiDevFlow scroll handler: `~/work/MauiDevFlow/src/MauiDevFlow.Agent.Core/DevFlowAgentService.cs:1531-1678`
+- MauiDevFlow tree walker: `~/work/MauiDevFlow/src/MauiDevFlow.Agent.Core/VisualTreeWalker.cs`
+- MauiDevFlow platform tap: `~/work/MauiDevFlow/src/MauiDevFlow.Agent/DevFlowAgentService.cs:223-257`
+- Comet ApplyInspectionMetadata: `src/Comet/AppHostBuilderExtensions.cs:820-865`
+- Comet CometHost: `src/Comet/Controls/CometHost.cs`
+- Comet gesture extensions: `src/Comet/Helpers/ViewExtensions.cs:102-118`
+- Comet iOS gesture bridge: `src/Comet/Platform/iOS/HandlerExtensions.cs`
