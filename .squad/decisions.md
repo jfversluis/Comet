@@ -1781,3 +1781,24 @@ Comet's GraphicsView accepts `Action<ICanvas, RectF>` directly in its constructo
 
 **Impact:** Wave 4 pages (Gestures, Graphics, Transforms, Theme) completed with 846 tests passing. 4 API gotchas documented to prevent reoccurrence in future gallery work.
 
+### 2026-03-11: Wave 5 Gallery Pages — Lists & Collections Patterns
+
+**Owner:** Amos (Controls & API Dev)  
+**Date:** 2026-03-11  
+**Status:** Implemented
+
+**Decision 1: Use Comet's Native CollectionView<T> and CarouselView<T>**  
+Wave 5 pages use Comet's built-in `CollectionView<T>` and `CarouselView<T>` controls instead of MauiViewHost-wrapped MAUI controls. This keeps the gallery as a pure Comet showcase and demonstrates the framework's own collection display capabilities including vertical/horizontal/grid layouts.
+
+**Decision 2: ListView<T> Constructor Requires Lambda Wrapper for Static Lists**  
+`ListView<T>` only accepts `Func<IReadOnlyList<T>>` or `Binding<IReadOnlyList<T>>`, not raw `IReadOnlyList<T>`. Static lists must be wrapped: `new ListView<T>(() => (IReadOnlyList<T>)items)`. This is a common gotcha for new Comet developers.
+
+**Decision 3: CarouselView Position Binding Requires Explicit Cast**  
+Setting `CarouselView<T>.Position` from a lambda requires explicit cast to `Func<int>` because C# cannot implicitly convert a lambda to the `Binding<int>` type: `Position = (Func<int>)(() => State.Position)`.
+
+**Decision 4: TableView Replaced with Component<TState> VStack Sections**  
+Since MAUI TableView, SwitchCell, EntryCell are deprecated in .NET 10, the TableViewPage uses `Component<TState>` with VStack sections containing `Toggle` and `TextField` controls. This demonstrates the idiomatic Comet approach to settings-style UIs.
+
+**Impact:** Wave 5 pages (CollectionView, ListView, TableView, CarouselView) completed with 846 tests passing. 4 API patterns documented for team consistency.
+
+---

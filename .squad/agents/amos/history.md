@@ -1093,3 +1093,23 @@ Merged into decisions.md: `2026-03-10: mauidevflow Integration via Local Project
 - Comet animations (`TranslateTo`, `RotateTo`, etc.) return `T` synchronously (not Task) — fire-and-forget pattern
 
 **Build:** 0 errors. Tests: 846 passed, 0 failed.
+
+### Gallery Wave 5 — CollectionView, ListView, TableView, CarouselView (2026-03-11)
+
+**What:** Rewrote four gallery pages in the Lists & Collections category to match Target Sample (TS) at `/Users/davidortinau/work/mauiplatforms/samples/Sample/Pages/`:
+- **CollectionViewPage** — 4 sections: Vertical List (30 items with accent bar, selection feedback), Horizontal List (20 items with circle avatars), 3-Column Vertical Grid (24 items), Grouped CollectionView (4 animal groups with name/detail). Uses Comet's native `CollectionView<T>` with `ItemsLayout.Vertical()`, `ItemsLayout.Horizontal()`, and `GridItemsLayout.Vertical(span: 3)`.
+- **ListViewPage** — 2 sections: ViewCell with DataTemplate (8 food items with emoji letter, name, category, selection label), TextCell ListView (4 settings items with title/subtitle). Uses `ListView<T>` with `ViewFor` templates, Header/Footer, and `.OnSelected()`.
+- **TableViewPage** — 4 sections matching TS: Account (text rows), Preferences (3 toggle switches), Input (2 text fields with labels), About (version/build/license text rows). Uses `Component<TableViewPageState>` with reactive `Toggle` and `TextField` controls.
+- **CarouselViewPage** — 5 swipeable slides using Comet's native `CarouselView<T>` control with colored cards, dot indicators built from `ShapeView(Circle)`, position label, and Previous/Next buttons. Uses `Component<CarouselViewPageState>` for position tracking.
+
+**Key Comet API patterns learned:**
+- `ListView<T>` constructor requires `Func<IReadOnlyList<T>>` — static lists need lambda wrapper: `new ListView<T>(() => (IReadOnlyList<T>)items)`
+- `CarouselView<T>.Position` is `Binding<int>` — lambda assignment requires explicit cast: `Position = (Func<int>)(() => State.Position)`
+- `CollectionView<T>` inherits from `ListView<T>`, so `.OnSelected()` works on both
+- `CarouselView<T>` defaults to `ItemsLayout.Horizontal()` in its constructor
+- `CarouselView<T>.PositionChanged` is `Action<int>` — fires on swipe or programmatic scroll
+- `Toggle(() => value).OnToggled(v => ...)` pattern for switch-style controls
+- `TextField(() => value, () => placeholder).OnTextChanged(v => ...)` for entry-style controls
+- `GridItemsLayout.Vertical(span: N, spacing: M)` for grid layouts in CollectionView
+
+**Build:** 0 errors. Tests: 846 passed, 0 failed.
