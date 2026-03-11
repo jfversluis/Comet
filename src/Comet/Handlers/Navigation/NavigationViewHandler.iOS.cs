@@ -11,10 +11,12 @@ namespace Comet.Handlers
 	public partial class NavigationViewHandler : ViewHandler<NavigationView, UIView>, IPlatformViewHandler
 	{
 		UIViewController viewController;
+		CometViewController rootViewController;
 		UIViewController IPlatformViewHandler.ViewController => viewController;
 		protected override UIView CreatePlatformView()
 		{
 			var vc = new Comet.iOS.CometViewController { MauiContext = MauiContext, CurrentView = VirtualView.Content };
+			rootViewController = vc;
 			var nav = VirtualView;
 
 			// Set title from NavigationView (content view may not carry the title)
@@ -133,6 +135,15 @@ namespace Comet.Handlers
 		{
 			base.ConnectHandler(platformView);
 			ApplyNavigationBarBackground();
+
+			// When the handler is transferred to a new NavigationView (during diff),
+			// the title must be refreshed from the current VirtualView.
+			if (rootViewController != null)
+			{
+				var title = VirtualView?.GetTitle();
+				if (!string.IsNullOrEmpty(title))
+					rootViewController.Title = title;
+			}
 		}
 
 		void ApplyNavigationBarBackground()

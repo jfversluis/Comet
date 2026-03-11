@@ -77,7 +77,6 @@ namespace CometControlsGallery
 	public class SidebarLayout : View
 	{
 		readonly State<int> selectedIndex = 0;
-		readonly State<string> selectedTitle = "Home";
 		NavigationView? _mainNav;
 
 		static readonly Color SidebarBackground = Color.FromArgb("#E8E8F0");
@@ -128,10 +127,11 @@ namespace CometControlsGallery
 		View body()
 		{
 			var sidebar = BuildSidebar();
-			var detail = navItems[selectedIndex.Value].CreatePage();
+			var idx = selectedIndex.Value;
+			var detail = navItems[idx].CreatePage();
 
 			_mainNav = NavigationView(detail)
-				.Title(selectedTitle.Value);
+				.Title(navItems[idx].Title);
 
 			return Grid(
 				new object[] { 280, "*" },
@@ -178,7 +178,6 @@ namespace CometControlsGallery
 						{
 							_mainNav?.PopToRoot();
 							selectedIndex.Value = index;
-							selectedTitle.Value = navItems[index].Title;
 						})
 				);
 			}
