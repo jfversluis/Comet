@@ -1677,3 +1677,24 @@ Currently applied to CometControlsGallery. Can be extended to other samples if n
 
 **Impact:** Gallery overhaul (Amos + Holden) now proceeds with clear visual parity standards and additional LLM capacity.
 
+# Gallery Overhaul: TS Visual Parity
+
+**Author:** Amos (Controls & API Dev)
+**Date:** 2026-03-10
+**Status:** Implemented
+
+## Decision
+
+Rewrote the CometControlsGallery sidebar and core pages to match the Target Sample navigation structure exactly.
+
+## Key choices
+
+1. **No emojis anywhere** — all menu items are text-only, per David's directive.
+2. **GalleryPageHelpers.Section() signature changed** — removed the description parameter (TS sections have no description subtitle). Added backward-compatible overload so existing pages still compile.
+3. **RadioButton section uses tappable Text views** — Comet's RadioButton still has measurement issues (Size.Zero). Used styled Text with OnTap as a workaround.
+4. **Button with Image section simplified** — Comet's generated Button implements ITextButton, not IImageButton. Used text-only buttons until Button image support is added.
+5. **16 stub pages created** — all TS nav items are represented. Stubs show "This page is under construction." message.
+
+## Impact
+
+All team members should use the new `Section(title, ...content)` signature going forward. The old `Section(title, description, ...content)` still compiles but the description is silently discarded.

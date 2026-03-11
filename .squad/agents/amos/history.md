@@ -1034,3 +1034,22 @@ Merged into decisions.md: `2026-03-10: mauidevflow Integration via Local Project
 **Build verification:** `dotnet build sample/CometControlsGallery/CometControlsGallery.csproj -c Debug -f net10.0-maccatalyst` — 0 errors, 4 warnings (pre-existing nullability warnings in App.cs).
 
 **Decision:** Since Comet doesn't yet have a CollectionView control, we used VStack + ScrollView to demonstrate list patterns without deprecated ListView. This keeps the gallery .NET 10-compliant while demonstrating the same visual patterns developers would use in a real app.
+
+### Gallery overhaul: TS visual parity (2026-03-10)
+
+**What:** Complete rewrite of CometControlsGallery sidebar, HomePage, ControlsPage, and GalleryPageHelpers to match the Target Sample (TS) at `~/work/mauiplatforms/samples/Sample/`.
+
+**Changes:**
+- **App.cs sidebar:** Removed emoji icons, removed header banner, added all 5 TS categories (General, Lists & Collections, Drawing & Visual, Platform, Navigation) with 29 nav items, scrollable sidebar, #E8E8F0 background, left-aligned text-only menu items
+- **HomePage:** New page matching TS — title, subtitle, platform details border box, footer
+- **ControlsPage:** Rewritten with exact TS sections (Button & ProgressBar, Button with Image, ImageButton, Entry, Editor, Slider, Switch, CheckBox, Stepper, RadioButton) using State<T> reactive pattern
+- **GalleryPageHelpers:** Removed description parameter from Section(), updated section headers to FontSize 16 + Bold + CornflowerBlue, separators to 1px gray 0.3 opacity. Added backward-compatible overload for existing callers.
+- **16 stub pages created** for unimplemented demos (FormattedText, CarouselView, ListView, TableView, Graphics, MenuBar, Toolbar, MultiWindow, WebView, DeviceInfo, BatteryNetwork, ClipboardStorage, LaunchShare, TabbedPageDemo, FlyoutPageDemo, Map)
+
+**API limitations discovered:**
+- Comet's generated Button doesn't implement IImageButton, so Button with Image section uses text-only buttons
+- Comet's FontImageSource has no Size property — use constructor overload instead
+- Text has no `.TextAlignment()` extension — use `.HorizontalTextAlignment()` from TextExtensions.cs
+- Border container has `.RoundedBorder()` helper, not `.Border(Paint, thickness)`
+
+**Build:** 0 errors. Tests: 846 passed, 0 failed.
