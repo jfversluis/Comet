@@ -124,7 +124,7 @@ namespace Comet
 
 		public static void SetFrameFromPlatformView(
 			this View view,
-			Rect frame, LayoutAlignment defaultHorizontalAlignment = LayoutAlignment.Center, LayoutAlignment defaultVerticalAlignment = LayoutAlignment.Center)
+			Rect frame, LayoutAlignment defaultHorizontalAlignment = LayoutAlignment.Fill, LayoutAlignment defaultVerticalAlignment = LayoutAlignment.Fill)
 		{
 			if (view == null)
 				return;

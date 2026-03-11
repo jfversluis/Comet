@@ -1385,3 +1385,20 @@ Merged into decisions.md:
 **Key architectural insight:** The `BeginInvokeOnMainThread` async dispatch in DiffUpdate's handler transfer was a production-only race condition. Tests masked it because `ThreadHelper.SetFireOnMainThread` was overridden to run synchronously. Any future async dispatch in the diff/handler-transfer path should be carefully evaluated for race conditions with `ResetView`'s synchronous disposal.
 
 **Validation:** Source generator, Comet framework (all 4 TFMs), CometControlsGallery (maccatalyst), and all 846 tests pass with 0 regressions.
+
+### 2026-03-11 — Framework Default Alignment Fix (Center → Fill)
+
+**Status:** ✅ Fixed — 846 tests pass, 0 regressions
+
+**Root cause:** Five default values across VStack, HStack, their layout managers, and `SetFrameFromPlatformView()` all defaulted to `LayoutAlignment.Center`. MAUI defaults to `Fill`. This caused every view in every Comet app to center-align instead of stretching to fill available space.
+
+**Files changed:**
+- `src/Comet/Controls/VStack.cs` — constructor default `Center` → `Fill`
+- `src/Comet/Controls/HStack.cs` — constructor default `Center` → `Fill`
+- `src/Comet/Layout/VStackLayoutManager.cs` — constructor default `Center` → `Fill`
+- `src/Comet/Layout/HStackLayoutManager.cs` — constructor default `Center` → `Fill`
+- `src/Comet/Helpers/LayoutExtensions.cs` — `SetFrameFromPlatformView` both axis defaults `Center` → `Fill`
+
+**Key insight:** The layout alignment chain is: VStack/HStack constructor → LayoutManager `_defaultAlignment` → `SetFrameFromPlatformView(defaultH, defaultV)` → `GetHorizontalLayoutAlignment(container, default)`. If no explicit alignment is set on a view, no style override exists, and no container-type style is set, the default flows all the way through. Center at any level causes centering.
+
+**Alignment resolution order:** (1) View's own environment `HorizontalLayoutAlignment`, (2) Container-type style (e.g., `"VStack.HorizontalLayoutAlignment"`), (3) Layout manager default, (4) `SetFrameFromPlatformView` parameter default.
