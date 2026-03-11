@@ -1365,3 +1365,23 @@ Integration points:
 Merged into decisions.md:
 - `2026-03-10: MauiDevFlow Comet-Aware Visual Tree Walker` (full rationale & alternatives)
 - `2026-03-09: MauiDevFlow + Comet Compatibility Assessment` (compatibility findings)
+
+### 2026-03-09 — Navigation Title + Window Resize Layout Fix
+
+**Status:** ✅ Fixed and committed (f462dbc3)
+
+**Bug 1 — Navigation title not updating:**
+- **Symptom:** NavigationView title bar showed stale title (e.g., "Pickers" when on Fonts page)
+- **Root cause:** `PerformContentReset` sets `vc.CurrentView = newContent`. `CometViewController.CurrentView` setter calls `GetTitle()` on the content view, which looks in the content's environment — empty. The title lives on the NavigationView, not the content page.
+- **Fix:** After setting `vc.CurrentView`, also read title from `VirtualView?.GetTitle()` (the NavigationView). `VirtualView` always points to the current NavigationView because the handler's `SetVirtualView` is called during handler transfer.
+
+**Bug 2 — Window resize breaks layout:**
+- **Symptom:** Resizing the Catalyst window caused the Grid layout (sidebar + content) to stop responding to size changes.
+- **Root cause (a):** `UpdateFromOldView` in `DatabindingExtensions.DiffUpdate` was dispatched async via `ThreadHelper.RunOnMainThread` (→ `BeginInvokeOnMainThread`). But `ResetView` disposes old views synchronously after Diff returns. The handler transfer ran AFTER dispose, reading null handlers from disposed views. New views got no handlers.
+- **Root cause (b):** `CometHostContainerView._virtualView` cached the initial Grid from `UpdateCometView()` (called once in `ConnectHandler`). After body rebuilds (state changes), the cached Grid was disposed but `_virtualView` still pointed to it. Resize measured/arranged a dead Grid with no children.
+- **Fix (a):** Changed `UpdateFromOldView` call to synchronous. Safe because Diff always runs on the main thread (ResetView is triggered from main thread via state change notifications). Tests already ran it synchronously via `SetFireOnMainThread(a => a?.Invoke())`.
+- **Fix (b):** `CometHostContainerView` now stores the root Comet View and re-resolves `_virtualView` from `rootCometView.GetView()` in `LayoutSubviews`. This ensures resize always operates on the current built view.
+
+**Key architectural insight:** The `BeginInvokeOnMainThread` async dispatch in DiffUpdate's handler transfer was a production-only race condition. Tests masked it because `ThreadHelper.SetFireOnMainThread` was overridden to run synchronously. Any future async dispatch in the diff/handler-transfer path should be carefully evaluated for race conditions with `ResetView`'s synchronous disposal.
+
+**Validation:** Source generator, Comet framework (all 4 TFMs), CometControlsGallery (maccatalyst), and all 846 tests pass with 0 regressions.

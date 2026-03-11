@@ -1053,3 +1053,23 @@ Merged into decisions.md: `2026-03-10: mauidevflow Integration via Local Project
 - Border container has `.RoundedBorder()` helper, not `.Border(Paint, thickness)`
 
 **Build:** 0 errors. Tests: 846 passed, 0 failed.
+
+### Gallery Wave 3 — Layouts, Alerts, FormattedText, Shapes (2026-03-09)
+
+**What:** Rewrote four gallery pages to match Target Sample (TS) at `/Users/davidortinau/work/mauiplatforms/samples/Sample/Pages/`:
+- **LayoutsPage** — VStack/HStack/Grid demos with colored blocks, bordered containers, rounded borders, deeply nested borders. Uses `Border().StrokeColor().StrokeThickness().CornerRadius()` chain.
+- **AlertsPage** — 6 buttons: Simple Alert, Confirm Alert, Action Sheet, Action Sheet (no destructive), Text Prompt, Prompt (with initial value). Uses `Component<AlertsPageState>` for result label. Uses `DisplayAlertAsync`/`DisplayActionSheetAsync`/`DisplayPromptAsync` on `Application.Current.Windows[0].Page`.
+- **FormattedTextPage** — 7 sections of rich text using Comet's `FormattedString` + `Span` API with `.ToView()`. Covers Bold, Italic, Bold+Italic (composable via `|=`), colors, backgrounds, font sizes, decorations, character spacing, monospace/code style.
+- **ShapesPage** — Rectangle (via RoundedRectangle), Ellipse, Line, Dashed Line, Polyline, Polygon, Path (Bezier curves via PathF), and 3 dash pattern variants. Uses `ShapeView` + shape extension methods `.Fill()`, `.Stroke()`.
+
+**Key Comet API patterns learned:**
+- `VStack((float?)0, ...)` — must cast `0` to `float?` to avoid ambiguity with `LayoutAlignment` overload
+- `LayoutAlignment.Start` requires `using Microsoft.Maui.Primitives;`
+- `DisplayAlert`/`DisplayActionSheet` are obsolete in MAUI 10; use `DisplayAlertAsync`/`DisplayActionSheetAsync`
+- Comet's `Span.Bold().Italic()` composes correctly (uses `|=` on FontAttributes)
+- Comet's `RoundedRectangle` only supports uniform corner radius — asymmetric corners from TS are approximated
+- `Border(content).StrokeColor(color).StrokeThickness(n).CornerRadius(r)` preserves `Border` type through chain
+- `FormattedString.ToView()` creates `MauiViewHost` with MAUI Label internally — seamless in Comet view tree
+- ShapeView `WithDash` helper: `shape.SetEnvironment("StrokeDashPattern", float[], false)`
+
+**Build:** 0 errors. Tests: 846 passed, 0 failed.

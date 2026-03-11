@@ -1717,3 +1717,44 @@ Added `SearchBarHandler.Mapper.AppendToMapping("CometSearchBarTextChanged", ...)
 ## Impact
 
 Any Comet SearchBar using `.OnTextChanged()` now fires the callback on every keystroke across all platforms. This is required for real-time search/filter UIs like the PickersPage fruit search.
+
+---
+
+### 2026-03-10: Wave 3 Gallery Pages — API Patterns
+
+**Owner:** Amos (Controls & API Dev)  
+**Date:** 2026-03-10  
+**Status:** Implemented
+
+**Decision 1: Use DisplayAlertAsync / DisplayActionSheetAsync in MAUI 10**  
+`Page.DisplayAlert()` and `Page.DisplayActionSheet()` are obsolete in .NET MAUI 10. Use `DisplayAlertAsync()` and `DisplayActionSheetAsync()` instead. `DisplayPromptAsync()` was already correctly named.
+
+**Decision 2: VStack(0) Requires Float Cast**  
+When calling `VStack(0, children)`, the literal `0` is ambiguous between `float?` (spacing) and `LayoutAlignment` overloads. Always use `VStack((float?)0, children)` to disambiguate. This affects any spacing value of exactly `0`.
+
+**Decision 3: Comet RoundedRectangle Is Uniform-Only**  
+Comet's `RoundedRectangle(float cornerRadius)` only supports uniform corner radii. MAUI's `CornerRadius(tl, tr, bl, br)` asymmetric corners cannot be expressed. Gallery pages approximate asymmetric corners with a uniform radius and document the limitation in text labels.
+
+**Impact:** Wave 3 pages (Layouts, Alerts, FormattedText, Shapes) completed with 846 tests passing. 3 API gotchas documented for future consistency.
+
+---
+
+### 2026-03-10: Nav Title Bug & Window Resize Layout Fix
+
+**Owner:** Holden (Lead Architect)  
+**Date:** 2026-03-10  
+**Status:** Implemented
+
+**Decision 1: UpdateFromOldView Must Run Synchronously During Diff**  
+`UpdateFromOldView` in `DatabindingExtensions.DiffUpdate` must be called synchronously, not dispatched via `ThreadHelper.RunOnMainThread`. The async dispatch caused a race condition where `ResetView` disposed old views before the handler transfer executed, leaving new views with null handlers. Since Diff is always called from `ResetView` which runs on the main thread, synchronous execution is safe.
+
+**Decision 2: CometHostContainerView Must Re-resolve Virtual View on Layout**  
+`CometHostContainerView.LayoutSubviews` (iOS) must re-resolve the rendered view from the root Comet View on each layout pass, not rely on the cached `_virtualView` from initial setup. The cached reference becomes stale after body rebuilds.
+
+**Impact:**
+- Navigation title now correctly reads from VirtualView instead of stale cached reference
+- Window resize works correctly after state changes in CometHost-based apps
+- All state-change-driven body rebuilds correctly transfer handlers from old to new views
+- 846 tests pass, 0 regressions
+- Android and Windows CometHostHandlers have the same pattern and should be updated if resize issues are reported on those platforms
+
