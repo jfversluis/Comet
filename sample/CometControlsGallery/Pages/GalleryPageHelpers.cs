@@ -46,7 +46,7 @@ namespace CometControlsGallery.Pages
 				.Color(SectionHeaderColor);
 
 		public static View Separator() =>
-			Border((View)null)
+			new Spacer()
 				.Background(SeparatorColor)
 				.Frame(height: 1);
 
