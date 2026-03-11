@@ -65,8 +65,7 @@ namespace CometControlsGallery.Pages
 				// Position label
 				Text($"Slide {State.Position + 1} of {Slides.Count}")
 					.FontSize(14)
-					.Color(Colors.Gray)
-					.HorizontalTextAlignment(TextAlignment.Center),
+					.Color(Colors.Gray),
 
 				// Navigation buttons
 				HStack(12,

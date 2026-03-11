@@ -108,7 +108,6 @@ namespace CometControlsGallery.Pages
 				Text("Pill-style rounded")
 					.FontSize(14)
 					.Color(Colors.White)
-					.HorizontalTextAlignment(TextAlignment.Center)
 			)
 			.StrokeThickness(0)
 			.Background(Colors.Teal)
@@ -122,7 +121,6 @@ namespace CometControlsGallery.Pages
 						Border(
 							Text("4 levels deep!")
 								.FontSize(14)
-								.HorizontalTextAlignment(TextAlignment.Center)
 						)
 						.StrokeColor(Colors.Blue)
 						.StrokeThickness(2)
@@ -152,7 +150,6 @@ namespace CometControlsGallery.Pages
 					.Color(Colors.White)
 					.FontSize(14)
 					.FontWeight(FontWeight.Bold)
-					.HorizontalTextAlignment(TextAlignment.Center)
 			)
 			.Background(bg)
 			.StrokeThickness(0)

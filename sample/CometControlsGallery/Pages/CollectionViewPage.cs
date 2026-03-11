@@ -90,7 +90,6 @@ namespace CometControlsGallery.Pages
 								Text(item.Name)
 									.FontSize(13)
 									.FontWeight(FontWeight.Bold)
-									.HorizontalTextAlignment(TextAlignment.Center)
 							)
 							.Frame(width: 100)
 							.Padding(new Thickness(8)),
@@ -112,7 +111,6 @@ namespace CometControlsGallery.Pages
 									Text(item.Name)
 										.FontSize(12)
 										.FontWeight(FontWeight.Bold)
-										.HorizontalTextAlignment(TextAlignment.Center)
 								)
 								.Padding(new Thickness(8))
 							)

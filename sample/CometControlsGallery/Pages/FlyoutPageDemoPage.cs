@@ -111,7 +111,6 @@ namespace CometControlsGallery.Pages
 								Text(letter)
 									.Color(Colors.White)
 									.FontSize(11)
-									.HorizontalTextAlignment(TextAlignment.Center)
 							)
 							.Background(senderColor)
 							.CornerRadius(12)

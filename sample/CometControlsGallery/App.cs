@@ -158,6 +158,7 @@ namespace CometControlsGallery
 						Text(item.Category)
 							.FontSize(11)
 							.FontWeight(FontWeight.Bold)
+							.HorizontalTextAlignment(TextAlignment.Start)
 							.Color(CategoryHeaderColor)
 							.Padding(new Thickness(16, 14, 16, 4))
 					);
@@ -166,17 +167,19 @@ namespace CometControlsGallery
 				var isSelected = selectedIndex.Value == index;
 
 				items.Add(
-					Button(item.Title, () =>
-					{
-						_mainNav?.PopToRoot();
-						selectedIndex.Value = index;
-						selectedTitle.Value = navItems[index].Title;
-					})
-					.FontSize(13)
-					.Color(isSelected ? SelectedAccent : ItemTextColor)
-					.Background(isSelected ? new Color(88, 86, 214, 25) : SidebarBackground)
-					.Padding(new Thickness(16, 8))
-					.Frame(height: 34)
+					Text(item.Title)
+						.FontSize(13)
+						.HorizontalTextAlignment(TextAlignment.Start)
+						.Color(isSelected ? SelectedAccent : ItemTextColor)
+						.Background(isSelected ? new Color(88, 86, 214, 25) : SidebarBackground)
+						.Padding(new Thickness(16, 8))
+						.Frame(height: 34)
+						.OnTap((v) =>
+						{
+							_mainNav?.PopToRoot();
+							selectedIndex.Value = index;
+							selectedTitle.Value = navItems[index].Title;
+						})
 				);
 			}
 

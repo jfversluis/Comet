@@ -13,13 +13,11 @@ namespace CometControlsGallery.Pages
 		View body() =>
 			ScrollView(
 				VStack(16,
-					Text("\U0001F34E .NET MAUI on macOS")
+					Text(".NET MAUI on macOS")
 						.FontSize(32)
-						.FontWeight(FontWeight.Bold)
-						.HorizontalTextAlignment(TextAlignment.Center),
+						.FontWeight(FontWeight.Bold),
 					Text("Rendered natively with AppKit")
 						.FontSize(16)
-						.HorizontalTextAlignment(TextAlignment.Center)
 						.Color(Colors.Grey),
 					Text("This sample app demonstrates the Microsoft.Maui.Platform.MacOS backend \u2014 " +
 						"a standalone .NET MAUI backend for macOS that maps MAUI controls " +
@@ -53,7 +51,6 @@ namespace CometControlsGallery.Pages
 					Text("Use the menu on the left to explore different control demos.")
 						.FontSize(14)
 						.Color(Colors.Grey)
-						.HorizontalTextAlignment(TextAlignment.Center)
 				)
 				.Padding(new Thickness(24))
 			)

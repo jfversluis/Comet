@@ -85,12 +85,10 @@ namespace CometControlsGallery.Pages
 							Text = "Secondary Window",
 							FontSize = 24,
 							FontAttributes = Microsoft.Maui.Controls.FontAttributes.Bold,
-							HorizontalTextAlignment = Microsoft.Maui.TextAlignment.Center,
 						},
 						new Microsoft.Maui.Controls.Label
 						{
 							Text = "This is a new window opened via Application.OpenWindow().\nClose it with the red button or the button below.",
-							HorizontalTextAlignment = Microsoft.Maui.TextAlignment.Center,
 							MaximumWidthRequest = 400,
 						},
 					}
@@ -197,12 +195,10 @@ namespace CometControlsGallery.Pages
 							Text = title,
 							FontSize = 24,
 							FontAttributes = Microsoft.Maui.Controls.FontAttributes.Bold,
-							HorizontalTextAlignment = Microsoft.Maui.TextAlignment.Center,
 						},
 						new Microsoft.Maui.Controls.Label
 						{
 							Text = "This is a new window opened via Application.OpenWindow().\nClose it with the button below.",
-							HorizontalTextAlignment = Microsoft.Maui.TextAlignment.Center,
 							MaximumWidthRequest = 400,
 						},
 					}
@@ -238,14 +234,12 @@ namespace CometControlsGallery.Pages
 							Text = title,
 							FontSize = 28,
 							FontAttributes = Microsoft.Maui.Controls.FontAttributes.Bold,
-							HorizontalTextAlignment = Microsoft.Maui.TextAlignment.Center,
 						},
 						new Microsoft.Maui.Controls.Label
 						{
 							Text = description,
 							FontSize = 16,
 							TextColor = Colors.Grey,
-							HorizontalTextAlignment = Microsoft.Maui.TextAlignment.Center,
 						},
 					}
 				}
