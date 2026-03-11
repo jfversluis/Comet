@@ -1113,3 +1113,20 @@ Merged into decisions.md: `2026-03-10: mauidevflow Integration via Local Project
 - `GridItemsLayout.Vertical(span: N, spacing: M)` for grid layouts in CollectionView
 
 **Build:** 0 errors. Tests: 846 passed, 0 failed.
+
+### Gallery Wave 6 — GroupedLists, WebView, DeviceInfo, BatteryNetwork (2026-03-11)
+
+**What:** Created/rewrote four gallery pages matching Target Sample (TS):
+- **GroupedListsPage** (NEW) — Standalone page demonstrating sectioned/grouped lists using Comet's `SectionedListView<T>` with `Section<T>` for each animal group (Mammals, Birds, Reptiles, Fish). Each section has a CornflowerBlue header, separator footer, and items with bold name + gray detail.
+- **WebViewPage** — URL navigation with TextField + Go button, Back/Forward/Reload controls, and Comet's native `WebView` control with `Source` binding and `OnNavigated` callback. Uses `Component<WebViewPageState>` for reactive URL tracking.
+- **DeviceInfoPage** — Four sections: Device Info (IDeviceInfo), App Info (IAppInfo), Display (IDeviceDisplay), File System (IFileSystem). Uses `IPlatformApplication.Current?.Services.GetService<T>()` for platform services. Simple `View` with `[Body]` since data is static.
+- **BatteryNetworkPage** — Battery section (ProgressBar + charge level/state/power source) and Network section (network access + connection profiles). Uses `Component<BatteryNetworkState>` with Refresh button for reactive updates.
+
+**Key learnings:**
+- `GetService<T>()` on `IServiceProvider` requires `using Microsoft.Extensions.DependencyInjection;` — without it, compiler finds `ElementHandlerExtensions.GetService<T>` which is wrong
+- `Section<T>` constructor takes `Binding<IReadOnlyList<T>>` — direct cast from `IReadOnlyList<T>` works via implicit conversion; lambda `() => items` does NOT work (CS1660: two-step implicit conversion not supported)
+- `WebView.GoBack()`, `.GoForward()`, `.Reload()` are explicit `IWebView` interface implementations — must cast: `((IWebView)webView).GoBack()`
+- `ProgressBar` is generated via source generator — factory: `ProgressBar(() => value)` with `Binding<double>`
+- Platform services (IBattery, IConnectivity, IDeviceInfo, etc.) accessed via `IPlatformApplication.Current?.Services`
+
+**Build:** 0 errors. Tests: 846 passed, 0 failed.

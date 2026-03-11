@@ -1802,3 +1802,21 @@ Since MAUI TableView, SwitchCell, EntryCell are deprecated in .NET 10, the Table
 **Impact:** Wave 5 pages (CollectionView, ListView, TableView, CarouselView) completed with 846 tests passing. 4 API patterns documented for team consistency.
 
 ---
+
+### 2026-03-11: Wave 6 Gallery Pages — Platform Service Access Pattern
+
+**Owner:** Amos (Controls & API Dev)  
+**Date:** 2026-03-11  
+**Status:** Implemented
+
+**Decision 1: Add using for Generic GetService Extension**  
+Gallery pages that access MAUI platform services must add `using Microsoft.Extensions.DependencyInjection;`. The generic `GetService<T>()` extension lives there, not in MAUI core. Without this, the compiler resolves to `ElementHandlerExtensions.GetService<T>` which requires an `IElementHandler` receiver.
+
+**Decision 2: Use IPlatformApplication Pattern**  
+Use the pattern: `IPlatformApplication.Current?.Services.GetService<T>()` with null checks to access platform services like IBattery, IDeviceInfo, and IConnectivity.
+
+**Decision 3: Choose Component<TState> vs View by Interactivity**  
+Use `Component<TState>` when the page has a Refresh button or interactive state (e.g., BatteryNetworkPage). Use plain `View` with `[Body]` when data is read-once (e.g., DeviceInfoPage).
+
+**Impact:** Wave 6 pages (GroupedLists, WebView, DeviceInfo, BatteryNetwork) completed with 846 tests passing. Platform service access pattern documented for all future gallery work involving device capabilities.
+
