@@ -1,99 +1,196 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Comet;
-using Comet.Styles;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Primitives;
 using static Comet.CometControls;
 
 namespace CometControlsGallery.Pages
 {
-	public class DemoItem
-	{
-		public string Icon { get; set; } = "";
-		public string Title { get; set; } = "";
-		public string Description { get; set; } = "";
-		public Color AccentColor { get; set; } = Colors.Purple;
-	}
+	record SimpleItem(string Name, string Description, Color AccentColor);
 
 	public class CollectionViewPageState
 	{
-		public string SelectedItem { get; set; } = "Nothing selected";
+		public string SelectedItem { get; set; } = "Tap an item";
 	}
 
 	public class CollectionViewPage : Component<CollectionViewPageState>
 	{
-		static readonly IReadOnlyList<DemoItem> DemoItems = new List<DemoItem>
+		static readonly Color[] AccentColors =
 		{
-			new() { Icon = "🎨", Title = "Styling & Theming", Description = "Customize colors, typography, and visual appearance", AccentColor = Color.FromArgb("#6750A4") },
-			new() { Icon = "📱", Title = "Responsive Layout", Description = "Adaptive UI that works across all screen sizes", AccentColor = Color.FromArgb("#0061A4") },
-			new() { Icon = "🔔", Title = "Notifications", Description = "Push alerts, badges, and in-app messaging", AccentColor = Color.FromArgb("#D93025") },
-			new() { Icon = "🌐", Title = "Networking", Description = "HTTP requests, REST APIs, and data sync", AccentColor = Color.FromArgb("#188038") },
-			new() { Icon = "🔒", Title = "Authentication", Description = "Login flows, OAuth 2.0, and secure storage", AccentColor = Color.FromArgb("#E37400") },
-			new() { Icon = "📊", Title = "Data Visualization", Description = "Charts, graphs, and interactive dashboards", AccentColor = Color.FromArgb("#7627BB") },
-			new() { Icon = "🎬", Title = "Animations", Description = "Smooth transitions and visual feedback", AccentColor = Color.FromArgb("#C61851") },
-			new() { Icon = "🗺", Title = "Maps & Location", Description = "GPS, geocoding, and map-based experiences", AccentColor = Color.FromArgb("#006A6A") }
+			Colors.CornflowerBlue, Colors.Coral, Colors.MediumSeaGreen, Colors.MediumOrchid,
+			Colors.SandyBrown, Colors.Teal, Colors.IndianRed, Colors.DodgerBlue,
+			Colors.SlateBlue, Colors.OliveDrab, Colors.Crimson, Colors.DarkCyan,
 		};
+
+		static List<SimpleItem> GenerateItems(int count) =>
+			Enumerable.Range(1, count)
+				.Select(i => new SimpleItem(
+					$"Item {i}",
+					$"Description for item {i}",
+					AccentColors[(i - 1) % AccentColors.Length]))
+				.ToList();
+
+		static readonly List<SimpleItem> VerticalItems = GenerateItems(30);
+		static readonly List<SimpleItem> HorizontalItems = GenerateItems(20);
+		static readonly List<SimpleItem> GridItems = GenerateItems(24);
 
 		public override View Render()
 		{
-			var itemViews = new List<View>();
-
-			foreach (var item in DemoItems)
-			{
-				var itemView = BuildCollectionViewItem(item);
-				itemViews.Add(itemView);
-			}
-
-			return GalleryPageHelpers.Scaffold("Collection View",
-				GalleryPageHelpers.Section("List with Custom Items", "Each row has a colored left accent bar (4px), icon, title (15px bold), and description (12px gray).",
-					ScrollView(
-						VStack(spacing: 0, itemViews.ToArray())
-					)
-					.Frame(height: 400),
-					GalleryPageHelpers.BodyText($"Selected: {State.SelectedItem}")
+			return GalleryPageHelpers.Scaffold("CollectionView",
+				// Vertical List
+				GalleryPageHelpers.Section("Vertical List",
+					Text(State.SelectedItem)
+						.FontSize(12)
+						.Color(Colors.Gray),
+					new CollectionView<SimpleItem>(() => VerticalItems)
+					{
+						ViewFor = item =>
+							Border(
+								HStack(spacing: 0,
+									new Spacer()
+										.Background(item.AccentColor)
+										.Frame(width: 4),
+									VStack(2,
+										Text(item.Name)
+											.FontSize(15)
+											.FontWeight(FontWeight.Bold),
+										Text(item.Description)
+											.FontSize(12)
+											.Color(Colors.Gray)
+									)
+									.Padding(new Thickness(12, 8))
+								)
+							)
+							.StrokeColor(Colors.Gray.WithAlpha(0.3f))
+							.StrokeThickness(1)
+							.CornerRadius(8),
+						ItemsLayout = ItemsLayout.Vertical(spacing: 8),
+						SelectionMode = SelectionMode.Single,
+					}
+					.OnSelected(item =>
+						SetState(s => s.SelectedItem = $"Selected: {item.Name}"))
+					.Frame(height: 350)
 				),
-				GalleryPageHelpers.Section("Collection View Features", "CollectionView replaces the deprecated ListView in .NET MAUI 10.",
-					GalleryPageHelpers.BodyText("✓ Vertical and horizontal scrolling"),
-					GalleryPageHelpers.BodyText("✓ Single and multiple selection modes"),
-					GalleryPageHelpers.BodyText("✓ Grouping and headers"),
-					GalleryPageHelpers.BodyText("✓ Pull-to-refresh support"),
-					GalleryPageHelpers.BodyText("✓ Incremental data loading"),
-					GalleryPageHelpers.BodyText("✓ Custom item templates")
+
+				// Horizontal List
+				GalleryPageHelpers.Section("Horizontal List",
+					Text("Scroll horizontally to see more items")
+						.FontSize(12)
+						.Color(Colors.Gray),
+					new CollectionView<SimpleItem>(() => HorizontalItems)
+					{
+						ViewFor = item =>
+							VStack(6,
+								new ShapeView(new Circle())
+									.Frame(width: 60, height: 60)
+									.Background(new SolidPaint(item.AccentColor)),
+								Text(item.Name)
+									.FontSize(13)
+									.FontWeight(FontWeight.Bold)
+									.HorizontalTextAlignment(TextAlignment.Center)
+							)
+							.Frame(width: 100)
+							.Padding(new Thickness(8)),
+						ItemsLayout = ItemsLayout.Horizontal(spacing: 8),
+					}
+					.Frame(height: 120)
+				),
+
+				// 3-Column Vertical Grid
+				GalleryPageHelpers.Section("3-Column Vertical Grid",
+					new CollectionView<SimpleItem>(() => GridItems)
+					{
+						ViewFor = item =>
+							Border(
+								VStack(6,
+									new Spacer()
+										.Background(item.AccentColor)
+										.Frame(height: 50),
+									Text(item.Name)
+										.FontSize(12)
+										.FontWeight(FontWeight.Bold)
+										.HorizontalTextAlignment(TextAlignment.Center)
+								)
+								.Padding(new Thickness(8))
+							)
+							.StrokeColor(Colors.Gray.WithAlpha(0.3f))
+							.StrokeThickness(1)
+							.CornerRadius(8),
+						ItemsLayout = GridItemsLayout.Vertical(span: 3, spacing: 8),
+					}
+					.Frame(height: 400)
+				),
+
+				// Grouped CollectionView (using VStack sections since Comet CollectionView grouping is manual)
+				GalleryPageHelpers.Section("Grouped CollectionView",
+					BuildGroupedSection("Mammals", new[] {
+						("Dog", "Loyal companion"),
+						("Cat", "Independent feline"),
+						("Horse", "Majestic equine"),
+						("Dolphin", "Intelligent marine mammal"),
+						("Elephant", "Gentle giant"),
+					}),
+					BuildGroupedSection("Birds", new[] {
+						("Eagle", "Bird of prey"),
+						("Parrot", "Colorful talker"),
+						("Penguin", "Flightless swimmer"),
+						("Owl", "Nocturnal hunter"),
+					}),
+					BuildGroupedSection("Reptiles", new[] {
+						("Turtle", "Slow and steady"),
+						("Gecko", "Wall climber"),
+						("Iguana", "Tropical lizard"),
+					}),
+					BuildGroupedSection("Fish", new[] {
+						("Clownfish", "Reef dweller"),
+						("Salmon", "Upstream swimmer"),
+						("Shark", "Ocean predator"),
+						("Swordfish", "Fast swimmer"),
+						("Pufferfish", "Inflatable defense"),
+					})
 				)
 			);
 		}
 
-		View BuildCollectionViewItem(DemoItem item)
+		View BuildGroupedSection(string groupName, (string Name, string Detail)[] items)
 		{
-			return Border(
-				HStack(spacing: 0,
-					// Left accent bar (4px colored border)
-					new Spacer()
-						.Background(item.AccentColor)
-						.Frame(width: 4),
-					// Content area
+			var views = new List<View>
+			{
+				Text(groupName)
+					.FontSize(16)
+					.FontWeight(FontWeight.Bold)
+					.Color(Colors.CornflowerBlue)
+					.Padding(new Thickness(0, 12, 0, 4))
+			};
+
+			foreach (var item in items)
+			{
+				views.Add(
 					HStack(12,
-						Text(item.Icon)
-							.FontSize(24),
-						VStack(4,
-							Text(item.Title)
-								.FontSize(15)
-								.FontWeight(FontWeight.Bold)
-								.Color(ColorTokens.OnSurface),
-							Text(item.Description)
+						VStack(2,
+							Text(item.Name)
+								.FontSize(14)
+								.FontWeight(FontWeight.Bold),
+							Text(item.Detail)
 								.FontSize(12)
 								.Color(Colors.Gray)
-								.LineBreakMode(LineBreakMode.WordWrap)
 						)
 					)
-					.Padding(new Thickness(12, 12))
-				)
-			)
-			.Background(ColorTokens.Surface)
-			.CornerRadius(0)
-			.StrokeColor(new Color(128, 128, 128, 0.3f))
-			.StrokeThickness(0.5f)
-			.OnTap(_ => SetState(s => s.SelectedItem = item.Title));
+					.Padding(new Thickness(16, 6, 0, 6))
+				);
+			}
+
+			views.Add(
+				new Spacer()
+					.Background(Colors.Grey)
+					.Frame(height: 1)
+					.Opacity(0.3f)
+			);
+
+			return VStack((float?)0, views.ToArray());
 		}
 	}
 }
