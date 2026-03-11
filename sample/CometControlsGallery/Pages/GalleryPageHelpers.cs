@@ -10,10 +10,7 @@ namespace CometControlsGallery.Pages
 {
 	internal static class GalleryPageHelpers
 	{
-		// Reference-style accent color for section headers
-		static readonly Color SectionHeaderColor = Color.FromArgb("#2980B9");
 		static readonly Color PageBackground = Color.FromArgb("#F0F0F5");
-		static readonly Color SeparatorColor = new Color(128, 128, 128, 0.25f);
 
 		public static View Scaffold(string title, params View[] sections) =>
 			ScrollView(
@@ -23,42 +20,39 @@ namespace CometControlsGallery.Pages
 			.Background(PageBackground)
 			.Title(title);
 
-		public static View Section(string title, string description, params View[] content)
+		public static View Section(string title, params View[] content)
 		{
-			var views = new List<View>
-			{
-				SectionHeader(title),
-				Text(description)
-					.Typography(TypographyTokens.BodyMedium)
-					.Color(ColorTokens.OnSurfaceVariant)
-					.LineBreakMode(LineBreakMode.WordWrap)
-			};
-
+			var views = new List<View> { SectionHeader(title) };
 			views.AddRange(content);
 			views.Add(Separator());
-
 			return VStack(10, views.ToArray());
+		}
+
+		public static View Section(string title, string _description, params View[] content)
+		{
+			return Section(title, content);
 		}
 
 		public static View SectionHeader(string title) =>
 			Text(title)
-				.Typography(TypographyTokens.TitleLarge)
-				.Color(SectionHeaderColor);
+				.FontSize(16)
+				.FontWeight(FontWeight.Bold)
+				.Color(Colors.CornflowerBlue);
 
 		public static View Separator() =>
 			new Spacer()
-				.Background(SeparatorColor)
-				.Frame(height: 1);
+				.Background(Colors.Grey)
+				.Frame(height: 1)
+				.Opacity(0.3f);
 
 		public static View BodyText(string value) =>
 			Text(value)
-				.Typography(TypographyTokens.BodyMedium)
-				.Color(ColorTokens.OnSurface);
+				.FontSize(14);
 
 		public static View Caption(string value) =>
 			Text(value)
-				.Typography(TypographyTokens.BodySmall)
-				.Color(ColorTokens.OnSurfaceVariant);
+				.FontSize(12)
+				.Color(Colors.Grey);
 
 		public static View NavButton(string label, Action action) =>
 			Button(label, action)

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Comet;
-using Comet.Styles;
 using CometControlsGallery.Pages;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls.Hosting;
@@ -21,7 +20,6 @@ namespace CometControlsGallery
 	public class NavItem
 	{
 		public string Title { get; set; } = "";
-		public string Icon { get; set; } = "";
 		public Func<View> CreatePage { get; set; } = () => new Text("Empty");
 		public string Category { get; set; } = "";
 	}
@@ -72,8 +70,6 @@ namespace CometControlsGallery
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 			});
 
-			Theme.Current = Defaults.Light;
-
 			return builder.Build();
 		}
 	}
@@ -81,25 +77,50 @@ namespace CometControlsGallery
 	public class SidebarLayout : View
 	{
 		readonly State<int> selectedIndex = 0;
-		readonly State<string> selectedTitle = "Controls";
+		readonly State<string> selectedTitle = "Home";
 		NavigationView? _mainNav;
+
+		static readonly Color SidebarBackground = Color.FromArgb("#E8E8F0");
+		static readonly Color CategoryHeaderColor = Colors.Grey;
+		static readonly Color ItemTextColor = new Color(60, 60, 67);
+		static readonly Color SelectedAccent = new Color(88, 86, 214);
 
 		static readonly List<NavItem> navItems = new()
 		{
-			new NavItem { Title = "Controls", Icon = "🎛", Category = "General", CreatePage = () => new ControlsPage() },
-			// RadioButton disabled — CrossPlatformMeasure returns Size.Zero, causing infinite re-render
-			// new NavItem { Title = "RadioButton", Icon = "🔘", Category = "General", CreatePage = () => new RadioButtonPage() },
-			new NavItem { Title = "Pickers", Icon = "📅", Category = "General", CreatePage = () => new PickersPage() },
-			new NavItem { Title = "Fonts", Icon = "🔤", Category = "General", CreatePage = () => new FontsPage() },
-			new NavItem { Title = "Layouts", Icon = "📐", Category = "General", CreatePage = () => new LayoutsPage() },
-			new NavItem { Title = "Alerts & Dialogs", Icon = "💬", Category = "General", CreatePage = () => new AlertsPage() },
-			new NavItem { Title = "Shapes", Icon = "🔷", Category = "Shapes & Visuals", CreatePage = () => new ShapesPage() },
-			new NavItem { Title = "Transforms", Icon = "🔄", Category = "Shapes & Visuals", CreatePage = () => new TransformsPage() },
-			new NavItem { Title = "Gestures", Icon = "👆", Category = "Shapes & Visuals", CreatePage = () => new GesturesPage() },
-			new NavItem { Title = "Collection View", Icon = "📋", Category = "Lists & Collections", CreatePage = () => new CollectionViewPage() },
-			new NavItem { Title = "Settings", Icon = "⚙️", Category = "Lists & Collections", CreatePage = () => new SettingsPage() },
-			new NavItem { Title = "Theme", Icon = "🎨", Category = "Settings", CreatePage = () => new ThemePage() },
-			new NavItem { Title = "Navigation Demo", Icon = "🧭", Category = "Settings", CreatePage = () => new NavigationDemoPage() },
+			// General
+			new NavItem { Title = "Home", Category = "General", CreatePage = () => new HomePage() },
+			new NavItem { Title = "Controls", Category = "General", CreatePage = () => new ControlsPage() },
+			new NavItem { Title = "RadioButton", Category = "General", CreatePage = () => new RadioButtonPage() },
+			new NavItem { Title = "Pickers & Search", Category = "General", CreatePage = () => new PickersPage() },
+			new NavItem { Title = "Fonts", Category = "General", CreatePage = () => new FontsPage() },
+			new NavItem { Title = "Formatted Text", Category = "General", CreatePage = () => new FormattedTextPage() },
+			new NavItem { Title = "Layouts", Category = "General", CreatePage = () => new LayoutsPage() },
+			new NavItem { Title = "Alerts & Dialogs", Category = "General", CreatePage = () => new AlertsPage() },
+			// Lists & Collections
+			new NavItem { Title = "Collection View", Category = "Lists & Collections", CreatePage = () => new CollectionViewPage() },
+			new NavItem { Title = "CarouselView", Category = "Lists & Collections", CreatePage = () => new CarouselViewPage() },
+			new NavItem { Title = "ListView", Category = "Lists & Collections", CreatePage = () => new ListViewPage() },
+			new NavItem { Title = "TableView", Category = "Lists & Collections", CreatePage = () => new TableViewPage() },
+			// Drawing & Visual
+			new NavItem { Title = "Graphics", Category = "Drawing & Visual", CreatePage = () => new GraphicsPage() },
+			new NavItem { Title = "Gestures", Category = "Drawing & Visual", CreatePage = () => new GesturesPage() },
+			new NavItem { Title = "Shapes", Category = "Drawing & Visual", CreatePage = () => new ShapesPage() },
+			new NavItem { Title = "Transforms", Category = "Drawing & Visual", CreatePage = () => new TransformsPage() },
+			// Platform
+			new NavItem { Title = "Menu Bar", Category = "Platform", CreatePage = () => new MenuBarPage() },
+			new NavItem { Title = "Toolbar", Category = "Platform", CreatePage = () => new ToolbarPage() },
+			new NavItem { Title = "Multi-Window", Category = "Platform", CreatePage = () => new MultiWindowPage() },
+			new NavItem { Title = "Theme", Category = "Platform", CreatePage = () => new ThemePage() },
+			new NavItem { Title = "WebView", Category = "Platform", CreatePage = () => new WebViewPage() },
+			new NavItem { Title = "Device & App Info", Category = "Platform", CreatePage = () => new DeviceInfoPage() },
+			new NavItem { Title = "Battery & Network", Category = "Platform", CreatePage = () => new BatteryNetworkPage() },
+			new NavItem { Title = "Clipboard & Storage", Category = "Platform", CreatePage = () => new ClipboardStoragePage() },
+			new NavItem { Title = "Launch & Share", Category = "Platform", CreatePage = () => new LaunchSharePage() },
+			// Navigation
+			new NavItem { Title = "Navigation Demo", Category = "Navigation", CreatePage = () => new NavigationDemoPage() },
+			new NavItem { Title = "TabbedPage", Category = "Navigation", CreatePage = () => new TabbedPageDemoPage() },
+			new NavItem { Title = "FlyoutPage", Category = "Navigation", CreatePage = () => new FlyoutPageDemoPage() },
+			new NavItem { Title = "Map", Category = "Navigation", CreatePage = () => new MapPage() },
 		};
 
 		[Body]
@@ -122,21 +143,6 @@ namespace CometControlsGallery
 		View BuildSidebar()
 		{
 			var items = new List<View>();
-
-			items.Add(
-				VStack(
-					Text("Comet Gallery")
-						.FontSize(18)
-						.FontWeight(FontWeight.Bold)
-						.Color(Colors.White),
-					Text("Controls Reference")
-						.FontSize(11)
-						.Color(new Color(255, 255, 255, 180))
-				)
-				.Padding(new Thickness(16, 20, 16, 12))
-				.Background(new Color(88, 86, 214))
-			);
-
 			string lastCategory = null;
 
 			for (int i = 0; i < navItems.Count; i++)
@@ -148,10 +154,10 @@ namespace CometControlsGallery
 				{
 					lastCategory = item.Category;
 					items.Add(
-						Text(item.Category.ToUpperInvariant())
-							.FontSize(10)
+						Text(item.Category)
+							.FontSize(11)
 							.FontWeight(FontWeight.Bold)
-							.Color(Colors.Grey)
+							.Color(CategoryHeaderColor)
 							.Padding(new Thickness(16, 14, 16, 4))
 					);
 				}
@@ -159,22 +165,24 @@ namespace CometControlsGallery
 				var isSelected = selectedIndex.Value == index;
 
 				items.Add(
-					Button($"{item.Icon}  {item.Title}", () =>
+					Button(item.Title, () =>
 					{
 						_mainNav?.PopToRoot();
 						selectedIndex.Value = index;
 						selectedTitle.Value = navItems[index].Title;
 					})
-					.FontSize(14)
-					.Color(isSelected ? new Color(88, 86, 214) : new Color(60, 60, 67))
-					.Background(isSelected ? new Color(88, 86, 214, 25) : new Color(242, 242, 247))
+					.FontSize(13)
+					.Color(isSelected ? SelectedAccent : ItemTextColor)
+					.Background(isSelected ? new Color(88, 86, 214, 25) : SidebarBackground)
 					.Padding(new Thickness(16, 8))
-					.Frame(height: 36)
+					.Frame(height: 34)
 				);
 			}
 
-			return VStack((float?)0, items.ToArray())
-				.Background(new Color(242, 242, 247));
+			return ScrollView(
+				VStack((float?)0, items.ToArray())
+			)
+			.Background(SidebarBackground);
 		}
 	}
 }
