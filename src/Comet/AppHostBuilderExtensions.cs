@@ -843,7 +843,11 @@ namespace Comet
 			{ typeof(NativeHost), typeof(Handlers.NativeHostHandler) },
 				{ typeof(Button), typeof(ButtonHandler) },
 				{ typeof(CheckBox), typeof(CheckBoxHandler) },
+	#if __MACOS__
+				{ typeof(CometWindow), typeof(Comet.Handlers.CometWindowHandler) },
+#else
 				{ typeof(CometWindow), typeof(WindowHandler) },
+#endif
 				{ typeof(DatePicker), typeof(DatePickerHandler) },
 				{ typeof(FlyoutView), typeof(FlyoutViewHandler) },
 				{ typeof(Frame), typeof(ContentViewHandler) },

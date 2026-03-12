@@ -2269,3 +2269,9 @@ This matches View.GetDesiredSize behavior — Frame size is the final size inclu
 - Run: `dotnet build sample/CometMacApp/CometMacApp.csproj -t:Run -f net10.0-macos -c Debug` → ✅ (PID verified)
 - Tests: 846 passed, 0 failed, 19 skipped (unchanged baseline)
 - Other TFMs: maccatalyst builds clean with 0 errors
+
+### CometWindowHandler.MacOS — NSWindow Visibility Fix
+- Root cause: `CometWindow` was mapped to the generic `Microsoft.Maui.Handlers.WindowHandler` which has no AppKit NSWindow creation logic. Platform.Maui.MacOS's handler can't be reused because it casts VirtualView to `BindableObject`/`Window` (Controls), which CometWindow doesn't extend.
+- Created `CometWindowHandler` as `ElementHandler<IWindow, NSWindow>` at `src/Comet/Handlers/Window/CometWindowHandler.MacOS.cs`. Uses FlippedNSView content container pattern (IsFlipped=true for correct top-left coordinate system). Creates 1280x720 centered NSWindow, calls MakeKeyAndOrderFront. Content resolved via Comet's `ToMacOSPlatform()` bridge.
+- Handler registration updated with `#if __MACOS__` conditional in AppHostBuilderExtensions.cs line 723.
+- Verification: CometMacApp launches with visible window, 846 tests pass / 0 failures.
