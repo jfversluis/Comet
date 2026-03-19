@@ -8,14 +8,16 @@ namespace Comet.iOS
 {
 	public class CometView : UIView, IReloadHandler
 	{
+		bool _inLayout;
+
 		public CometView(IMauiContext mauiContext) {
 			MauiContext = mauiContext;
-			BackgroundColor = UIColor.White;
+			BackgroundColor = UIColor.SystemBackground;
 		}
 		public CometView(CGRect rect, IMauiContext mauiContext) : base(rect)
 		{
 			MauiContext = mauiContext;
-			BackgroundColor = UIColor.White;
+			BackgroundColor = UIColor.SystemBackground;
 		}
 		IView _view;
 		public IView CurrentView
@@ -53,7 +55,12 @@ namespace Comet.iOS
 				ihr.ReloadHandler = this;
 				MauiHotReloadHelper.AddActiveView(ihr);
 			}
-			var newPlatformView = _view?.ToPlatform(MauiContext);
+			// Resolve views with a Body (e.g. Component<T>) to their concrete view tree
+			// before calling ToPlatform, to avoid circular CometViewHandler→CometView loop.
+			var viewToRender = _view;
+			if (viewToRender is View cometView && cometView.Body != null)
+				viewToRender = cometView.GetView();
+			var newPlatformView = viewToRender?.ToPlatform(MauiContext);
 			currentHandler = _view?.Handler;
 			if (currentPlatformView == newPlatformView)
 				return;
@@ -65,11 +72,30 @@ namespace Comet.iOS
 
 		public override void LayoutSubviews()
 		{
-			base.LayoutSubviews();
-			if (currentPlatformView == null)
+			if (_inLayout)
 				return;
-			_view?.Measure(Bounds.Width, Bounds.Height);
-			currentPlatformView.Frame = Bounds;
+			_inLayout = true;
+			try
+			{
+				base.LayoutSubviews();
+				if (currentPlatformView == null || Bounds.Width <= 0 || Bounds.Height <= 0)
+					return;
+
+				// Invalidate measurement so the view tree remeasures with
+				// new constraints (critical for device rotation).
+				if (_view is View cometView)
+					cometView.MeasurementValid = false;
+
+				_view?.Measure(Bounds.Width, Bounds.Height);
+				_view?.Arrange(new Microsoft.Maui.Graphics.Rect(0, 0, Bounds.Width, Bounds.Height));
+				currentPlatformView.Frame = Bounds;
+				currentPlatformView.SetNeedsLayout();
+				currentPlatformView.LayoutIfNeeded();
+			}
+			finally
+			{
+				_inLayout = false;
+			}
 		}
 
 

@@ -22,33 +22,64 @@ namespace Comet.Handlers
 
 		public CollectionViewHandler() : base(Mapper, ActionMapper) { }
 
-		Microsoft.Maui.Controls.CollectionView _mauiCollectionView;
+		Microsoft.Maui.Controls.ItemsView _mauiItemsView;
+
+		// Stable reference updated on each MapListViewProperty call so that
+		// one-time callbacks (ItemTemplate, SelectionChanged) always resolve
+		// to the *current* Comet view, even after body rebuilds.
+		WeakReference<IListView> _currentListViewRef;
 
 		/// <summary>
-		/// Creates and fully configures a MAUI CollectionView from the Comet IListView.
+		/// Detects whether the Comet IListView is a CarouselView (generic or non-generic).
 		/// </summary>
-		static Microsoft.Maui.Controls.CollectionView CreateAndConfigureMauiCollectionView(IListView listView)
+		static bool IsCarouselView(IListView listView)
 		{
-			var cv = new Microsoft.Maui.Controls.CollectionView();
-			ConfigureMauiCollectionView(cv, listView);
-			RefreshItemsSource(cv, listView);
-			return cv;
+			var type = listView.GetType();
+			while (type != null)
+			{
+				if (type == typeof(Comet.CarouselView))
+					return true;
+				if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Comet.CarouselView<>))
+					return true;
+				type = type.BaseType;
+			}
+			return false;
 		}
 
 		/// <summary>
-		/// One-time configuration: layout, selection, empty view, header/footer, template.
+		/// Configuration for MAUI CarouselView: item template and carousel-specific properties.
 		/// </summary>
-		static void ConfigureMauiCollectionView(Microsoft.Maui.Controls.CollectionView cv, IListView listView)
+		static void ConfigureMauiCarouselView(Microsoft.Maui.Controls.CarouselView carousel, IListView listView)
 		{
-			MapCometItemsLayout(cv, listView);
-			MapCometSelectionMode(cv, listView);
-			MapCometEmptyView(cv, listView);
-			MapCometHeaderFooter(cv, listView);
-			MapCometInfiniteScroll(cv, listView);
+			var loop = GetPropertyValue<bool>(listView, nameof(Comet.CarouselView.Loop));
+			carousel.Loop = loop;
 
-			// Store reference to current listView that can be updated when VirtualView changes
+			var isBounceEnabled = GetPropertyValue<bool>(listView, nameof(Comet.CarouselView.IsBounceEnabled));
+			carousel.IsBounceEnabled = isBounceEnabled;
+
+			var isSwipeEnabled = GetPropertyValue<bool>(listView, nameof(Comet.CarouselView.IsSwipeEnabled));
+			carousel.IsSwipeEnabled = isSwipeEnabled;
+
+			var isScrollAnimated = GetPropertyValue<bool>(listView, nameof(Comet.CarouselView.IsScrollAnimated));
+			carousel.IsScrollAnimated = isScrollAnimated;
+
+			var peekAreaInsets = GetPropertyValue<double>(listView, nameof(Comet.CarouselView.PeekAreaInsets));
+			if (peekAreaInsets > 0)
+				carousel.PeekAreaInsets = new Microsoft.Maui.Thickness(peekAreaInsets);
+
+			// Sync position from the Comet CarouselView to the MAUI CarouselView
+			var positionProp = listView.GetType().GetProperty("Position");
+			if (positionProp != null)
+			{
+				var posValue = positionProp.GetValue(listView);
+				if (posValue is Reactive.PropertySubscription<int> posSub)
+					carousel.Position = posSub.CurrentValue;
+				else if (posValue is int posInt)
+					carousel.Position = posInt;
+			}
+
 			var listViewRef = new WeakReference<IListView>(listView);
-			cv.ItemTemplate = new Microsoft.Maui.Controls.DataTemplate(() =>
+			carousel.ItemTemplate = new Microsoft.Maui.Controls.DataTemplate(() =>
 			{
 				var container = new Microsoft.Maui.Controls.ContentView();
 				container.BindingContextChanged += (s, e) =>
@@ -63,21 +94,81 @@ namespace Comet.Handlers
 				return container;
 			});
 
+			carousel.PositionChanged += (s, e) =>
+			{
+				var callback = GetPropertyValue<Action<int>>(listView, "PositionChanged");
+				callback?.Invoke(e.CurrentPosition);
+			};
+		}
+
+		/// <summary>
+		/// One-time setup for a new MAUI CollectionView: template + event handlers.
+		/// These reference the handler's <see cref="_currentListViewRef"/> so they
+		/// survive Comet body rebuilds without re-registration.
+		/// </summary>
+		void InitCollectionView(Microsoft.Maui.Controls.CollectionView cv)
+		{
+			cv.ItemTemplate = new Microsoft.Maui.Controls.DataTemplate(() =>
+			{
+				var container = new Microsoft.Maui.Controls.ContentView();
+				container.BindingContextChanged += (s, e) =>
+				{
+					if (container.BindingContext is not CollectionViewItemProxy proxy)
+						return;
+					if (_currentListViewRef?.TryGetTarget(out var lv) != true)
+						return;
+					var cometView = lv.ViewFor(proxy.Section, proxy.Row);
+					container.Content = cometView != null ? new CometHost(cometView) : null;
+				};
+				return container;
+			});
+
 			cv.SelectionChanged += (s, e) =>
 			{
-				var selected = e.CurrentSelection?.FirstOrDefault();
-				if (selected is CollectionViewItemProxy proxy)
+				if (_currentListViewRef?.TryGetTarget(out var lv) != true)
+					return;
+
+				var current = e.CurrentSelection;
+				if (current == null || current.Count == 0)
+					return;
+
+				// Find the most recently added item for accurate multi-select reporting
+				var previous = e.PreviousSelection;
+				object target = current[current.Count - 1];
+				if (previous != null)
 				{
-					if (listViewRef.TryGetTarget(out var currentListView))
-						currentListView.OnSelected(proxy.Section, proxy.Row);
+					foreach (var item in current)
+					{
+						if (!previous.Contains(item))
+						{
+							target = item;
+							break;
+						}
+					}
 				}
+
+				if (target is CollectionViewItemProxy proxy)
+					lv.OnSelected(proxy.Section, proxy.Row);
 			};
+		}
+
+		/// <summary>
+		/// Updates mutable properties on an existing MAUI CollectionView from
+		/// the current Comet view (selection mode, scroll-to, items, etc.).
+		/// </summary>
+		static void UpdateCollectionView(Microsoft.Maui.Controls.CollectionView cv, IListView listView)
+		{
+			MapCometSelectionMode(cv, listView);
+			MapCometEmptyView(cv, listView);
+			MapCometHeaderFooter(cv, listView);
+			MapCometScrollTo(cv, listView);
+			RefreshItemsSource(cv, listView);
 		}
 
 		/// <summary>
 		/// Rebuilds the items list from IListView sections/rows.
 		/// </summary>
-		static void RefreshItemsSource(Microsoft.Maui.Controls.CollectionView cv, IListView listView)
+		static void RefreshItemsSource(Microsoft.Maui.Controls.ItemsView itemsView, IListView listView)
 		{
 			var items = new List<CollectionViewItemProxy>();
 			var sections = listView.Sections();
@@ -87,7 +178,7 @@ namespace Comet.Handlers
 				for (int r = 0; r < rows; r++)
 					items.Add(new CollectionViewItemProxy(s, r));
 			}
-			cv.ItemsSource = items;
+			itemsView.ItemsSource = items;
 		}
 
 		static void MapCometItemsLayout(Microsoft.Maui.Controls.CollectionView cv, IListView listView)
@@ -180,6 +271,23 @@ namespace Comet.Handlers
 				if (param is int index)
 					command?.Invoke(index);
 			});
+		}
+
+		static void MapCometScrollTo(Microsoft.Maui.Controls.CollectionView cv, IListView listView)
+		{
+			var scrollToProp = listView.GetType().GetProperty("ScrollToRequested");
+			if (scrollToProp != null)
+			{
+				scrollToProp.SetValue(listView, (Action<int, bool>)((index, animate) =>
+				{
+					var totalItems = cv.ItemsSource is System.Collections.ICollection c ? c.Count : 0;
+					// Use End position for the last item so it scrolls fully into view
+					var position = (totalItems > 0 && index >= totalItems - 1)
+						? Microsoft.Maui.Controls.ScrollToPosition.End
+						: Microsoft.Maui.Controls.ScrollToPosition.MakeVisible;
+					cv.ScrollTo(index, position: position, animate: animate);
+				}));
+			}
 		}
 	}
 

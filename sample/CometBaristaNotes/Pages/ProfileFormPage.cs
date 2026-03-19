@@ -1,47 +1,57 @@
-using Comet;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Storage;
 using CometBaristaNotes.Models;
 using CometBaristaNotes.Services;
 using CometBaristaNotes.Components;
 
-using MauiLabel = Microsoft.Maui.Controls.Label;
-using MauiScrollView = Microsoft.Maui.Controls.ScrollView;
-
 namespace CometBaristaNotes.Pages;
 
-public class ProfileFormPage : Comet.View
+public class ProfileFormPageState
 {
-	readonly int _profileId;
+	public string Name { get; set; } = "";
+	public string AvatarPath { get; set; } = "";
+	public string Error { get; set; } = "";
+	public bool IsLoaded { get; set; }
+}
 
-	[State] readonly State<string> _name = new("");
-	[State] readonly State<string> _error = new("");
-	[State] readonly State<bool> _isLoaded = new(false);
+public class ProfileFormPage : Component<ProfileFormPageState>
+{
+	const double AvatarSize = 100;
+
+	readonly int _profileId;
 
 	public ProfileFormPage(int profileId = 0) { _profileId = profileId; }
 
 	void LoadProfile()
 	{
-		if (_profileId <= 0) { _isLoaded.Value = true; return; }
+		if (_profileId <= 0)
+		{
+			SetState(s => s.IsLoaded = true);
+			return;
+		}
 
 		var store = InMemoryDataStore.Instance;
 		if (store == null) return;
 
 		var profile = store.GetProfile(_profileId);
-		if (profile != null)
-			_name.Value = profile.Name;
-
-		_isLoaded.Value = true;
+		SetState(s =>
+		{
+			if (profile != null)
+			{
+				s.Name = profile.Name;
+				s.AvatarPath = profile.AvatarPath ?? "";
+			}
+			s.IsLoaded = true;
+		});
 	}
 
 	void Save()
 	{
-		if (string.IsNullOrWhiteSpace(_name.Value))
+		if (string.IsNullOrWhiteSpace(State.Name))
 		{
-			_error.Value = "Please enter a profile name";
+			SetState(s => s.Error = "Please enter a profile name");
 			return;
 		}
-		_error.Value = "";
+		SetState(s => s.Error = "");
 
 		var store = InMemoryDataStore.Instance;
 		if (store == null) return;
@@ -51,57 +61,155 @@ public class ProfileFormPage : Comet.View
 			store.UpdateProfile(new UserProfile
 			{
 				Id = _profileId,
-				Name = _name.Value,
+				Name = State.Name,
+				AvatarPath = string.IsNullOrEmpty(State.AvatarPath) ? null : State.AvatarPath,
 			});
 		}
 		else
 		{
 			store.CreateProfile(new UserProfile
 			{
-				Name = _name.Value,
+				Name = State.Name,
+				AvatarPath = string.IsNullOrEmpty(State.AvatarPath) ? null : State.AvatarPath,
 			});
 		}
 
-		Microsoft.Maui.Controls.Shell.Current.GoToAsync("..");
+		Navigation?.Pop();
 	}
 
-	void Delete()
+	async void Delete()
 	{
 		if (_profileId <= 0) return;
 		var store = InMemoryDataStore.Instance;
 		if (store == null) return;
 
+		var page = CometBaristaNotes.Services.PageHelper.GetCurrentPage();
+		if (page != null)
+		{
+			var confirmed = await page.DisplayAlertAsync(
+				"Delete Profile?",
+				$"Are you sure you want to delete '{State.Name}'? This action cannot be undone.",
+				"Delete",
+				"Cancel");
+			if (!confirmed) return;
+		}
+
 		store.DeleteProfile(_profileId);
-		Microsoft.Maui.Controls.Shell.Current.GoToAsync("..");
+		Navigation?.Pop();
 	}
 
-	[Body]
-	Comet.View body()
+	async void PickPhoto()
 	{
-		if (!_isLoaded.Value)
+		try
+		{
+			var results = await Microsoft.Maui.Media.MediaPicker.Default.PickPhotosAsync();
+			var result = results?.FirstOrDefault();
+			if (result == null) return;
+
+			var profilesDir = System.IO.Path.Combine(FileSystem.AppDataDirectory, "profiles");
+			System.IO.Directory.CreateDirectory(profilesDir);
+
+			var destPath = System.IO.Path.Combine(profilesDir, $"{(_profileId > 0 ? _profileId : 0)}.jpg");
+			using var sourceStream = await result.OpenReadAsync();
+			using var destStream = System.IO.File.Create(destPath);
+			await sourceStream.CopyToAsync(destStream);
+
+			SetState(s => s.AvatarPath = destPath);
+		}
+		catch
+		{
+			// Photo pick cancelled or failed — ignore silently
+		}
+	}
+
+	View BuildAvatar()
+	{
+		var hasPhoto = !string.IsNullOrEmpty(State.AvatarPath) && System.IO.File.Exists(State.AvatarPath);
+
+		var items = new List<View>();
+
+		if (hasPhoto)
+		{
+			items.Add(
+				Border(
+					Image(State.AvatarPath)
+						.Aspect(Aspect.AspectFill)
+						.Frame(width: (float)AvatarSize, height: (float)AvatarSize)
+				)
+				.CornerRadius((float)(AvatarSize / 2))
+				.StrokeColor(Theme.Primary)
+				.StrokeThickness(2)
+				.Frame(width: (float)AvatarSize, height: (float)AvatarSize)
+			);
+		}
+		else
+		{
+			items.Add(
+				Border(
+					Text(Icons.Person)
+						.FontFamily(Icons.FontFamily)
+						.FontSize(48)
+						.Color(Theme.TextMuted)
+						.HorizontalTextAlignment(TextAlignment.Center)
+						.VerticalTextAlignment(TextAlignment.Center)
+						.Frame(width: (float)AvatarSize, height: (float)AvatarSize)
+				)
+				.CornerRadius((float)(AvatarSize / 2))
+				.StrokeColor(Theme.Outline)
+				.StrokeThickness(2)
+				.Background(Theme.SurfaceVariant)
+				.Frame(width: (float)AvatarSize, height: (float)AvatarSize)
+			);
+		}
+
+		if (_profileId > 0)
+		{
+			items.Add(
+				Button(hasPhoto ? "Change Photo" : "Add Photo", PickPhoto)
+					.FontFamily(Theme.FontSemibold)
+					.FontSize(14)
+					.Color(Theme.Primary)
+					.Background(Colors.Transparent)
+					.Frame(height: 36)
+			);
+		}
+
+		var stack = VStack(Theme.SpacingS);
+		foreach (var item in items)
+			stack.Add(item);
+
+		return stack.Padding(new Thickness(0, Theme.SpacingS));
+	}
+
+	public override View Render()
+	{
+		if (!State.IsLoaded)
 			LoadProfile();
 
 		var isEdit = _profileId > 0;
 
-		var stack = new VerticalStackLayout { Spacing = Theme.SpacingS, Padding = new Thickness(Theme.SpacingM) };
-
-		stack.Add(FormHelpers.MakeSectionHeader(isEdit ? "EDIT PROFILE" : "NEW PROFILE"));
-		stack.Add(FormHelpers.MakeFormEntry("Name *", _name.Value, "Profile name", v => _name.Value = v));
-
-		if (!string.IsNullOrEmpty(_error.Value))
-			stack.Add(new MauiLabel { Text = _error.Value, TextColor = Theme.Error, FontFamily = Theme.FontRegular, FontSize = 14 });
-
-		stack.Add(FormHelpers.MakePrimaryButton(isEdit ? "Save Changes" : "Create Profile", Save));
-
-		if (isEdit)
-			stack.Add(FormHelpers.MakeDangerButton("Delete Profile", Delete));
-
-		var scrollView = new MauiScrollView
+		var items = new List<View>
 		{
-			Content = stack,
-			BackgroundColor = Theme.Background,
+			FormHelpers.MakeSectionHeader(isEdit ? "EDIT PROFILE" : "NEW PROFILE"),
+			BuildAvatar(),
+			FormHelpers.MakeFormEntry("Name *", State.Name, "Profile name", v => SetState(s => s.Name = v)),
 		};
 
-		return new MauiViewHost(scrollView);
+		if (!string.IsNullOrEmpty(State.Error))
+			items.Add(Text(State.Error).Color(Theme.Error).FontFamily(Theme.FontRegular).FontSize(14));
+
+		items.Add(FormHelpers.MakePrimaryButton(isEdit ? "Save Changes" : "Create Profile", Save));
+
+		if (isEdit)
+			items.Add(FormHelpers.MakeDangerButton("Delete Profile", Delete));
+
+		var stack = VStack(Theme.SpacingS);
+		foreach (var item in items)
+			stack.Add(item);
+
+		return ScrollView(
+			stack.Padding(new Thickness(Theme.SpacingM))
+		)
+		.Background(Theme.Background);
 	}
 }

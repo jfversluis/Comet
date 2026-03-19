@@ -14,53 +14,78 @@ namespace Comet.Handlers
 		public static void MapListViewProperty(IElementHandler handler, IListView virtualView)
 		{
 			var cvHandler = (CollectionViewHandler)handler;
-			cvHandler._mauiCollectionView = CreateAndConfigureMauiCollectionView(virtualView);
-			cvHandler.EmbedMauiCollectionView();
+			cvHandler._currentListViewRef = new WeakReference<IListView>(virtualView);
+
+			// Reuse existing MAUI CollectionView — only update changed properties.
+			// This preserves scroll position and selection state across body rebuilds.
+			if (cvHandler._mauiItemsView is Microsoft.Maui.Controls.CollectionView existingCv
+				&& !IsCarouselView(virtualView))
+			{
+				UpdateCollectionView(existingCv, virtualView);
+				return;
+			}
+
+			if (IsCarouselView(virtualView))
+			{
+				var carousel = new Microsoft.Maui.Controls.CarouselView();
+				ConfigureMauiCarouselView(carousel, virtualView);
+				RefreshItemsSource(carousel, virtualView);
+				cvHandler._mauiItemsView = carousel;
+			}
+			else
+			{
+				var cv = new Microsoft.Maui.Controls.CollectionView();
+				cvHandler.InitCollectionView(cv);
+				MapCometItemsLayout(cv, virtualView);
+				MapCometInfiniteScroll(cv, virtualView);
+				UpdateCollectionView(cv, virtualView);
+				cvHandler._mauiItemsView = cv;
+			}
+			cvHandler.EmbedMauiItemsView();
 		}
 
 #nullable enable
 		public static void MapReloadData(CollectionViewHandler handler, IListView virtualView, object? value)
 #nullable restore
 		{
-			if (handler._mauiCollectionView != null)
-				RefreshItemsSource(handler._mauiCollectionView, virtualView);
+			if (handler._mauiItemsView != null)
+				RefreshItemsSource(handler._mauiItemsView, virtualView);
 		}
 
-		void EmbedMauiCollectionView()
+		void EmbedMauiItemsView()
 		{
-			if (_mauiCollectionView == null || MauiContext == null)
+			if (_mauiItemsView == null || MauiContext == null)
 				return;
 
 			try
 			{
-				var platformView = _mauiCollectionView.ToPlatform(MauiContext);
-				PlatformView.SetContent(platformView, _mauiCollectionView);
+				var platformView = _mauiItemsView.ToPlatform(MauiContext);
+				PlatformView.SetContent(platformView, _mauiItemsView);
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"[CollectionViewHandler] EmbedMauiCollectionView failed: {ex.Message}");
+				Console.WriteLine($"[CollectionViewHandler] EmbedMauiItemsView failed: {ex.Message}");
 			}
 		}
 
 		protected override void DisconnectHandler(CollectionViewContainer platformView)
 		{
 			platformView.ClearContent();
-			if (_mauiCollectionView?.Handler is IElementHandler hostedHandler)
+			if (_mauiItemsView?.Handler is IElementHandler hostedHandler)
 			{
 				hostedHandler.DisconnectHandler();
 				if (hostedHandler is IDisposable disposable)
 					disposable.Dispose();
 			}
-			_mauiCollectionView = null;
+			_mauiItemsView = null;
 			base.DisconnectHandler(platformView);
 		}
 
 		public override Microsoft.Maui.Graphics.Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			// Use platform view's intrinsic size when constraints are unconstrained
-			if (_mauiCollectionView != null)
+			if (_mauiItemsView != null)
 			{
-				var platformView = _mauiCollectionView.Handler?.PlatformView as UIView;
+				var platformView = _mauiItemsView.Handler?.PlatformView as UIView;
 				if (platformView != null)
 				{
 					var fitting = platformView.SizeThatFits(new CoreGraphics.CGSize(

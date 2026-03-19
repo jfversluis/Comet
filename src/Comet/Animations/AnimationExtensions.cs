@@ -51,19 +51,31 @@ namespace Comet
 
 				var values = change.Value;
 				//Handle the bingings!
-				if (values.newValue is Binding nb)
-					values.newValue = nb.Value;
-				if (values.oldValue is Binding ob)
-					values.oldValue = ob.Value;
 				if (values.newValue == values.oldValue)
 					continue;
+
+				// When a property has never been set, oldValue is null.
+				// LerpingAnimation can't interpolate from null, so default
+				// to the numeric zero for the matching type.
+				var startValue = values.oldValue;
+				if (startValue == null)
+				{
+					startValue = values.newValue switch
+					{
+						double => 0.0,
+						float => 0.0f,
+						int => 0,
+						_ => startValue,
+					};
+				}
+
 				Animation animation = new ContextualAnimation
 				{
 					Duration = duration,
 					Easing = easing,
 					Repeats = repeats,
 					StartDelay = delay,
-					StartValue = values.oldValue,
+					StartValue = startValue,
 					EndValue = values.newValue,
 					ContextualObject = prop.view,
 					PropertyName = prop.property,
@@ -190,8 +202,6 @@ namespace Comet
 				var prop = change.Key;
 				var values = change.Value;
 
-				if (values.newValue is Binding nb) values.newValue = nb.Value;
-				if (values.oldValue is Binding ob) values.oldValue = ob.Value;
 				if (Equals(values.newValue, values.oldValue))
 					continue;
 

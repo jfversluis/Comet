@@ -1,85 +1,142 @@
-using Comet;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
+using CometBaristaNotes.Components;
 using CometBaristaNotes.Models;
 using CometBaristaNotes.Services;
-using CometBaristaNotes.Components;
-
-using MauiLabel = Microsoft.Maui.Controls.Label;
-using MauiScrollView = Microsoft.Maui.Controls.ScrollView;
-using MauiBoxView = Microsoft.Maui.Controls.BoxView;
-using MauiFontAttributes = Microsoft.Maui.Controls.FontAttributes;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.ApplicationModel;
 
 namespace CometBaristaNotes.Pages;
 
-public class ActivityFeedPage : Comet.View
+public class ActivityFeedState
 {
-	[State] readonly State<List<ShotRecord>> _shots = new();
-	[State] readonly State<bool> _isLoading = new(true);
+	public int RefreshVersion { get; set; }
+}
 
-	[Body]
-	Comet.View body()
+public class ActivityFeedPage : Component<ActivityFeedState>
+{
+	const int MaxShots = 25;
+
+	readonly IDataStore _store;
+	readonly IDataChangeNotifier? _notifier;
+
+	public ActivityFeedPage()
 	{
-		if (_isLoading.Value)
+		_store = IPlatformApplication.Current?.Services.GetService<IDataStore>() ?? (IDataStore)InMemoryDataStore.Instance;
+		_notifier = IPlatformApplication.Current?.Services.GetService<IDataChangeNotifier>();
+		if (_notifier != null)
 		{
-			LoadShots();
+			_notifier.DataChanged += OnDataChanged;
 		}
-
-		var shots = _shots.Value ?? new List<ShotRecord>();
-
-		if (shots.Count == 0 && !_isLoading.Value)
-		{
-			var emptyStack = new VerticalStackLayout
-			{
-				BackgroundColor = Theme.Background,
-				VerticalOptions = LayoutOptions.Fill,
-				HorizontalOptions = LayoutOptions.Fill,
-			};
-			emptyStack.Add(FormHelpers.MakeEmptyState(Icons.Coffee, "No Shots Yet", "Log your first espresso shot to see it here."));
-			return new MauiViewHost(emptyStack);
-		}
-
-		var contentStack = new VerticalStackLayout { Spacing = 0 };
-
-		// Spacer
-		contentStack.Add(new MauiBoxView { HeightRequest = 20, BackgroundColor = Colors.Transparent });
-
-		// Shot count header
-		contentStack.Add(new MauiLabel
-		{
-			Text = $"{shots.Count} shots logged",
-			FontFamily = Theme.FontSemibold,
-			FontSize = 14,
-			FontAttributes = MauiFontAttributes.Bold,
-			TextColor = Theme.TextSecondary,
-			Margin = new Thickness(Theme.SpacingM, Theme.SpacingS),
-		});
-
-		// Shot cards
-		foreach (var shot in shots)
-		{
-			contentStack.Add(ShotRecordCardFactory.Create(shot, () =>
-			{
-				// Could navigate to shot detail
-			}));
-		}
-
-		var scrollView = new MauiScrollView
-		{
-			Content = contentStack,
-			BackgroundColor = Theme.Background,
-		};
-
-		return new MauiViewHost(scrollView);
 	}
 
-	void LoadShots()
+	public override View Render()
 	{
-		var store = InMemoryDataStore.Instance;
-		if (store != null)
+		_ = State.RefreshVersion;
+
+		var shots = _store.GetAllShots().Take(MaxShots).ToList();
+		if (shots.Count == 0)
 		{
-			_shots.Value = store.GetAllShots();
+			return VStack(
+				FormHelpers.MakeEmptyState(Icons.Feed, "No shots yet", "Log a new shot to seed the activity feed.")
+			)
+			.Background(Theme.Background)
+			.FillHorizontal()
+			.Title("Activity");
 		}
-		_isLoading.Value = false;
+
+		var content = VStack(Theme.SpacingS,
+				BuildSummaryCard(shots),
+				FormHelpers.MakeSectionHeader("Latest shots")
+			);
+
+		foreach (var shot in shots)
+		{
+			content.Add(BuildShotCard(shot));
+		}
+
+		return ScrollView(
+				content.Padding(new Thickness(Theme.SpacingM))
+			)
+		.Background(Theme.Background)
+		.Title("Activity");
+	}
+
+	protected override void OnWillUnmount()
+	{
+		if (_notifier != null)
+		{
+			_notifier.DataChanged -= OnDataChanged;
+		}
+
+		base.OnWillUnmount();
+	}
+
+	void OnDataChanged(string entityType, int entityId, DataChangeType changeType)
+	{
+		if (entityType != "Shot")
+		{
+			return;
+		}
+
+		MainThread.BeginInvokeOnMainThread(() =>
+			SetState(state => state.RefreshVersion++));
+	}
+
+	View BuildSummaryCard(IReadOnlyList<ShotRecord> shots)
+	{
+		var latestShot = shots[0];
+		var detail = $"{shots.Count} recent shots • latest {FormatTimestamp(latestShot.Timestamp)}";
+
+		return FormHelpers.MakeCard(
+			VStack(Theme.SpacingS,
+				Text("Activity feed")
+					.FontFamily(Theme.FontSemibold)
+					.FontSize(18)
+					.FontWeight(FontWeight.Bold)
+					.Color(Theme.TextPrimary),
+
+				Text(detail)
+					.FontFamily(Theme.FontRegular)
+					.FontSize(13)
+					.Color(Theme.TextSecondary)
+			));
+	}
+
+	View BuildShotCard(ShotRecord shot)
+	{
+		var title = shot.BeanName ?? shot.BagDisplayName ?? shot.DrinkType;
+		var subtitle = $"{shot.DrinkType} • {FormatTimestamp(shot.Timestamp)}";
+		var detail = $"{shot.DoseIn:0.#}g in • {(shot.ActualOutput ?? shot.ExpectedOutput):0.#}g out";
+
+		return FormHelpers.MakeListCard(
+			title,
+			subtitle,
+			detail,
+			() => Navigation?.Navigate(new ShotLoggingPage(shot.Id)));
+	}
+
+	static string FormatTimestamp(DateTime timestamp)
+	{
+		var diff = DateTime.Now - timestamp;
+		if (diff.TotalMinutes < 1)
+		{
+			return "just now";
+		}
+
+		if (diff.TotalMinutes < 60)
+		{
+			return $"{(int)diff.TotalMinutes}m ago";
+		}
+
+		if (diff.TotalHours < 24)
+		{
+			return $"{(int)diff.TotalHours}h ago";
+		}
+
+		if (diff.TotalDays < 7)
+		{
+			return $"{(int)diff.TotalDays}d ago";
+		}
+
+		return timestamp.ToString("MMM d");
 	}
 }
