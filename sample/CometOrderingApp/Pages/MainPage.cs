@@ -25,19 +25,20 @@ class MainPage : Component<MainPageState>
 	public override View Render()
 	{
 		return new Grid(
-			rows: new object[] { 260, "*" },
+			rows: new object[] { 290, "*" },
 			columns: new object[] { "*" })
 		{
 			new HeaderView(
 				State.SelectedType,
 				type => SetState(s => s.SelectedType = type)),
 
-			new CollectionView<ProductItem>(() => ProductItem.Items.ToList())
-			{
-				ViewFor = RenderProductItem
-			}
-			.GridRow(1)
-			.Margin(left: 24, top: 20, right: 24, bottom: 20),
+			ScrollView(
+				VStack(spacing: 0,
+					ProductItem.Items.Select(RenderProductItem).ToArray()
+				)
+				.Margin(left: 24, top: 20, right: 24, bottom: 20)
+			)
+			.GridRow(1),
 
 			State.SelectedItemIndex.HasValue
 				? new CartPanel(
@@ -101,7 +102,14 @@ class MainPage : Component<MainPageState>
 			}
 		)
 		.CornerRadius(13)
-		.Background(Theme.PrimaryLightColor)
+		.Background(new LinearGradientPaint(
+			new PaintGradientStop[]
+			{
+				new PaintGradientStop(0.0537f, Theme.PrimaryLightColor),
+				new PaintGradientStop(0.9738f, Colors.White)
+			},
+			startPoint: new Point(0, 0.5),
+			endPoint: new Point(1, 0.5)))
 		.Margin(bottom: 12)
 		.Frame(height: 132);
 	}
@@ -124,7 +132,7 @@ class HeaderView : View
 	View body()
 	{
 		return new Grid(
-			rows: new object[] { 62, 49, 130 },
+			rows: new object[] { 92, 49, 130 },
 			columns: new object[] { "*" })
 		{
 			// Top bar row
@@ -152,7 +160,7 @@ class HeaderView : View
 				.GridColumn(3)
 				.Alignment(Comet.Alignment.Trailing)
 			}
-			.Margin(left: 24, top: 32, right: 24),
+			.Margin(left: 24, top: 62, right: 24),
 
 			// Address bar row
 			Border(
