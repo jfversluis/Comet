@@ -14,5 +14,11 @@ namespace Comet.iOS
 			var bounds = Bounds.ToRectangle();
 			CrossPlatformArrange?.Invoke(bounds);
 		}
+
+		public override void SafeAreaInsetsDidChange()
+		{
+			base.SafeAreaInsetsDidChange();
+			SetNeedsLayout();
+		}
 	}
 }

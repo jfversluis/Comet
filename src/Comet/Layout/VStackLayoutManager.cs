@@ -22,9 +22,18 @@ public class VStackLayoutManager : Microsoft.Maui.Layouts.ILayoutManager
 		double spacerHeight = (layoutRect.Height - childrenHeight) / spacerCount;
 		foreach (var view in layout)
 		{
-			if (view is Spacer)
+			if (view is Spacer spacer)
 			{
-				layoutRect.Y += spacerHeight;
+				var spacerConstraints = spacer.GetFrameConstraints();
+				if (spacerConstraints?.Height > 0)
+				{
+					// Fixed-height spacer — advance by its explicit height.
+					layoutRect.Y += spacerConstraints.Height.Value + _spacing;
+				}
+				else
+				{
+					layoutRect.Y += spacerHeight;
+				}
 				continue;
 			}
 
@@ -56,15 +65,32 @@ public class VStackLayoutManager : Microsoft.Maui.Layouts.ILayoutManager
 
 		foreach (var view in layout)
 		{
-			if (view is Spacer)
+			if (view is Spacer spacer)
 			{
-				spacerCount++;
-
-				if (!view.MeasurementValid)
+				var spacerConstraints = spacer.GetFrameConstraints();
+				if (spacerConstraints?.Height > 0)
 				{
-					view.MeasuredSize = new Size(-1, -1);
-					view.MeasurementValid = true;
+					// Spacer with an explicit Frame(height:) acts as a
+					// fixed-size gap, not a flexible spacer.
+					var fixedHeight = spacerConstraints.Height.Value;
+					spacer.MeasuredSize = new Size(0, fixedHeight);
+					spacer.MeasurementValid = true;
+					height += fixedHeight;
+					childrenHeight += fixedHeight;
 				}
+				else
+				{
+					spacerCount++;
+					if (!spacer.MeasurementValid)
+					{
+						spacer.MeasuredSize = new Size(-1, -1);
+						spacer.MeasurementValid = true;
+					}
+				}
+
+				if (index > 0)
+					height += _spacing;
+				index++;
 				continue;
 			}
 			else
