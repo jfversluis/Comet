@@ -2109,3 +2109,29 @@ Restructured and expanded the guide from 11 sections to 16, covering every state
 - View.GetRenderViewReactive() wraps Body.Invoke() in ReactiveScope.BeginTracking() and manages subscription/unsubscription delta after each body evaluation -- this is how dependency tracking is automatic.
 - Component.OnMounted() fires inside OnLoaded() with a _mounted guard to ensure it only fires once.
 - SignalList<T> is NOT thread-safe for mutations (no internal lock). This contrasts with Signal<T> and Reactive<T> which are safe for writes from any thread.
+
+---
+
+### ScrollView iOS Bottom Clipping Fix
+
+**Date:** 2025-07-27
+**Task:** Fix ScrollView content clipping at bottom on iOS — last items in scrollable VStack lists cut off, only visible during overscroll bounce.
+**Outcome:** Shipped 2-file fix on branch `squad/scrollview-ios-bottom-clipping`. Verified on iPhone 17 Pro simulator with CometRecipeApp.
+
+**What was delivered:**
+Root cause was in VStackLayoutManager: ALL Spacers were treated as flexible (MeasuredSize = -1,-1), ignoring `.Frame(height:)` constraints entirely. A `new Spacer().Frame(height: 40)` contributed 0pt to content height, making ScrollView contentSize ~40pt too small.
+
+Fixed in two files:
+1. **VStackLayoutManager.cs** — Measure() and ArrangeChildren() now check `spacer.GetFrameConstraints()?.Height > 0`. Fixed-height spacers are measured as fixed-size elements (contributing their explicit height). Flexible spacers (no constraint) retain existing behavior.
+2. **CUIScrollView.cs** — Added SafeAreaInsetsDidChange override to trigger re-layout when safe area insets change, ensuring contentSize recalculation.
+
+**What was reverted (important learning):**
+Initially also changed ScrollViewHandler.iOS.cs ContentInsetAdjustmentBehavior from .Always to .Never with manual safe area padding. Reverted this because .Never globally would require handling BOTH top and bottom safe areas manually, potentially breaking apps where ScrollView extends behind navigation chrome.
+
+**Learnings:**
+- VStackLayoutManager treats Spacers specially — they're detected by type check and counted for flexible space division. The `GetFrameConstraints()` API on IView is the correct way to check if a Spacer has an explicit size constraint.
+- ContentInsetAdjustmentBehavior.Always is the correct default for UIScrollView in Comet. Changing to .Never is too invasive — it shifts the content origin to (0,0) behind the status bar/nav bar.
+- CUIScrollView's LayoutSubviews calls the handler's Arange() method which sets contentSize. SafeAreaInsetsDidChange → SetNeedsLayout() ensures this runs after the view enters the window hierarchy with correct insets.
+- UseCometSampleDebugHost in DEBUG mode overrides the app's CreateRootView — modifying App.cs Body/CreateRootView won't change navigation when this debug host is active.
+- Appium automation (via appium-automation skill) is reliable for iOS simulator interaction where MauiDevFlow element inspection fails (Comet elements show as [hidden] [disabled]).
+- `xcrun simctl io <UDID> screenshot` is more reliable than MauiDevFlow screenshots for verification.
