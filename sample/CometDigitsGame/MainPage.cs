@@ -1,32 +1,66 @@
 namespace CometDigitsGame;
 
+enum PageView
+{
+	GameBoard,
+	OperationList
+}
+
 class MainPage : Component<GameState>
 {
 	public override View Render()
 	{
 		return ScrollView(
-			VStack(16,
-				RenderTarget(),
-				RenderBoard(),
-				RenderOperationBar(),
-				RenderErrorMessage(),
-				RenderWinMessage(),
-				RenderViewToggle(),
-				State.ShowOperationList ? RenderOperationList() : null!
+			VStack(
+				RenderTabBar(),
+				State.CurrentPageView == PageView.GameBoard
+					? RenderGameBoardContent()
+					: RenderOperationListContent()
 			)
-			.Padding(new Thickness(16))
 		)
 		.Background(Colors.White);
+	}
+
+	View RenderTabBar()
+	{
+		var current = State.CurrentPageView;
+		return HStack(
+			Button("Game Board", () => SetState(s => s.CurrentPageView = PageView.GameBoard))
+				.Background(current == PageView.GameBoard ? Theme.GreenColor : Colors.LightGrey)
+				.Color(current == PageView.GameBoard ? Colors.White : Colors.Black)
+				.FontSize(16)
+				.CornerRadius(0)
+				.Margin(new Thickness(10)),
+			Button("Operations", () => SetState(s => s.CurrentPageView = PageView.OperationList))
+				.Background(current == PageView.OperationList ? Theme.GreenColor : Colors.LightGrey)
+				.Color(current == PageView.OperationList ? Colors.White : Colors.Black)
+				.FontSize(16)
+				.CornerRadius(0)
+				.Margin(new Thickness(10))
+		)
+		.FillHorizontal();
+	}
+
+	View RenderGameBoardContent()
+	{
+		return VStack(16,
+			RenderTarget(),
+			RenderBoard(),
+			RenderOperationBar(),
+			RenderErrorMessage(),
+			RenderWinMessage()
+		)
+		.Padding(new Thickness(16));
 	}
 
 	View RenderTarget()
 	{
 		return Text($"{State.CurrentGame.TargetValue}")
-			.FontSize(48)
+			.FontSize(46)
 			.FontWeight(FontWeight.Bold)
 			.HorizontalTextAlignment(TextAlignment.Center)
-			.Color(Theme.GreenColor)
-			.Margin(new Thickness(0, 8));
+			.Color(Colors.Black)
+			.Margin(new Thickness(0, 16));
 	}
 
 	View RenderBoard()
@@ -55,54 +89,51 @@ class MainPage : Component<GameState>
 		var isError = State.OperationInError?.Left == number || State.OperationInError?.Right == number;
 		var bgColor = isError ? Theme.ErrorColor : isSelected ? Theme.GreenColor : Colors.White;
 		var textColor = (isSelected || isError) ? Colors.White : Colors.Black;
-		var borderColor = isError ? Theme.ErrorColor : isSelected ? Theme.GreenColor : Colors.DarkGrey;
+		var borderColor = isError ? Theme.ErrorColor : isSelected ? Theme.GreenColor : Colors.Black;
 
 		return Button($"{number.Value}", () => OnNumberClicked(number))
 			.Background(bgColor)
 			.Color(textColor)
-			.FontSize(22)
+			.FontSize(24)
 			.FontWeight(FontWeight.Bold)
 			.CornerRadius(43)
-			.BorderWidth(isSelected ? 0 : 2)
+			.BorderWidth(isSelected ? 0 : 3)
 			.BorderColor(borderColor)
 			.Frame(width: 86, height: 86);
 	}
 
 	View RenderOperationBar()
 	{
-		return HStack(8,
+		return HStack(12,
 			RenderUndoButton(),
-			RenderOperationButton(Operation.Add, "add_icon.png", "add_icon_green.png", "+"),
-			RenderOperationButton(Operation.Subtract, "subtract_icon.png", "subtract_icon_green.png", "−"),
-			RenderOperationButton(Operation.Multiply, "multiply_icon.png", "multiply_icon_green.png", "×"),
-			RenderOperationButton(Operation.Divide, "divide_icon.png", "divide_icon_green.png", "÷")
+			RenderOperationButton(Operation.Add, "+"),
+			RenderOperationButton(Operation.Subtract, "−"),
+			RenderOperationButton(Operation.Multiply, "×"),
+			RenderOperationButton(Operation.Divide, "÷")
 		)
 		.Padding(new Thickness(8, 16));
 	}
 
 	View RenderUndoButton()
 	{
-		return Button("↩", () => OnUndoLastOperation())
-			.FontSize(24)
-			.Color(Theme.GreenColor)
-			.Background(Colors.Transparent)
-			.Frame(width: 50, height: 50);
+		return new Image("undo_icon_green.png")
+			.Frame(width: 50, height: 50)
+			.OnTap(_ => OnUndoLastOperation());
 	}
 
-	View RenderOperationButton(Operation operation, string icon, string selectedIcon, string label)
+	View RenderOperationButton(Operation operation, string label)
 	{
 		var isSelected = State.CurrentOperation == operation;
 		var isError = State.OperationInError?.Operation == operation;
-		var bgColor = isError ? Theme.ErrorColor : isSelected ? Theme.GreenColor : Colors.LightGrey;
-		var textColor = (isSelected || isError) ? Colors.White : Colors.Black;
+		var bgColor = isError ? Theme.ErrorColor : isSelected ? Theme.GreenColor : Colors.Black;
 
 		return Button(label, () => OnOperationSelected(operation))
 			.Background(bgColor)
-			.Color(textColor)
+			.Color(Colors.White)
 			.FontSize(24)
 			.FontWeight(FontWeight.Bold)
-			.CornerRadius(25)
-			.Frame(width: 50, height: 50);
+			.CornerRadius(30)
+			.Frame(width: 60, height: 60);
 	}
 
 	View RenderErrorMessage()
@@ -128,15 +159,9 @@ class MainPage : Component<GameState>
 			.Margin(new Thickness(0, 8));
 	}
 
-	View RenderViewToggle()
+	View RenderOperationListContent()
 	{
-		return Button(
-			State.ShowOperationList ? "Hide Operations" : "Show Operations",
-			() => SetState(s => s.ShowOperationList = !s.ShowOperationList))
-			.Background(Theme.GreenColor)
-			.Color(Colors.White)
-			.CornerRadius(8)
-			.Margin(new Thickness(0, 8));
+		return RenderOperationList();
 	}
 
 	View RenderOperationList()
@@ -146,18 +171,20 @@ class MainPage : Component<GameState>
 			return Text("No operations yet.")
 				.Color(Colors.Grey)
 				.FontSize(16)
-				.HorizontalTextAlignment(TextAlignment.Center);
+				.HorizontalTextAlignment(TextAlignment.Center)
+				.Margin(new Thickness(100));
 
 		return VStack(4,
 			Text("Your operations:")
-				.FontSize(20)
-				.FontWeight(FontWeight.Bold)
+				.FontSize(24)
 				.HorizontalTextAlignment(TextAlignment.Center)
+				.Color(Colors.Black)
 				.Margin(new Thickness(0, 8)),
 			VStack(2,
 				ops.Select(RenderOperationItem).ToArray()
 			)
-		);
+		)
+		.Margin(new Thickness(100));
 	}
 
 	View RenderOperationItem(OperationItem op)
@@ -171,7 +198,7 @@ class MainPage : Component<GameState>
 			_ => "?"
 		};
 		return Text($"{op.Left.Value} {sign} {op.Right.Value} = {op.CalcValue()}")
-			.FontSize(18)
+			.FontSize(24)
 			.Color(Colors.Black)
 			.HorizontalTextAlignment(TextAlignment.Center)
 			.Padding(new Thickness(0, 4));

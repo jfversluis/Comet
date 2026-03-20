@@ -11,7 +11,7 @@ class GameState
 	public Operation? CurrentOperation { get; set; }
 	public GameNumber? CurrentNumber { get; set; }
 	public OperationItem? OperationInError { get; set; }
-	public bool ShowOperationList { get; set; }
+	public PageView CurrentPageView { get; set; } = PageView.GameBoard;
 
 	public GameNumber[] CurrentBoard =>
 		BoardStates.Count > 0 ? BoardStates.Peek() : CurrentGame.Values;
