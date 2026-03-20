@@ -32,13 +32,13 @@ public class RecipeDetailPage : View
 				.FontSize(32)
 				.FontWeight(FontWeight.Bold)
 				.Color(AppColors.Black)
-				.Padding(new Thickness(20, 20, 20, 0)),
+				.Padding(new Thickness(15, 20, 15, 0)),
 
 			// Description
 			Text(_recipe.Description)
 				.FontSize(16)
 				.Color(Colors.DarkGray)
-				.Padding(new Thickness(20, 8, 20, 0)),
+				.Padding(new Thickness(15, 8, 15, 0)),
 		};
 
 		// Ingredients
@@ -47,9 +47,9 @@ public class RecipeDetailPage : View
 			contentItems.Add(
 				Text("INGREDIENTS")
 					.FontSize(18)
-					.FontWeight(FontWeight.Bold)
+					.FontWeight(FontWeight.Heavy)
 					.Color(AppColors.Black)
-					.Padding(new Thickness(20, 20, 20, 4))
+					.Padding(new Thickness(15, 20, 15, 4))
 			);
 
 			foreach (var ingredient in _recipe.Ingredients.Where(i => !string.IsNullOrEmpty(i)))
@@ -64,9 +64,9 @@ public class RecipeDetailPage : View
 			contentItems.Add(
 				Text("STEPS")
 					.FontSize(18)
-					.FontWeight(FontWeight.Bold)
+					.FontWeight(FontWeight.Heavy)
 					.Color(AppColors.Black)
-					.Padding(new Thickness(20, 20, 20, 4))
+					.Padding(new Thickness(15, 20, 15, 4))
 			);
 
 			foreach (var step in _recipe.Instructions)
@@ -107,6 +107,7 @@ public class RecipeDetailPage : View
 			Image(_recipe.ImageSource)
 				.Aspect(Aspect.AspectFit)
 				.Frame(width: 200, height: 200)
+				.Margin(new Thickness(20))
 		);
 
 		return new ZStack
@@ -114,6 +115,8 @@ public class RecipeDetailPage : View
 			children.ToArray()
 		}
 		.Background(new SolidPaint(_recipe.BgColor))
+		.ClipShape(new AsymmetricRoundedRectangle(0, 0, 20, 20))
+		.Shadow(AppColors.BlackLight.WithAlpha(0.5f), radius: 30f, y: 15f)
 		.Frame(height: 300)
 		.FillHorizontal();
 	}
@@ -126,19 +129,19 @@ public class RecipeDetailPage : View
 			{
 				new ShapeView(new RoundedRectangle(5))
 					.Background(new SolidPaint(_recipe.BgColor))
-					.Frame(width: 36, height: 36),
+					.Frame(width: 42, height: 42),
 
 				Image("chef")
 					.Aspect(Aspect.AspectFit)
-					.Frame(width: 20, height: 20)
+					.Frame(width: 24, height: 24)
 			}
-			.Frame(width: 36, height: 36),
+			.Frame(width: 42, height: 42),
 
 			Text(ingredient)
 				.FontSize(15)
 				.Color(AppColors.Black)
 		}
-		.Padding(new Thickness(20, 4));
+		.Padding(new Thickness(15, 5));
 	}
 
 	View RenderStepItem(IndexItem step)
@@ -152,9 +155,10 @@ public class RecipeDetailPage : View
 					.Frame(width: 32, height: 32),
 
 				Text(step.Index.ToString())
-					.FontSize(16)
-					.FontWeight(FontWeight.Bold)
-					.Color(Colors.White)
+					.FontSize(22)
+					.FontWeight(FontWeight.Heavy)
+					.Color(AppColors.Black)
+					.Rotation(45)
 			}
 			.Frame(width: 32, height: 32),
 
@@ -163,6 +167,6 @@ public class RecipeDetailPage : View
 				.Color(AppColors.Black)
 				.FillHorizontal()
 		}
-		.Padding(new Thickness(20, 4));
+		.Padding(new Thickness(15, 5));
 	}
 }

@@ -208,7 +208,7 @@ namespace Comet
 	/// Custom Shape that draws a rounded rectangle with different corner radii.
 	/// Extends Shape (like RoundedRectangle) so it participates in the environment system correctly.
 	/// </summary>
-	sealed class AsymmetricRoundedRectangle : Shape
+	public sealed class AsymmetricRoundedRectangle : Shape
 	{
 		readonly float _topLeft, _topRight, _bottomLeft, _bottomRight;
 

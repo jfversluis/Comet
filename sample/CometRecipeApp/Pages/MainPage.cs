@@ -51,7 +51,7 @@ public class MainPage : View
 			new VStack(spacing: 6)
 			{
 				Text(recipe.Title)
-					.FontSize(24)
+					.FontSize(32)
 					.FontWeight(FontWeight.Bold)
 					.Color(Colors.White),
 
@@ -59,19 +59,20 @@ public class MainPage : View
 					.FontSize(12)
 					.Color(Colors.White.WithAlpha(0.85f))
 			}
-			.Padding(new Thickness(16, 16, 8, 16))
+			.Padding(new Thickness(10, 10, 0, 10))
 			.Cell(row: 0, column: 0),
 
 			Image(recipe.ImageSource)
 				.Aspect(Aspect.AspectFit)
-				.Frame(width: 130, height: 130)
+				.Frame(width: 140, height: 140)
 				.Cell(row: 0, column: 1)
 		}
 		.Background(new SolidPaint(recipe.BgColor))
 		.ClipShape(new RoundedRectangle(20))
-		.Shadow(AppColors.BlackLight.WithAlpha(0.4f), radius: 15f, y: 6f)
-		.Frame(height: 200)
+		.Shadow(AppColors.BlackLight.WithAlpha(0.5f), radius: 30f, y: 6f)
+		.Frame(height: 250)
 		.FillHorizontal()
+		.Margin(new Thickness(0, 5))
 		.OnTap(_ => this.Navigate(new RecipeDetailPage(recipe)));
 	}
 }
