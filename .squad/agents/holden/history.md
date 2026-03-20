@@ -2135,3 +2135,41 @@ Initially also changed ScrollViewHandler.iOS.cs ContentInsetAdjustmentBehavior f
 - UseCometSampleDebugHost in DEBUG mode overrides the app's CreateRootView — modifying App.cs Body/CreateRootView won't change navigation when this debug host is active.
 - Appium automation (via appium-automation skill) is reliable for iOS simulator interaction where MauiDevFlow element inspection fails (Comet elements show as [hidden] [disabled]).
 - `xcrun simctl io <UDID> screenshot` is more reliable than MauiDevFlow screenshots for verification.
+
+---
+
+### AbstractLayout.GetDesiredSize Frame Constraint Fix (Root Cause)
+
+**Date:** 2025-07-27
+**Task:** Fix the deeper root cause of ScrollView bottom clipping — individual Frame() constraints ignored on layout containers.
+**Outcome:** Shipped fix in AbstractLayout.cs on branch `squad/scrollview-ios-bottom-clipping`. All 974 tests pass.
+
+**What was delivered:**
+The previous Spacer fix addressed one symptom. David confirmed the same clipping occurs in CometControlsGallery which has NO Spacer.Frame(height:) usage, proving a deeper framework bug.
+
+**True root cause:** `AbstractLayout.GetDesiredSize()` line 83 checks `frameConstraints?.Height > 0 && frameConstraints?.Width > 0` — it only applies Frame constraints when BOTH width AND height are set. When only one dimension is specified (the common pattern `.Frame(height: 300)`), the constraint is passed to `LayoutManager.Measure()` as the heightConstraint but the measured result is never overridden to match the requested frame size.
+
+Compare with `View.GetDesiredSize()` which correctly applies them independently:
+```csharp
+if (frameConstraints?.Height > 0) ms.Height = frameConstraints.Height.Value;
+if (frameConstraints?.Width > 0) ms.Width = frameConstraints.Width.Value;
+```
+
+**Fix:** Added individual frame constraint application in the else branch of GetDesiredSize(), after fill sizing and padding addition:
+```csharp
+if (frameConstraints?.Width > 0)
+    measured.Width = frameConstraints.Width.Value;
+if (frameConstraints?.Height > 0)
+    measured.Height = frameConstraints.Height.Value;
+```
+
+This matches View.GetDesiredSize behavior — Frame size is the final size including padding.
+
+**Impact:** Affects ALL AbstractLayout subclasses: VStack, HStack, ZStack, Grid, AbsoluteLayout, FlexLayout. Any layout container with a single-dimension Frame constraint was measuring at intrinsic content size instead of the specified size.
+
+**Diagnostic example:** CometRecipeApp Macaroons detail page has `ZStack.Frame(height: 300)` containing a 200pt image. Before fix: ZStack measured 200pt (100pt missing). After fix: ZStack measures 300pt, ScrollView contentSize is correct, no bottom clipping.
+
+**Learnings:**
+- AbstractLayout.GetDesiredSize and View.GetDesiredSize have parallel measurement logic but diverged in frame constraint handling. They should stay in sync.
+- Per-child diagnostic logging in VStackLayoutManager.Measure was essential to identifying the 200pt vs 300pt discrepancy — without it, the bug appeared to be in ScrollView or safe area handling.
+- The `&&` vs independent `if` distinction is subtle but critical — it's a common logic error when both constraints CAN be set together but each should also work independently.
