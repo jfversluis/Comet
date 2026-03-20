@@ -14,6 +14,7 @@ public class MarvelousShell : MauiControls.Shell
 			ContentTemplate = new MauiControls.DataTemplate(() =>
 			{
 				var page = new MauiControls.ContentPage();
+				page.SafeAreaEdges = SafeAreaEdges.None;
 				var container = new MauiControls.ContentView();
 				page.Content = container;
 				page.Loaded += (s, e) =>

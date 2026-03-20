@@ -11,8 +11,9 @@ public class MainCarouselViewState
 
 /// <summary>
 /// A carousel-style wonder selector. Users swipe horizontally to browse wonders
-/// and tap/swipe up to select one. Ported from MauiReactor's custom pan-gesture
-/// carousel to a Comet CarouselView-backed approach with illustration overlays.
+/// and tap/swipe up to select one. Uses a single AbsoluteLayout with
+/// proportional bounds for all illustration layers (background, main, foreground)
+/// matching the MauiReactor reference.
 /// </summary>
 public class MainCarouselView : View
 {
@@ -38,27 +39,57 @@ public class MainCarouselView : View
 		var wonderType = _allWonders[Math.Clamp(idx, 0, _allWonders.Length - 1)];
 		var config = Illustration.Config[wonderType];
 
+		// Single AbsoluteLayout holds all image layers in z-order.
+		// Proportional bounds (AbsoluteLayoutFlags.All) are multiplied
+		// by the parent size at layout time, matching GetFinalBounds().
+		var imageLayer = new Comet.AbsoluteLayout();
+
+		// Background images (sun, clouds) — drawn first (behind everything)
+		foreach (var img in config.BackgroundImages)
+			imageLayer.Add(
+				Image(img.Source)
+					.Opacity(img.Opacity)
+					.Aspect(Aspect.Fill)
+					.LayoutBounds(img.FinalBounds)
+					.LayoutFlags(AbsoluteLayoutFlags.All));
+
+		// Main object (pyramid, statue, etc.)
+		imageLayer.Add(
+			Image(config.MainObjectImage.Source)
+				.Opacity(config.MainObjectImage.Opacity)
+				.Aspect(Aspect.Fill)
+				.LayoutBounds(config.MainObjectImage.FinalBounds)
+				.LayoutFlags(AbsoluteLayoutFlags.All));
+
+		// Foreground images (vegetation, structures) — drawn on top
+		foreach (var img in config.ForegroundImages)
+			imageLayer.Add(
+				Image(img.Source)
+					.Opacity(img.Opacity)
+					.Aspect(Aspect.Fill)
+					.LayoutBounds(img.FinalBounds)
+					.LayoutFlags(AbsoluteLayoutFlags.All));
+
 		return new Comet.Grid
 		{
-			// Background gradient
-			new BoxView(config.SecondaryColor)
+			// Layer 1: Background gradient (secondary → primary, top → bottom)
+			new BoxView()
+				.Background(config.BackgroundBrush)
 				.FillHorizontal()
 				.FillVertical(),
 
-			// Main illustration image
-			Image(config.MainObject)
-				.Aspect(Aspect.AspectFill)
-				.FillHorizontal()
-				.FillVertical()
-				.Opacity(0.7),
-
-			// Foreground gradient overlay
-			new BoxView(config.PrimaryColor)
-				.Opacity(0.4)
+			// Layer 2: All illustration images in a single AbsoluteLayout
+			imageLayer
 				.FillHorizontal()
 				.FillVertical(),
 
-			// Wonder title
+			// Layer 3: Foreground gradient (transparent top → primary bottom)
+			new BoxView()
+				.Background(config.ForegroundBrush)
+				.FillHorizontal()
+				.FillVertical(),
+
+			// Layer 4: Title + indicators + arrow
 			VStack(
 				Text(() =>
 				{
@@ -69,7 +100,9 @@ public class MainCarouselView : View
 					.Color(Colors.White)
 					.FontFamily("YesevaOne")
 					.FontSize(58)
-					.HorizontalTextAlignment(TextAlignment.Center),
+					.HorizontalTextAlignment(TextAlignment.Center)
+					.LineHeight(0.8)
+					.Frame(width: 320),
 
 				// Indicator dots
 				HStack(
@@ -82,7 +115,7 @@ public class MainCarouselView : View
 				).Alignment(Alignment.Center)
 					.Margin(new Thickness(0, 20, 0, 0)),
 
-				// Swipe up hint
+				// Swipe up hint arrow
 				Image("common_arrow_indicator.png")
 					.Frame(width: 30, height: 30)
 					.Margin(new Thickness(0, 20, 0, 0))
@@ -127,6 +160,7 @@ public class MainCarouselView : View
 				.Frame(width: 200, height: 200)
 				.Alignment(Alignment.Center),
 		}
+		.IgnoreSafeArea()
 		.Opacity(_show ? 1.0 : 0.0);
 	}
 }
