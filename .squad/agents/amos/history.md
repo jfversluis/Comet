@@ -1663,3 +1663,37 @@ Migrated all 15 handwritten controls from `Binding<T>` to `PropertySubscription<
 - `FlyoutNavigationView.Set?.Invoke()` pattern (null-checking a delegate) had to become `?.Set()` (null-checking the object before calling the method).
 - ListView and CollectionView needed a `PropertySubscription<T>` constructor overload because FlyoutNavigationView passes PropertySubscription-typed Items to `new ListView<T>(Items)`.
 - Test baseline: 28 pre-existing failures, 28 after migration (zero regressions).
+
+---
+
+## CometRecipeApp Sample — Port from MauiReactor
+**Date:** 2025-07-18
+**Commit:** 6247d29e on dev
+
+**What was done:**
+Ported the MauiReactor RecipeApp (dessert recipe browser) to Comet as `sample/CometRecipeApp/`. The app features a scrollable card list with colored backgrounds and overlapping food images, plus a detail page with ingredients and preparation steps. 15 dessert recipes, custom color palette, targets iOS and Mac Catalyst.
+
+**Files created (37 total):**
+- `App.cs` — RecipeApp : CometApp entry point with Rubik font registration
+- `Model/Recipe.cs` — Recipe/IndexItem records + RecipesData (15 desserts)
+- `Styles/AppColors.cs` — 14 named Color constants matching original palette
+- `Pages/MainPage.cs` — Scrollable card list with Grid-based cards, navigation
+- `Pages/RecipeDetailPage.cs` — Detail view with colored header, ingredients, steps
+- Platform entry points for iOS and MacCatalyst
+- 17 dessert PNGs + chef.png, 4 Rubik fonts, app icons, splash screen
+
+**Key learnings:**
+1. **ZStack doesn't support child alignment** — `ZStackLayoutManager.ArrangeChildren` gives every child the full bounds rect. Use `Grid` with column definitions for side-by-side positioning.
+2. **VStack/HStack constructor gotcha** — `new VStack(16)` interprets 16 as `LayoutAlignment` enum, not spacing. Must use named parameter: `new VStack(spacing: 16)`.
+3. **Navigation from layout views** — `OnTapNavigate(() => dest)` doesn't work on Grid views because Grid uses `LayoutHandler` (gesture mappers registered on `ViewHandler.ViewMapper` don't fire). Fix: use `.OnTap(_ => this.Navigate(dest))` from the parent View that is connected to NavigationView hierarchy.
+4. **RoundedRectangle API** — takes a single float cornerRadius, not 4 separate corners.
+5. **Image resource names** — MAUI resources are lowercase, no path prefix, no extension: `Image("i_01_lemon_cheesecake")`.
+6. **Incremental build can serve stale binaries** — must clean bin/obj when code changes aren't reflected after rebuild.
+
+**MauiReactor → Comet translation patterns:**
+- `Component<TState>` → `View` with `[Body]` method
+- `SetState()` → `State<T>.Value = ...`
+- `Column`/`Row` → `VStack`/`HStack`
+- `Picture(source)` → `Image(source)`
+- `DropShadow` → `.Shadow()` extension
+- Canvas `Box{}` with color → Grid/VStack with `.Background()` + `.ClipShape()`
