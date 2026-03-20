@@ -1,79 +1,102 @@
+using MauiGrid = Microsoft.Maui.Controls.Grid;
+using MauiLabel = Microsoft.Maui.Controls.Label;
+using MauiBoxView = Microsoft.Maui.Controls.BoxView;
+using Microsoft.Maui.Controls;
+
 namespace CometVideoApp;
 
 /// <summary>
-/// Full-screen vertical feed of video cards. Swipe up/down to navigate.
-/// Uses ScrollView wrapping a VStack of full-screen VideoCard views.
-/// Reactive state tracks the current index and per-video like state.
+/// Full-screen immersive video feed matching the MauiReactor VideoApp layout.
+/// Shows one full-screen video at a time with colored placeholder background,
+/// creator info at bottom-left, and floating reaction emojis.
+/// Uses MauiViewHost pattern (proven in CometWeather) for reliable dark rendering.
 /// </summary>
-public class VideoFeedPage : View
+public class VideoFeedPage : Comet.View
 {
-	readonly Reactive<int> currentIndex = 0;
-	readonly Reactive<bool[]> likedStates = new(new bool[VideoModel.All.Length]);
-	readonly Reactive<int[]> likeCounts = new(
-		VideoModel.All.Select(v => v.Likes).ToArray());
-
-	void ToggleLike(int index)
+	[Body]
+	Comet.View body()
 	{
-		var liked = likedStates.Value;
-		var counts = likeCounts.Value;
-		liked[index] = !liked[index];
-		counts[index] += liked[index] ? 1 : -1;
-		// Trigger reactive update by reassigning arrays
-		likedStates.Value = liked.ToArray();
-		likeCounts.Value = counts.ToArray();
+		var video = VideoModel.All[0];
+
+		var root = new MauiGrid
+		{
+			BackgroundColor = Color.FromArgb(video.ThumbnailColor),
+		};
+
+		// Full-screen colored background (simulating video)
+		root.Add(new MauiBoxView
+		{
+			Color = Color.FromArgb(video.ThumbnailColor),
+		});
+
+		// Subtle centered play icon
+		root.Add(new MauiLabel
+		{
+			Text = "▶",
+			FontSize = 72,
+			TextColor = new Color(255, 255, 255, 60),
+			HorizontalOptions = LayoutOptions.Center,
+			VerticalOptions = LayoutOptions.Center,
+			HorizontalTextAlignment = TextAlignment.Center,
+		});
+
+		// Bottom-left creator info overlay
+		var infoStack = new Microsoft.Maui.Controls.VerticalStackLayout
+		{
+			Spacing = 4,
+			Padding = new Thickness(16, 0, 80, 90),
+			VerticalOptions = LayoutOptions.End,
+			HorizontalOptions = LayoutOptions.Start,
+		};
+		infoStack.Add(new MauiLabel
+		{
+			Text = video.Creator,
+			FontSize = 16,
+			FontAttributes = Microsoft.Maui.Controls.FontAttributes.Bold,
+			TextColor = Colors.White,
+		});
+		infoStack.Add(new MauiLabel
+		{
+			Text = video.Description,
+			FontSize = 14,
+			TextColor = new Color(255, 255, 255, 200),
+		});
+		root.Add(infoStack);
+
+		// Floating reaction emojis (matching MauiReactor FeedbackFlow)
+		AddReactionEmojis(root);
+
+		return new MauiViewHost(root);
 	}
 
-	[Body]
-	View body()
+	static void AddReactionEmojis(MauiGrid root)
 	{
-		var videos = VideoModel.All;
-
-		return new ZStack
+		// Position emojis clustered in bottom-center area matching MauiReactor FeedbackFlow
+		var emojis = new (string emoji, int size, double left, double right, double bottom)[]
 		{
-			// Dark background behind everything
-			new BoxView(Color.FromArgb("#0a0a0a"))
-				.FillHorizontal()
-				.FillVertical(),
+			("❤️", 32, 80, -1, 260),
+			("😀", 28, 180, -1, 200),
+			("👍", 30, -1, 100, 230),
+			("❤️", 26, 130, -1, 150),
+			("😀", 24, -1, 130, 170),
+			("❤️", 34, -1, 70, 130),
+		};
 
-			ScrollView(Orientation.Vertical,
-				VStack((float?)0,
-					videos.Select((video, index) =>
-						new VideoCard(
-							video,
-							() => likedStates.Value[index],
-							() => likeCounts.Value[index],
-							() => ToggleLike(index)
-						)
-					).ToArray()
-				)
-			),
-
-			// Top gradient overlay with app title
-			VStack(
-				Text("Comet Video")
-					.FontSize(20)
-					.FontWeight(FontWeight.Bold)
-					.Color(Colors.White)
-					.HorizontalTextAlignment(TextAlignment.Center)
-					.Margin(new Thickness(0, 54, 0, 0)),
-				HStack(8,
-					Text("Following")
-						.FontSize(15)
-						.Color(new Color(255, 255, 255, 180))
-						.HorizontalTextAlignment(TextAlignment.Center),
-					Text("|")
-						.FontSize(15)
-						.Color(new Color(255, 255, 255, 100)),
-					Text("For You")
-						.FontSize(15)
-						.FontWeight(FontWeight.Bold)
-						.Color(Colors.White)
-						.HorizontalTextAlignment(TextAlignment.Center)
-				).Alignment(Alignment.Center)
-			)
-			.FillHorizontal()
-			.FitVertical()
-			.Alignment(Alignment.Top)
-		}.IgnoreSafeArea();
+		foreach (var (emoji, size, left, right, bottom) in emojis)
+		{
+			var label = new MauiLabel
+			{
+				Text = emoji,
+				FontSize = size,
+				VerticalOptions = LayoutOptions.End,
+				HorizontalOptions = left >= 0 ? LayoutOptions.Start : LayoutOptions.End,
+				Margin = new Thickness(
+					left >= 0 ? left : 0,
+					0,
+					right >= 0 ? right : 0,
+					bottom),
+			};
+			root.Add(label);
+		}
 	}
 }
