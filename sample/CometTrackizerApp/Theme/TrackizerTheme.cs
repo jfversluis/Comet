@@ -100,6 +100,8 @@ public static class TrackizerTheme
 			).Alignment(Alignment.Center)
 		)
 		.Background(baseColor)
+		.StrokeColor(White.WithAlpha(0.15f))
+		.StrokeThickness(1)
 		.ClipShape(new RoundedRectangle(25))
 		.Frame(height: 48)
 		.OnTap(_ => (onClicked ?? (() => { }))());

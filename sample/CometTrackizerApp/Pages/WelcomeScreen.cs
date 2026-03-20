@@ -14,12 +14,13 @@ public class WelcomeScreen : View
 	[Body]
 	View body() => new ZStack
 	{
-		// Background accent glow
+		// Background accent glow — offset and subtle to approximate Reactor's rotated Border
 		Border(Spacer())
-			.Frame(width: 600, height: 600)
-			.Background(TrackizerTheme.Accentp100.WithAlpha(0.15f))
+			.Frame(width: 800, height: 800)
+			.Background(TrackizerTheme.Accentp100.WithAlpha(0.05f))
 			.ClipShape(new Ellipse())
-			.Alignment(Alignment.Center),
+			.Alignment(Alignment.Center)
+			.Margin(new Thickness(200, 0, 0, 0)),
 
 		// Logo at top
 		Image("full_logo.png")
@@ -32,7 +33,7 @@ public class WelcomeScreen : View
 			.Frame(width: 289)
 			.Alignment(Alignment.Center),
 
-		// Floating service images (static — rotation animation omitted)
+		// Floating service images (static — Reactor uses RotatingImage animations)
 		Image("welcome_you_tube.png")
 			.Frame(width: 143)
 			.Alignment(Alignment.Center)
@@ -44,7 +45,7 @@ public class WelcomeScreen : View
 			.Margin(new Thickness(0, 0, 80, 20)),
 
 		Image("welcome_spotify.png")
-			.Frame(width: 200)
+			.Frame(width: 243)
 			.Alignment(Alignment.Center)
 			.Margin(new Thickness(50, 200, 0, 0)),
 
