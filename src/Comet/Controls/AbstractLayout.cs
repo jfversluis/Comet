@@ -95,6 +95,13 @@ namespace Comet
 					measured.Width += padding.HorizontalThickness;
 				if (!double.IsInfinity(measured.Height))
 					measured.Height += padding.VerticalThickness;
+
+				// Apply individual frame constraints — Frame size is the
+				// final size (including padding), matching View.GetDesiredSize.
+				if (frameConstraints?.Width > 0)
+					measured.Width = frameConstraints.Width.Value;
+				if (frameConstraints?.Height > 0)
+					measured.Height = frameConstraints.Height.Value;
 			}
 
 			var margin = this.GetMargin();
