@@ -26,20 +26,19 @@ namespace CometSurfingApp.Pages
 			var posts = PostService.Instance.GetPosts();
 
 			return new Grid(
-				rows: new object[] { 48, "Auto", "*" },
+				rows: new object[] { 48, 68, "*" },
 				columns: new object[] { "*" })
 			{
-				// ── Header row ──────────────────────────────────────
-				BuildHeader(),
+				BuildHeader()
+					.Cell(row: 0, column: 0),
 
-				// ── User avatars (horizontal scroll) ────────────────
 				BuildUserStrip(users)
 					.Cell(row: 1, column: 0),
 
-				// ── Posts feed (vertical scroll) ────────────────────
 				BuildPostFeed(posts)
 					.Cell(row: 2, column: 0),
-			};
+			}
+			.Padding(new Thickness(0, 58, 0, 0));
 		}
 
 		// ── Header ──────────────────────────────────────────────────
@@ -49,7 +48,6 @@ namespace CometSurfingApp.Pages
 				rows: new object[] { "*" },
 				columns: new object[] { "Auto", "*", "Auto" })
 			{
-				// Hamburger icon placeholder
 				Text("☰")
 					.FontSize(22)
 					.Color(Colors.Black)
@@ -57,7 +55,6 @@ namespace CometSurfingApp.Pages
 					.VerticalTextAlignment(TextAlignment.Center)
 					.Cell(row: 0, column: 0),
 
-				// Title
 				Text("Surfers")
 					.FontSize(28)
 					.FontWeight(FontWeight.Bold)
@@ -66,13 +63,12 @@ namespace CometSurfingApp.Pages
 					.VerticalTextAlignment(TextAlignment.Center)
 					.Cell(row: 0, column: 1),
 
-				// Search icon placeholder
 				Text("🔍")
 					.FontSize(20)
 					.Margin(new Thickness(24, 6))
 					.VerticalTextAlignment(TextAlignment.Center)
 					.Cell(row: 0, column: 2),
-			}.Cell(row: 0, column: 0);
+			};
 		}
 
 		// ── Horizontal user avatar strip ────────────────────────────
@@ -85,7 +81,7 @@ namespace CometSurfingApp.Pages
 			}
 			return ScrollView(Orientation.Horizontal, hstack)
 				.Padding(new Thickness(24, 0))
-				.Margin(new Thickness(0, 18));
+				.Margin(new Thickness(0, 4));
 		}
 
 		View BuildUserAvatar(User user)
@@ -100,13 +96,14 @@ namespace CometSurfingApp.Pages
 		// ── Vertical post feed ──────────────────────────────────────
 		View BuildPostFeed(List<Post> posts)
 		{
-			var vstack = new VStack(spacing: 36);
+			var vstack = new VStack(spacing: 16);
 			foreach (var post in posts)
 			{
 				vstack.Add(BuildPostCard(post));
 			}
-			return ScrollView(Orientation.Vertical, vstack)
-				.Padding(new Thickness(24, 12, 14, 0));
+			return ScrollView(Orientation.Vertical,
+				vstack.FillHorizontal())
+				.Padding(new Thickness(24, 4, 14, 0));
 		}
 
 		// ── Individual post card ────────────────────────────────────
@@ -152,26 +149,24 @@ namespace CometSurfingApp.Pages
 					.Margin(new Thickness(0, 18))
 					.Cell(row: 0, column: 1),
 
-					// Likes + bookmark row
-					HStack(spacing: 8,
-						Text("♥")
-							.FontSize(14)
-							.Color(Colors.Black),
-						Text(post.Likes)
-							.FontSize(10)
-							.Margin(new Thickness(2, 0)),
-						new Spacer(),
+					// Likes + bookmark (vertical, matching reference layout)
+					VStack(spacing: 4,
+						HStack(spacing: 4,
+							Text("♥")
+								.FontSize(14)
+								.Color(Colors.Black),
+							Text(post.Likes)
+								.FontSize(10)
+								.Color(Colors.Black)
+						),
 						Text("🔖")
 							.FontSize(14)
-							.Color(Colors.Black)
 					)
 					.Margin(new Thickness(12, 0))
-					.Cell(row: 1, column: 0)
-					.GridColumnSpan(2),
+					.Cell(row: 1, column: 0),
 
 					// Play button + title area (bottom)
 					HStack(
-						// Play button circle
 						Text("▶")
 							.FontSize(16)
 							.Color(Colors.Black)
@@ -181,9 +176,8 @@ namespace CometSurfingApp.Pages
 							.ClipShape(new Ellipse())
 							.Background(Colors.White)
 							.Shadow(Colors.Black, 4, 0, 2)
-							.Margin(new Thickness(12)),
+							.Margin(new Thickness(12, 0)),
 
-						// Title + location
 						VStack(
 							Text(post.Title)
 								.FontSize(18)
@@ -204,7 +198,7 @@ namespace CometSurfingApp.Pages
 				},
 			}
 			.Frame(height: 240)
-			.ClipShape(new RoundedRectangle(12))
+			.ClipShape(new AsymmetricRoundedRectangle(12, 120, 12, 12))
 			.Shadow(Colors.Black.WithAlpha(0.15f), 4, 1, 1);
 		}
 	}
