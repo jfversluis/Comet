@@ -1,0 +1,168 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Comet;
+using CometRecipeApp.Model;
+using CometRecipeApp.Styles;
+using Microsoft.Maui;
+using Microsoft.Maui.Graphics;
+using static Comet.CometControls;
+
+namespace CometRecipeApp.Pages;
+
+public class RecipeDetailPage : View
+{
+	readonly Recipe _recipe;
+
+	public RecipeDetailPage(Recipe recipe)
+	{
+		_recipe = recipe;
+	}
+
+	[Body]
+	View body()
+	{
+		var contentItems = new List<View>
+		{
+			// Header with image
+			RenderHeader(),
+
+			// Title
+			Text(_recipe.Title)
+				.FontSize(32)
+				.FontWeight(FontWeight.Bold)
+				.Color(AppColors.Black)
+				.Padding(new Thickness(20, 20, 20, 0)),
+
+			// Description
+			Text(_recipe.Description)
+				.FontSize(16)
+				.Color(Colors.DarkGray)
+				.Padding(new Thickness(20, 8, 20, 0)),
+		};
+
+		// Ingredients
+		if (_recipe.Ingredients.Length > 0 && !string.IsNullOrEmpty(_recipe.Ingredients[0]))
+		{
+			contentItems.Add(
+				Text("INGREDIENTS")
+					.FontSize(18)
+					.FontWeight(FontWeight.Bold)
+					.Color(AppColors.Black)
+					.Padding(new Thickness(20, 20, 20, 4))
+			);
+
+			foreach (var ingredient in _recipe.Ingredients.Where(i => !string.IsNullOrEmpty(i)))
+			{
+				contentItems.Add(RenderIngredientItem(ingredient));
+			}
+		}
+
+		// Instructions
+		if (_recipe.Instructions.Length > 0)
+		{
+			contentItems.Add(
+				Text("STEPS")
+					.FontSize(18)
+					.FontWeight(FontWeight.Bold)
+					.Color(AppColors.Black)
+					.Padding(new Thickness(20, 20, 20, 4))
+			);
+
+			foreach (var step in _recipe.Instructions)
+			{
+				contentItems.Add(RenderStepItem(step));
+			}
+		}
+
+		// Bottom spacer
+		contentItems.Add(new Spacer().Frame(height: 40));
+
+		return new ScrollView
+		{
+			new VStack(spacing: 0)
+			{
+				contentItems.ToArray()
+			}
+		}
+		.Title(_recipe.Title)
+		.Background(Colors.White);
+	}
+
+	View RenderHeader()
+	{
+		var children = new List<View>();
+
+		if (_recipe.BgImage != null)
+		{
+			children.Add(
+				Image(_recipe.BgImage)
+					.Aspect(Aspect.AspectFill)
+					.FillHorizontal()
+					.FillVertical()
+			);
+		}
+
+		children.Add(
+			Image(_recipe.ImageSource)
+				.Aspect(Aspect.AspectFit)
+				.Frame(width: 200, height: 200)
+		);
+
+		return new ZStack
+		{
+			children.ToArray()
+		}
+		.Background(new SolidPaint(_recipe.BgColor))
+		.Frame(height: 300)
+		.FillHorizontal();
+	}
+
+	View RenderIngredientItem(string ingredient)
+	{
+		return new HStack(spacing: 12)
+		{
+			new ZStack
+			{
+				new ShapeView(new RoundedRectangle(5))
+					.Background(new SolidPaint(_recipe.BgColor))
+					.Frame(width: 36, height: 36),
+
+				Image("chef")
+					.Aspect(Aspect.AspectFit)
+					.Frame(width: 20, height: 20)
+			}
+			.Frame(width: 36, height: 36),
+
+			Text(ingredient)
+				.FontSize(15)
+				.Color(AppColors.Black)
+		}
+		.Padding(new Thickness(20, 4));
+	}
+
+	View RenderStepItem(IndexItem step)
+	{
+		return new HStack(spacing: 12)
+		{
+			new ZStack
+			{
+				new ShapeView(new RoundedRectangle(5))
+					.Background(new SolidPaint(_recipe.BgColor))
+					.Frame(width: 32, height: 32),
+
+				Text(step.Index.ToString())
+					.FontSize(16)
+					.FontWeight(FontWeight.Bold)
+					.Color(Colors.White)
+			}
+			.Frame(width: 32, height: 32),
+
+			Text(step.Item)
+				.FontSize(15)
+				.Color(AppColors.Black)
+				.FillHorizontal()
+		}
+		.Padding(new Thickness(20, 4));
+	}
+}
