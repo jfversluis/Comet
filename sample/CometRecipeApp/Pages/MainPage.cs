@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Comet;
+using Comet.Reactive;
 using CometRecipeApp.Model;
 using CometRecipeApp.Styles;
 using Microsoft.Maui;
@@ -12,35 +13,26 @@ namespace CometRecipeApp.Pages;
 
 public class MainPage : View
 {
+	readonly Signal<int> _selectedRecipeIndex = new(-1);
+
 	[Body]
 	View body()
 	{
+		if (_selectedRecipeIndex.Value >= 0)
+		{
+			var recipe = RecipesData.DessertMenu[_selectedRecipeIndex.Value];
+			return new RecipeDetailPage(recipe, () => _selectedRecipeIndex.Value = -1);
+		}
+
 		var cards = RecipesData.DessertMenu.Select(RenderRecipeCard).ToArray();
 
-		return NavigationView(
-			new ScrollView
+		return new ScrollView
+		{
+			new VStack(spacing: 16)
 			{
-				new VStack(spacing: 16)
-				{
-					Text("Dessert Menu")
-						.FontSize(34)
-						.FontWeight(FontWeight.Bold)
-						.Color(AppColors.Black)
-						.Padding(new Thickness(20, 16, 20, 0)),
-
-					Text("Choose your favorite treat")
-						.FontSize(16)
-						.Color(Colors.Grey)
-						.Padding(new Thickness(20, 0, 20, 8)),
-
-					new VStack(spacing: 20)
-					{
-						cards
-					}.Padding(new Thickness(16, 0, 16, 20))
-				}
-			}
-		)
-		.Title("Recipes")
+				cards
+			}.Padding(new Thickness(10, 15, 10, 20))
+		}
 		.Background(Colors.White);
 	}
 
@@ -53,11 +45,11 @@ public class MainPage : View
 				Text(recipe.Title)
 					.FontSize(32)
 					.FontWeight(FontWeight.Bold)
-					.Color(Colors.White),
+					.Color(AppColors.Black),
 
 				Text(recipe.Description)
 					.FontSize(12)
-					.Color(Colors.White.WithAlpha(0.85f))
+					.Color(AppColors.Black.WithAlpha(0.7f))
 			}
 			.Padding(new Thickness(10, 10, 0, 10))
 			.Cell(row: 0, column: 0),
@@ -73,6 +65,6 @@ public class MainPage : View
 		.Frame(height: 250)
 		.FillHorizontal()
 		.Margin(new Thickness(0, 5))
-		.OnTap(_ => this.Navigate(new RecipeDetailPage(recipe)));
+		.OnTap(_ => _selectedRecipeIndex.Value = Array.IndexOf(RecipesData.DessertMenu, recipe));
 	}
 }

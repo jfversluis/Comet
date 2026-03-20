@@ -13,10 +13,12 @@ namespace CometRecipeApp.Pages;
 public class RecipeDetailPage : View
 {
 	readonly Recipe _recipe;
+	readonly Action? _onDismiss;
 
-	public RecipeDetailPage(Recipe recipe)
+	public RecipeDetailPage(Recipe recipe, Action? onDismiss = null)
 	{
 		_recipe = recipe;
+		_onDismiss = onDismiss;
 	}
 
 	[Body]
@@ -37,7 +39,7 @@ public class RecipeDetailPage : View
 			// Description
 			Text(_recipe.Description)
 				.FontSize(16)
-				.Color(Colors.DarkGray)
+				.Color(Colors.Black)
 				.Padding(new Thickness(15, 8, 15, 0)),
 		};
 
@@ -46,7 +48,7 @@ public class RecipeDetailPage : View
 		{
 			contentItems.Add(
 				Text("INGREDIENTS")
-					.FontSize(18)
+					.FontSize(14)
 					.FontWeight(FontWeight.Heavy)
 					.Color(AppColors.Black)
 					.Padding(new Thickness(15, 20, 15, 4))
@@ -63,7 +65,7 @@ public class RecipeDetailPage : View
 		{
 			contentItems.Add(
 				Text("STEPS")
-					.FontSize(18)
+					.FontSize(14)
 					.FontWeight(FontWeight.Heavy)
 					.Color(AppColors.Black)
 					.Padding(new Thickness(15, 20, 15, 4))
@@ -78,15 +80,46 @@ public class RecipeDetailPage : View
 		// Bottom spacer
 		contentItems.Add(new Spacer().Frame(height: 40));
 
-		return new ScrollView
+		return new Grid
 		{
-			new VStack(spacing: 0)
+			// Scrollable content
+			new ScrollView
 			{
-				contentItems.ToArray()
+				new VStack(spacing: 0)
+				{
+					contentItems.ToArray()
+				}
+			},
+
+			// Back button overlay at top-left
+			new VStack
+			{
+				new HStack
+				{
+					RenderBackButton(),
+					new Spacer()
+				},
+				new Spacer()
 			}
 		}
-		.Title(_recipe.Title)
 		.Background(Colors.White);
+	}
+
+	View RenderBackButton()
+	{
+		return new ZStack
+		{
+			new ShapeView(new RoundedRectangle(21))
+				.Background(new SolidPaint(Colors.Black))
+				.Frame(width: 42, height: 42),
+
+			Text("←")
+				.FontSize(22)
+				.Color(Colors.White)
+		}
+		.Frame(width: 42, height: 42)
+		.Margin(new Thickness(10))
+		.OnTap(_ => _onDismiss?.Invoke());
 	}
 
 	View RenderHeader()
