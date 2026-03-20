@@ -2173,3 +2173,31 @@ This matches View.GetDesiredSize behavior — Frame size is the final size inclu
 - AbstractLayout.GetDesiredSize and View.GetDesiredSize have parallel measurement logic but diverged in frame constraint handling. They should stay in sync.
 - Per-child diagnostic logging in VStackLayoutManager.Measure was essential to identifying the 200pt vs 300pt discrepancy — without it, the bug appeared to be in ScrollView or safe area handling.
 - The `&&` vs independent `if` distinction is subtle but critical — it's a common logic error when both constraints CAN be set together but each should also work independently.
+
+---
+
+### ScrollView Bottom Clipping — Visual Verification (RESOLVED)
+
+**Date:** 2025-07-27
+**Task:** Deploy CometRecipeApp to iPhone 17 Pro simulator and verify ScrollView bottom clipping is fixed.
+**Outcome:** CONFIRMED FIXED. All content visible at max scroll.
+
+**Verification procedure:**
+1. Built Comet framework and CometRecipeApp with both committed fixes (b2013962 + 8aff9765)
+2. Deployed to iPhone 17 Pro simulator (EBCFDD5B) running iOS 26.2
+3. Navigated to Macaroons detail page via Appium automation
+4. Scrolled to absolute bottom with 15 swipe gestures
+5. Captured screenshot — all 8 recipe steps visible plus 40pt bottom Spacer
+
+**Visual confirmation:**
+- Header ZStack now renders at 300pt (AbstractLayout fix working)
+- All 8 steps visible: Step 8 ("Cool completely before filling with buttercream.") is the last step
+- Bottom Spacer whitespace is visible below step 8
+- No content clipped at bottom — original bug is resolved
+
+**Summary of fixes applied (both committed on `squad/scrollview-ios-bottom-clipping`, merged to dev):**
+1. **VStackLayoutManager** (b2013962): Fixed Spacer.Frame(height:) being ignored in Measure/Arrange
+2. **AbstractLayout.GetDesiredSize** (8aff9765): Fixed individual Frame constraints being ignored when only one dimension specified
+3. **CUIScrollView** (b2013962): Added SafeAreaInsetsDidChange override for safe area change re-layout
+
+**Note:** Step 8's text "buttercream." may appear truncated within its row — this is a separate text measurement issue within HStack, not related to ScrollView clipping.
