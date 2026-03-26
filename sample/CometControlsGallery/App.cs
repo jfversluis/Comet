@@ -157,14 +157,16 @@ namespace CometControlsGallery
 			builder.UseMauiApp<App>();
 #endif
 			builder.UseCometHandlers();
+#if !__MACOS__
 			builder.UseCupertinoMauiIcons();
+#endif
 
 			// Override default button style to match MAUI's native Mac Catalyst look
 			var theme = ThemeManager.Current();
 			theme.SetControlStyle<Button, ButtonConfiguration>(ButtonStyles.Text);
 			ThemeManager.SetTheme(theme);
 
-#if DEBUG
+#if DEBUG && !__MACOS__
 			builder.AddMauiDevFlowAgent();
 #endif
 
@@ -222,6 +224,7 @@ namespace CometControlsGallery
 			{
 				dispatcher.Dispatch(() =>
 				{
+#if !__MACOS__
 					if (DeviceInfo.Idiom == DeviceIdiom.Phone && _phoneNav != null)
 					{
 						// On phone, push navigation directly — no signal write needed
@@ -232,6 +235,7 @@ namespace CometControlsGallery
 						_phoneNav.Navigate(detail);
 					}
 					else
+#endif
 					{
 						// Desktop sidebar: signal write triggers body rebuild to swap detail
 						selectedIndex.Value = index;
@@ -309,10 +313,16 @@ namespace CometControlsGallery
 		[Body]
 		View body()
 		{
+#if __MACOS__
+			// macOS is always desktop — DeviceInfo.Idiom uses MAUI Essentials which
+			// has no macOS implementation, so skip the runtime check.
+			return BuildDesktopLayout();
+#else
 			if (DeviceInfo.Idiom == DeviceIdiom.Phone)
 				return BuildPhoneLayout();
 
 			return BuildDesktopLayout();
+#endif
 		}
 
 		View BuildDesktopLayout()

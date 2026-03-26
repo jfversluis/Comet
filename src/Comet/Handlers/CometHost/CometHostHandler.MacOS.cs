@@ -50,7 +50,7 @@ public partial class CometHostHandler : ViewHandler<CometHost, CometHostHandler.
 		}
 		catch (Exception ex)
 		{
-			Console.WriteLine($"[CometHostHandler.MacOS] UpdateCometView failed: {ex.Message}");
+			Console.WriteLine($"[CometHostHandler.MacOS] UpdateCometView failed: {ex}");
 		}
 	}
 

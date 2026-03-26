@@ -20,6 +20,32 @@ using Microsoft.Maui.Graphics.Win2D;
 
 #if __MACOS__
 using Microsoft.Maui.Platform.MacOS.Hosting;
+// Redirect MAUI built-in handler types to Platform.Maui.MacOS implementations.
+// The MAUI built-in handlers (Microsoft.Maui.Handlers.*) throw NotImplementedException
+// on macOS. Platform.Maui.MacOS provides AppKit-based implementations.
+using ActivityIndicatorHandler = Microsoft.Maui.Platform.MacOS.Handlers.ActivityIndicatorHandler;
+using ButtonHandler = Microsoft.Maui.Platform.MacOS.Handlers.ButtonHandler;
+using CheckBoxHandler = Microsoft.Maui.Platform.MacOS.Handlers.CheckBoxHandler;
+using ContentViewHandler = Microsoft.Maui.Platform.MacOS.Handlers.ContentViewHandler;
+using DatePickerHandler = Microsoft.Maui.Platform.MacOS.Handlers.DatePickerHandler;
+using EditorHandler = Microsoft.Maui.Platform.MacOS.Handlers.EditorHandler;
+using EntryHandler = Microsoft.Maui.Platform.MacOS.Handlers.EntryHandler;
+using GraphicsViewHandler = Microsoft.Maui.Platform.MacOS.Handlers.GraphicsViewHandler;
+using ImageButtonHandler = Microsoft.Maui.Platform.MacOS.Handlers.ImageButtonHandler;
+using ImageHandler = Microsoft.Maui.Platform.MacOS.Handlers.ImageHandler;
+using IndicatorViewHandler = Microsoft.Maui.Platform.MacOS.Handlers.IndicatorViewHandler;
+using LabelHandler = Microsoft.Maui.Platform.MacOS.Handlers.LabelHandler;
+using LayoutHandler = Microsoft.Maui.Platform.MacOS.Handlers.LayoutHandler;
+using PickerHandler = Microsoft.Maui.Platform.MacOS.Handlers.PickerHandler;
+using ProgressBarHandler = Microsoft.Maui.Platform.MacOS.Handlers.ProgressBarHandler;
+using RefreshViewHandler = Microsoft.Maui.Platform.MacOS.Handlers.RefreshViewHandler;
+using SearchBarHandler = Microsoft.Maui.Platform.MacOS.Handlers.SearchBarHandler;
+using SliderHandler = Microsoft.Maui.Platform.MacOS.Handlers.SliderHandler;
+using StepperHandler = Microsoft.Maui.Platform.MacOS.Handlers.StepperHandler;
+using SwipeViewHandler = Microsoft.Maui.Platform.MacOS.Handlers.SwipeViewHandler;
+using SwitchHandler = Microsoft.Maui.Platform.MacOS.Handlers.SwitchHandler;
+using TimePickerHandler = Microsoft.Maui.Platform.MacOS.Handlers.TimePickerHandler;
+using WebViewHandler = Microsoft.Maui.Platform.MacOS.Handlers.WebViewHandler;
 #endif
 
 namespace Comet
@@ -837,8 +863,9 @@ namespace Comet
 				{ typeof(AbstractLayout), typeof(LayoutHandler) },
 				{ typeof(AbsoluteLayout), typeof(LayoutHandler) },
 				{ typeof(FlexLayout), typeof(LayoutHandler) },
-				{ typeof(ActivityIndicator), typeof(ActivityIndicatorHandler) },
 				{ typeof(Border), typeof(LayoutHandler) },
+				{ typeof(RadioGroup), typeof(LayoutHandler) },
+				{ typeof(ActivityIndicator), typeof(ActivityIndicatorHandler) },
 			{ typeof(MauiViewHost), typeof(Handlers.MauiViewHostHandler) },
 			{ typeof(NativeHost), typeof(Handlers.NativeHostHandler) },
 				{ typeof(Button), typeof(ButtonHandler) },
@@ -858,7 +885,6 @@ namespace Comet
 				{ typeof(Picker), typeof(PickerHandler) },
 				{ typeof(ProgressBar), typeof(ProgressBarHandler) },
 				{ typeof(RadioButton), typeof(Handlers.RadioButtonHandler) },
-				{ typeof(RadioGroup), typeof(LayoutHandler) },
 				{ typeof(RefreshView), typeof(RefreshViewHandler) },
 				{ typeof(SearchBar), typeof(SearchBarHandler) },
 				{ typeof(SecureField), typeof(EntryHandler) },
@@ -900,7 +926,11 @@ namespace Comet
 				
 				{typeof(NavigationView), typeof (Microsoft.Maui.Handlers.NavigationViewHandler)},
 #endif
+#if __MACOS__
+				{typeof(WebView), typeof(Microsoft.Maui.Platform.MacOS.Handlers.WebViewHandler)},
+#else
 				{typeof(WebView), typeof(Microsoft.Maui.Handlers.WebViewHandler)},
+#endif
 				{typeof(MenuBar), typeof(Microsoft.Maui.Handlers.MenuBarHandler)},
 				{typeof(MenuBarItem), typeof(Microsoft.Maui.Handlers.MenuBarItemHandler)},
 				{typeof(MenuFlyoutItem), typeof(Microsoft.Maui.Handlers.MenuFlyoutItemHandler)},
@@ -929,10 +959,52 @@ namespace Comet
 			// Register standard MAUI Controls handlers for MauiViewHost embedding.
 			// These enable Microsoft.Maui.Controls types (Label, Entry, Border, etc.)
 			// to be rendered when hosted inside a Comet view tree via MauiViewHost.
-			// Interface-based registrations are critical for third-party controls (e.g. Syncfusion)
-			// that implement IContentView but don't extend ContentView directly.
 			builder.ConfigureMauiHandlers((handlersCollection) =>
 			{
+				handlersCollection.AddHandler<CometHost, Handlers.CometHostHandler>();
+#if __MACOS__
+				// On macOS, Platform.Maui.MacOS's SetupDefaults() already registered
+				// macOS-specific handlers for MAUI Controls types. Use those instead
+				// of MAUI's built-in handlers which throw NotImplementedException.
+				handlersCollection.TryAddHandler<IContentView, Microsoft.Maui.Platform.MacOS.Handlers.ContentViewHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.Label, Microsoft.Maui.Platform.MacOS.Handlers.LabelHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.Entry, Microsoft.Maui.Platform.MacOS.Handlers.EntryHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.Editor, Microsoft.Maui.Platform.MacOS.Handlers.EditorHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.Button, Microsoft.Maui.Platform.MacOS.Handlers.ButtonHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.CheckBox, Microsoft.Maui.Platform.MacOS.Handlers.CheckBoxHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.Switch, Microsoft.Maui.Platform.MacOS.Handlers.SwitchHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.Slider, Microsoft.Maui.Platform.MacOS.Handlers.SliderHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.Stepper, Microsoft.Maui.Platform.MacOS.Handlers.StepperHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.Picker, Microsoft.Maui.Platform.MacOS.Handlers.PickerHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.DatePicker, Microsoft.Maui.Platform.MacOS.Handlers.DatePickerHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.TimePicker, Microsoft.Maui.Platform.MacOS.Handlers.TimePickerHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.Image, Microsoft.Maui.Platform.MacOS.Handlers.ImageHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.ImageButton, Microsoft.Maui.Platform.MacOS.Handlers.ImageButtonHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.SearchBar, Microsoft.Maui.Platform.MacOS.Handlers.SearchBarHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.ProgressBar, Microsoft.Maui.Platform.MacOS.Handlers.ProgressBarHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.ActivityIndicator, Microsoft.Maui.Platform.MacOS.Handlers.ActivityIndicatorHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.RadioButton, Microsoft.Maui.Platform.MacOS.Handlers.RadioButtonHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.Border, Microsoft.Maui.Platform.MacOS.Handlers.BorderHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.BoxView, Microsoft.Maui.Platform.MacOS.Handlers.ShapeViewHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.ContentView, Microsoft.Maui.Platform.MacOS.Handlers.ContentViewHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.Layout, Microsoft.Maui.Platform.MacOS.Handlers.LayoutHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.Frame, Microsoft.Maui.Platform.MacOS.Handlers.BorderHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.ScrollView, Microsoft.Maui.Platform.MacOS.Handlers.ScrollViewHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.Grid, Microsoft.Maui.Platform.MacOS.Handlers.LayoutHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.StackLayout, Microsoft.Maui.Platform.MacOS.Handlers.LayoutHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.HorizontalStackLayout, Microsoft.Maui.Platform.MacOS.Handlers.LayoutHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.VerticalStackLayout, Microsoft.Maui.Platform.MacOS.Handlers.LayoutHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.FlexLayout, Microsoft.Maui.Platform.MacOS.Handlers.LayoutHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.AbsoluteLayout, Microsoft.Maui.Platform.MacOS.Handlers.LayoutHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.RefreshView, Microsoft.Maui.Platform.MacOS.Handlers.RefreshViewHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.SwipeView, Microsoft.Maui.Platform.MacOS.Handlers.SwipeViewHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.IndicatorView, Microsoft.Maui.Platform.MacOS.Handlers.IndicatorViewHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.WebView, Microsoft.Maui.Platform.MacOS.Handlers.WebViewHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.ContentPage, Microsoft.Maui.Platform.MacOS.Handlers.ContentPageHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.NavigationPage, Microsoft.Maui.Platform.MacOS.Handlers.NavigationPageHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.TabbedPage, Microsoft.Maui.Platform.MacOS.Handlers.TabbedPageHandler>();
+				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.FlyoutPage, Microsoft.Maui.Platform.MacOS.Handlers.FlyoutPageHandler>();
+#else
 				// Interface-based handler registrations (matches MAUI's own registrations)
 				handlersCollection.TryAddHandler<IContentView, Microsoft.Maui.Handlers.ContentViewHandler>();
 				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.Label, Microsoft.Maui.Handlers.LabelHandler>();
@@ -958,7 +1030,6 @@ namespace Comet
 				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.Layout, Microsoft.Maui.Handlers.LayoutHandler>();
 				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.Frame, Microsoft.Maui.Handlers.BorderHandler>();
 				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.ScrollView, Microsoft.Maui.Handlers.ScrollViewHandler>();
-				handlersCollection.AddHandler<CometHost, Handlers.CometHostHandler>();
 				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.Grid, Microsoft.Maui.Handlers.LayoutHandler>();
 				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.StackLayout, Microsoft.Maui.Handlers.LayoutHandler>();
 				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.HorizontalStackLayout, Microsoft.Maui.Handlers.LayoutHandler>();
@@ -974,13 +1045,16 @@ namespace Comet
 				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.NavigationPage, Microsoft.Maui.Handlers.NavigationViewHandler>();
 				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.TabbedPage, Microsoft.Maui.Handlers.TabbedViewHandler>();
 				handlersCollection.TryAddHandler<Microsoft.Maui.Controls.FlyoutPage, Microsoft.Maui.Handlers.FlyoutViewHandler>();
-				// Phase 8: Comet TabbedPage/FlyoutPage deferred
-				//handlersCollection.TryAddHandler<Comet.TabbedPage, Microsoft.Maui.Handlers.TabbedViewHandler>();
-				//handlersCollection.TryAddHandler<Comet.FlyoutPage, Microsoft.Maui.Handlers.FlyoutViewHandler>();
+#endif
 			});
 
 
+#if !__MACOS__
+			// macOS (AppKit) uses NSApplication.InvokeOnMainThread set in ThreadHelper's
+			// field initializer. Don't overwrite it with MAUI's MainThread which has no
+			// macOS implementation.
 			ThreadHelper.SetFireOnMainThread(MainThread.BeginInvokeOnMainThread);
+#endif
 
 			return builder;
 		}

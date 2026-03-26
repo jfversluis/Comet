@@ -9,7 +9,8 @@ using PlatformView = UIKit.UIView;
 using PlatformView = Android.Views.View;
 #elif WINDOWS
 using PlatformView = Microsoft.UI.Xaml.Controls.Panel;
-
+#elif __MACOS__
+using PlatformView = AppKit.NSView;
 #else
 using PlatformView = System.Object;
 #endif
@@ -30,6 +31,8 @@ namespace Comet.Handlers
 			new PlatformView(Context.ApplicationContext);
 #elif WINDOWS
 			new LayoutPanel();
+#elif __MACOS__
+			new PlatformView { WantsLayer = true };
 #else
 			new PlatformView();
 #endif
