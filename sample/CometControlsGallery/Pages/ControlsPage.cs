@@ -19,7 +19,7 @@ namespace CometControlsGallery.Pages
 		readonly Reactive<int> radioIndex = 0;
 
 		[Body]
-		View body() =>
+		View Body() =>
 			GalleryPageHelpers.Scaffold("Controls",
 				GalleryPageHelpers.Section("Button & ProgressBar",
 					Button("Click me!", () => clickCount.Value++),

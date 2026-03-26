@@ -33,7 +33,7 @@ namespace CometControlsGallery.Pages
 			"to map native controls. No MAUI Controls required!";
 
 		[Body]
-		View body() =>
+		View Body() =>
 			ScrollView(Orientation.Vertical,
 				VStack(16,
 					Text(PlatformTitle)

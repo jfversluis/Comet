@@ -18,6 +18,9 @@ using static Comet.CometControls;
 #if DEBUG
 using MauiDevFlow.Agent;
 #endif
+#if __MACOS__
+using Microsoft.Maui.Platform.MacOS.Hosting;
+#endif
 using MauiApplication = Microsoft.Maui.Controls.Application;
 using MauiContentPage = Microsoft.Maui.Controls.ContentPage;
 using MauiWindow = Microsoft.Maui.Controls.Window;
@@ -148,7 +151,11 @@ namespace CometControlsGallery
 
 			var builder = MauiApp.CreateBuilder();
 
+#if __MACOS__
+			builder.UseMauiAppMacOS<App>();
+#else
 			builder.UseMauiApp<App>();
+#endif
 			builder.UseCometHandlers();
 			builder.UseCupertinoMauiIcons();
 
