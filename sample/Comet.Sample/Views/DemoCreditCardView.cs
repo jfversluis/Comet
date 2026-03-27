@@ -13,23 +13,15 @@ namespace Comet.Samples
 		public string Name { get; set; }
 	}
 
-	public class DemoCreditCardView : Component
+	public class DemoCreditCardView : Component<CreditCard>
 	{
-		[State]
-		readonly CreditCard Card;
-
 		readonly Reactive<string> number = "";
 		readonly Reactive<bool> remember = false;
 
 		Color titleColor = Color.FromArgb("#1d1d1d");
 		Color ccColor = Color.FromArgb("#999999");
 
-		public DemoCreditCardView()
-		{
-			Card = new CreditCard();
-		}
-
-				public override View Render() => Grid(
+		public override View Render() => Grid(
 			columns: new object[] { 20, "*", 20 },
 			rows: new object[] { "250", 20, 160, 20, 44, 20, 1, 20, 44, "*" },
 			Grid(
@@ -50,7 +42,7 @@ namespace Comet.Samples
 						.FontSize(10)
 						.Color(Colors.Silver)
 						.Cell(row:2, column:1, colSpan:2),
-					Text(Card.Number)
+					Text(State.Number)
 						.FontSize(14)
 						.Color(Colors.Black)
 						.Cell(row:3, column:1, colSpan:2),
@@ -59,7 +51,7 @@ namespace Comet.Samples
 						.FontSize(10)
 						.Color(Colors.Silver)
 						.Cell(row:5, column:1),
-					Text(Card.Expiration)
+					Text(State.Expiration)
 						.FontSize(14)
 						.Color(Colors.Black)
 						.Cell(row:6, column:1),
@@ -68,7 +60,7 @@ namespace Comet.Samples
 						.FontSize(10)
 						.Color(Colors.Silver)
 						.Cell(row:5, column:2),
-					Text(Card.CVV)
+					Text(State.CVV)
 						.FontSize(14)
 						.Color(Colors.Black)
 						.Cell(row:6, column:2),
@@ -86,9 +78,9 @@ namespace Comet.Samples
 			Grid(
 				columns: new object[] { "2*", 20, "*" },
 				rows: new object[] { 40, 20, 40, 20, 40, 20, 44, 20, 1, 20, 44 },
-				EntryContainer(Card.Number, "Enter CC Number", "\uf09d").Cell(row:0, column: 0, colSpan: 3),
-				EntryContainer(Card.Expiration, "MM/YYYY", "\uf783").Cell(row:2, column: 0),
-				EntryContainer(Card.CVV, "CVV", "\uf023").Cell(row:2, column: 2),
+				EntryContainer(State.Number, "Enter CC Number", "\uf09d", t => SetState(s => s.Number = t)).Cell(row:0, column: 0, colSpan: 3),
+				EntryContainer(State.Expiration, "MM/YYYY", "\uf783", t => SetState(s => s.Expiration = t)).Cell(row:2, column: 0),
+				EntryContainer(State.CVV, "CVV", "\uf023", t => SetState(s => s.CVV = t)).Cell(row:2, column: 2),
 				HStack(
 					Toggle(remember),
 					Text("  Remember Me")
@@ -124,14 +116,16 @@ namespace Comet.Samples
 				.Color(titleColor);
 		}
 
-		HStack EntryContainer(string val, string placeholder, string icon = "")
+		HStack EntryContainer(string val, string placeholder, string icon = "", Action<string> onChanged = null)
 		{
 			return HStack(10,
 					Text(icon)
 						.Frame(width:20)
 						.Margin(left:8, top:8)
 						.FontFamily("Font Awesome 5 Free"),
-					TextField(val, placeholder).Margin(top:9)
+					TextField(val, placeholder)
+						.OnTextChanged(t => onChanged?.Invoke(t))
+						.Margin(top:9)
 
 			).RoundedBorder(color: Colors.Grey).FillHorizontal();
 		}

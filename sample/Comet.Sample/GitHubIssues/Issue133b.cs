@@ -4,22 +4,13 @@ using static Comet.CometControls;
 
 namespace Comet.Samples
 {
-	public class Issue133b : Component
+	public class Issue133b : Component<CreditCard>
 	{
-		[State]
-		readonly CreditCard Card;
-
 		readonly Reactive<bool> remember = false;
 
-		public Issue133b()
-		{
-			Card = new CreditCard();
-		}
+		public override View Render() => VStack(20,
 
-
-				public override View Render() => VStack(20,
-
-			new BorderedEntry(Card.Number,"Enter CC Number", "\uf09d")
+			new BorderedEntry(State.Number,"Enter CC Number", "\uf09d")
 				.Margin(left:20, right: 20)
 
 		).FillHorizontal().Alignment(Alignment.Top);

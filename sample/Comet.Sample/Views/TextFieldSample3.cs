@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Comet.Reactive;
 using Microsoft.Maui.Graphics;
 using static Comet.CometControls;
 
@@ -7,19 +8,14 @@ namespace Comet.Samples
 {
 	public class TextFieldSample3 : Component
 	{
-		class MyBindingObject
-		{
-			public string Text { get; set; }
-		}
+		readonly Signal<string> _text = new("Edit Me");
 
-		[State] private readonly MyBindingObject _state = new MyBindingObject { Text = "Edit Me" };
-
-				public override View Render() => VStack(
-			TextField(_state.Text, "Name"),
+		public override View Render() => VStack(
+			TextField(_text, "Name"),
 			HStack(
 				Text("Current Value:")
 					.Color(Colors.Grey),
-				Text(_state.Text),
+				Text(() => _text.Value),
 				Spacer()
 			)
 		).FillHorizontal();

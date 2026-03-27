@@ -1,48 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
+using Comet.Reactive;
 using Microsoft.Maui.Graphics;
 using static Comet.CometControls;
 
 namespace Comet.Samples
 {
-	public class BasicTestView : Component
+	public class BasicTestState
 	{
-		class MyBindingObject
-		{
-			public bool CanEdit { get; set; }
+		public bool CanEdit { get; set; } = true;
+		public string Text { get; set; } = "Bar";
+		public int ClickCount { get; set; } = 1;
+	}
 
-			public string Text { get; set; }
-		}
-
-		[State]
-		readonly MyBindingObject state;
-
-		readonly Reactive<int> clickCount = new Reactive<int>(1);
-
-		readonly Reactive<bool> bar = new Reactive<bool>();
-
-		public BasicTestView()
-		{
-			state = new MyBindingObject
-			{
-				Text = "Bar",
-				CanEdit = true,
-			};
-			
-		}
-
+	public class BasicTestView : Component<BasicTestState>
+	{
 		public override View Render() =>
 			VStack(
-				(state.CanEdit
-					? (View) TextField(state.Text)
-					: Text(() => $"{state.Text}: multiText")), // Text will warn you. This should be done by TextBinding
-                Text(state.Text),
+				(State.CanEdit
+					? (View) TextField(State.Text, "Enter text")
+						.OnTextChanged(t => SetState(s => s.Text = t))
+					: Text($"{State.Text}: multiText")),
+				Text(State.Text),
 				HStack(
 					Button("Toggle Entry/Label",
-						() => state.CanEdit = !state.CanEdit)
+						() => SetState(s => s.CanEdit = !s.CanEdit))
 						.Background(Colors.Salmon),
 					Button("Update Text",
-						() => state.Text = $"Click Count: {clickCount.Value++}" )
+						() => SetState(s => s.Text = $"Click Count: {s.ClickCount++}"))
 				)
 			);
 	}

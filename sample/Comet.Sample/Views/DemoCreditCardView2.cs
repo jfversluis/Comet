@@ -4,20 +4,11 @@ using static Comet.CometControls;
 
 namespace Comet.Samples
 {
-	public class DemoCreditCardView2 : Component
+	public class DemoCreditCardView2 : Component<CreditCard>
 	{
-		[State]
-		readonly CreditCard Card;
-
 		readonly Reactive<bool> remember = false;
 
-		public DemoCreditCardView2()
-		{
-			Card = new CreditCard();
-		}
-
-
-				public override View Render() => VStack(20,
+		public override View Render() => VStack(20,
 			VStack(
 				VStack(
 					new ShapeView(new RoundedRectangle(4.0f)
@@ -32,7 +23,7 @@ namespace Comet.Samples
 						.Color(Colors.Silver)
 						.Margin(left: 30),
 
-					Text(Card.Number)
+					Text(State.Number)
 						.FontSize(14)
 						.Color(Colors.Black)
 						.Margin(left: 30, bottom:20)
@@ -50,12 +41,12 @@ namespace Comet.Samples
 					).Margin(left:30),
 
 					HStack(
-						Text(Card.Expiration)
+						Text(State.Expiration)
 							.FontSize(14)
 							.Color(Colors.Black)
 							.Frame(width: 200),
 
-						Text(Card.CVV)
+						Text(State.CVV)
 							.FontSize(14)
 							.Color(Colors.Black)
 					).Margin(left:30, bottom:30).Frame(height: 20)
@@ -63,17 +54,17 @@ namespace Comet.Samples
 				).RoundedBorder(radius: 8, color: Color.FromArgb("#3177CB"), filled: true).Margin(30)
 			).Background("#f6f6f6"),
 
-			new BorderedEntry(Card.Number,"Enter CC Number", "\uf09d")
+			new BorderedEntry(State.Number,"Enter CC Number", "\uf09d")
 				.Margin(left:20, right: 20),
 
 			HStack(20,
-				new BorderedEntry(Card.Expiration, "MM/YYYY", "\uf783")
+				new BorderedEntry(State.Expiration, "MM/YYYY", "\uf783")
 					.Frame(height: 40, width: 200)
 					.Margin(left:20),
 
 				Spacer(),
 
-				new BorderedEntry(Card.CVV, "CVV", "\uf023")
+				new BorderedEntry(State.CVV, "CVV", "\uf023")
 					.Frame( height: 40, width: 100)
 					.Margin(right:20)
 			),

@@ -1,55 +1,40 @@
 using System;
-using static Comet.CometControls;
 using Comet.Reactive;
+using static Comet.CometControls;
 
 namespace Comet.Samples
 {
-	public class BindingSample : Component
+	public class BindingSampleState
 	{
-		class MyBindingObject
-		{
-			public bool CanEdit { get; set; }
+		public bool CanEdit { get; set; } = true;
+		public string Text { get; set; } = "Bar";
+		public int ClickCount { get; set; } = 1;
+	}
 
-			public string Text { get; set; }
-		}
-
-		[State]
-		readonly MyBindingObject state;
-
-		readonly Signal<int> clickCount = new(1);
-
-		readonly Signal<bool> bar = new(false);
-
-		public BindingSample()
-		{
-			state = new MyBindingObject
-			{
-				Text = "Bar",
-				CanEdit = true,
-			};
-			
-		}
-
+	public class BindingSample : Component<BindingSampleState>
+	{
 		public override View Render() =>
 			NavigationView(ScrollView(
 				VStack(
-					(state.CanEdit
-						? (View) TextField(state.Text)
-						: Text(() => $"{state.Text}: multiText")), // Formatted Text will warn you. This should be done by TextBinding
-					Text(state.Text),
+					(State.CanEdit
+						? (View) TextField(State.Text, "Enter text")
+							.OnTextChanged(t => SetState(s => s.Text = t))
+						: Text($"{State.Text}: multiText")),
+					Text(State.Text),
 					HStack(
 						Button("Toggle Entry/Label",
-							() => state.CanEdit = !state.CanEdit),
+							() => SetState(s => s.CanEdit = !s.CanEdit)),
 						Button("Update Text",
-							() => state.Text = $"Click Count: {clickCount.Value++}"),
+							() => SetState(s => s.Text = $"Click Count: {s.ClickCount++}")),
 						Button("Update FontSize",
 							() => {
 								var font = View.GetGlobalEnvironment<float?>(EnvironmentKeys.Fonts.Size) ?? 14;
 								var size = font + 5;
-								View.SetGlobalEnvironment (EnvironmentKeys.Fonts.Size, size);
+								View.SetGlobalEnvironment(EnvironmentKeys.Fonts.Size, size);
 							})
 					),
-					Toggle(state.CanEdit)
+					Toggle(State.CanEdit)
+						.OnToggled(v => SetState(s => s.CanEdit = v))
 				)
 			));
 	}
