@@ -20,25 +20,22 @@ struct ContentView: View {
 
 namespace Comet.Samples.Comparisons
 {
-	public class RideSample : Component
+	public class CometRideState
 	{
-		public RideSample()
-		{
-			//View.SetGlobalEnvironment(EnvironmentKeys.Colors.Color, Colors.Black);
-			comet = new Comet();
-		}
+		public int Rides { get; set; }
+		public string CometTrain => "☄️".Repeat(Rides);
+	}
 
-		[State]
-		readonly Comet comet;
-
-				public override View Render()
+	public class RideSample : Component<CometRideState>
+	{
+		public override View Render()
 			=> VStack(
-				Text(()=> $"({comet.Rides}) rides taken:{comet.CometTrain}")
+				Text($"({State.Rides}) rides taken:{State.CometTrain}")
 					.Frame(width:300)
 					.LineBreakMode(LineBreakMode.CharacterWrap),
 
-				Button("Ride the Comet! ☄️", ()=>{
-					comet.Rides++;
+				Button("Ride the Comet! ☄️", () => {
+					SetState(s => s.Rides++);
 				})
 					.Frame(height:44)
 					.Margin(8)
@@ -47,19 +44,6 @@ namespace Comet.Samples.Comparisons
 				.RoundedBorder(color:Colors.Blue)
 				.Shadow(Colors.Grey,4,2,2)
 			);
-
-		public class Comet
-		{
-			public int Rides { get; set; }
-
-			public string CometTrain
-			{
-				get
-				{
-					return "☄️".Repeat(Rides);
-				}
-			}
-		}
 	}
 }
 
