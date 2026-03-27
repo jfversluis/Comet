@@ -5,7 +5,7 @@ namespace Comet.Samples
 {
 	public class ContinuosSample : Component
 	{
-		readonly State<string> _strokeColor = "#000000";
+		readonly Reactive<string> _strokeColor = "#000000";
 
 				public override View Render()
 		{

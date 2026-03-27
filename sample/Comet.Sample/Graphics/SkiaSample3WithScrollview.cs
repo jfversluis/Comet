@@ -7,16 +7,14 @@ namespace Comet.Samples
 {
 	public class SkiaSample3WithScrollView : Component
 	{
-		readonly State<double> _strokeSize = 2;
-		readonly State<Color> _strokeColor = Colors.Black;
+		readonly Reactive<double> _strokeSize = 2;
+		readonly Reactive<Color> _strokeColor = Colors.Black;
 
 				public override View Render() => VStack(
 			VStack(
 				HStack(
 					Text("Stroke Width:"),
-					Slider(_strokeSize,
-						new Binding<double>(() => 1d, null),
-						new Binding<double>(() => 10d, null)).FillHorizontal()
+					Slider(_strokeSize, 1d, 10d).FillHorizontal()
 				),
 				HStack(
 					Text("Stroke Color!:")

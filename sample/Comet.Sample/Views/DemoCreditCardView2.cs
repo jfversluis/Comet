@@ -9,7 +9,7 @@ namespace Comet.Samples
 		[State]
 		readonly CreditCard Card;
 
-		readonly State<bool> remember = false;
+		readonly Reactive<bool> remember = false;
 
 		public DemoCreditCardView2()
 		{
@@ -79,7 +79,7 @@ namespace Comet.Samples
 			),
 
 			HStack(
-				Toggle((Binding<bool>)remember),
+				Toggle(remember),
 				Text("  Remember Me")
 			).Margin(left:20),
 
@@ -111,14 +111,14 @@ namespace Comet.Samples
 
 		public class BorderedEntry : HStack
 		{
-			public BorderedEntry(Binding<string> val, string placeholder, string icon) : base(spacing: 8)
+			public BorderedEntry(string val, string placeholder, string icon) : base(spacing: 8)
 			{
 				Add(Text(icon)
 					.Frame(width: 20)
 					.Margin(left: 8)
 					.FontFamily("Font Awesome 5 Free"));
 
-				Add(TextField(val, new Binding<string>(() => placeholder, null)));
+				Add(TextField(val, placeholder));
 
 				this.Frame(height: 40).RoundedBorder(color: Colors.Grey);
 

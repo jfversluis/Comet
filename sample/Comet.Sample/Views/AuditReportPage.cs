@@ -9,8 +9,8 @@ namespace Comet.Samples
 {
 	public class AuditReportPage : Component
 	{
-		readonly State<List<ApiAuditManager.AuditReport>> reports = new List<ApiAuditManager.AuditReport>();
-		readonly State<bool> isLoading = false;
+		readonly Reactive<List<ApiAuditManager.AuditReport>> reports = new List<ApiAuditManager.AuditReport>();
+		readonly Reactive<bool> isLoading = false;
 
 				public override View Render()
 		{

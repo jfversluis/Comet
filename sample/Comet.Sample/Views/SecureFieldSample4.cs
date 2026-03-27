@@ -20,7 +20,7 @@ namespace Comet.Samples
 {
 	public class SecureFieldSample4 : Component
 	{
-		readonly State<string> password = "";
+		readonly Reactive<string> password = "";
 
 				public override View Render() => VStack(
 			SecureField(password, "Enter a password"),

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using Comet.Graphics;
+using Comet;
 using Comet.Samples.Models;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
@@ -11,15 +11,19 @@ namespace Comet.Samples
 {
 	public class MyApp : CometApp
 	{
-		[Body]
-		View view() => new MainPage();
+		public MyApp()
+		{
+			Body = CreateRootView;
+		}
+
+		public static View CreateRootView() => new MainPage();
 
 		public static MauiApp CreateMauiApp()
 		{
 			var builder = MauiApp.CreateBuilder();
 
 #if DEBUG
-			builder.UseCometSampleDebugHost<MyApp>();
+			builder.UseCometSampleDebugHost(CreateRootView);
 #else
 			builder.UseCometApp<MyApp>();
 #endif
@@ -27,8 +31,8 @@ namespace Comet.Samples
 			builder.ConfigureFonts(fonts => {
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 			});
+
 #if DEBUG
-			builder.EnableHotReload();
 			builder.EnableSampleRuntimeDebugging();
 #endif
 

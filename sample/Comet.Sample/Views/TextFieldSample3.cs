@@ -7,13 +7,9 @@ namespace Comet.Samples
 {
 	public class TextFieldSample3 : Component
 	{
-		class MyBindingObject : BindingObject
+		class MyBindingObject
 		{
-			public string Text
-			{
-				get => GetProperty<string>();
-				set => SetProperty(value);
-			}
+			public string Text { get; set; }
 		}
 
 		[State] private readonly MyBindingObject _state = new MyBindingObject { Text = "Edit Me" };

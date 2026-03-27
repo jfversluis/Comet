@@ -5,8 +5,8 @@ namespace Comet.Samples
 {
 	public class InsaneDiffPage : Component
 	{
-		readonly State<bool> myBoolean = new State<bool>();
-		readonly State<string> myText = new State<string>();
+		readonly Reactive<bool> myBoolean = new Reactive<bool>();
+		readonly Reactive<string> myText = new Reactive<string>();
 
 				public override View Render()
 		{

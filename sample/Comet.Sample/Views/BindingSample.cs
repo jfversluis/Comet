@@ -6,19 +6,11 @@ namespace Comet.Samples
 {
 	public class BindingSample : Component
 	{
-		class MyBindingObject : BindingObject
+		class MyBindingObject
 		{
-			public bool CanEdit
-			{
-				get => GetProperty<bool>();
-				set => SetProperty(value);
-			}
+			public bool CanEdit { get; set; }
 
-			public string Text
-			{
-				get => GetProperty<string>();
-				set => SetProperty(value);
-			}
+			public string Text { get; set; }
 		}
 
 		[State]

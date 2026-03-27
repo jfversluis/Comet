@@ -11,7 +11,7 @@ namespace Comet.Samples
 		{
 			
 		}
-		readonly State<bool> shouldAnimate = true;
+		readonly Reactive<bool> shouldAnimate = true;
 		Text animatedText;
 		Button button;
 		public override View Render() =>

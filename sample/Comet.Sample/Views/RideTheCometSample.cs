@@ -48,13 +48,9 @@ namespace Comet.Samples.Comparisons
 				.Shadow(Colors.Grey,4,2,2)
 			);
 
-		public class Comet : BindingObject
+		public class Comet
 		{
-			public int Rides
-			{
-				get => GetProperty<int>();
-				set => SetProperty(value);
-			}
+			public int Rides { get; set; }
 
 			public string CometTrain
 			{

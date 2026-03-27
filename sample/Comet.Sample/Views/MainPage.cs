@@ -1,9 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Comet.Samples.Comparisons;
 using Comet.Samples.LiveStreamIssues;
 using Microsoft.Maui;
-using Microsoft.Maui.HotReload;
 using static Comet.CometControls;
 
 namespace Comet.Samples
@@ -98,8 +97,6 @@ namespace Comet.Samples
 
 		public MainPage(List<MenuItem> additionalPage = null)
 		{
-			//This is only required since there is a parameter for the view
-			MauiHotReloadHelper.Register(this, additionalPage);
 			if (additionalPage != null)
 				pages.AddRange(additionalPage);
 

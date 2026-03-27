@@ -24,11 +24,11 @@ namespace Comet.Samples
 
 		private class BorderedEntry : Component
 		{
-			private Binding<String> _val;
+			private string _val;
 			private string _placeholder;
 			private string _icon;
 
-			public BorderedEntry(Binding<String> val, string placeholder, string icon)
+			public BorderedEntry(string val, string placeholder, string icon)
 			{
 				_val = val;
 				_placeholder = placeholder;
@@ -41,7 +41,7 @@ namespace Comet.Samples
 						.Margin(left: 8)
 						.FontFamily("Font Awesome 5 Free"),
 
-					TextField(_val, new Binding<string>(() => _placeholder, null))
+					TextField(_val, _placeholder)
 				)
 				.Frame(height: 40)
 				.RoundedBorder(color: Colors.Grey);

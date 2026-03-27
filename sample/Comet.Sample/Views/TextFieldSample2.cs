@@ -7,7 +7,7 @@ namespace Comet.Samples
 {
 	public class TextFieldSample2 : Component
 	{
-		readonly State<string> _textValue = "Edit Me";
+		readonly Reactive<string> _textValue = "Edit Me";
 
 				public override View Render() => VStack(
 			TextField(_textValue, "Name"),

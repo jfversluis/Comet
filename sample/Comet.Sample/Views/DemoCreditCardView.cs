@@ -5,28 +5,12 @@ using static Comet.CometControls;
 
 namespace Comet.Samples
 {
-	public class CreditCard : BindingObject
+	public class CreditCard
 	{
-		public string Number
-		{
-			get => GetProperty<string>();
-			set => SetProperty(value);
-		}
-		public string Expiration
-		{
-			get => GetProperty<string>();
-			set => SetProperty(value);
-		}
-		public string CVV
-		{
-			get => GetProperty<string>();
-			set => SetProperty(value);
-		}
-		public string Name
-		{
-			get => GetProperty<string>();
-			set => SetProperty(value);
-		}
+		public string Number { get; set; }
+		public string Expiration { get; set; }
+		public string CVV { get; set; }
+		public string Name { get; set; }
 	}
 
 	public class DemoCreditCardView : Component
@@ -34,8 +18,8 @@ namespace Comet.Samples
 		[State]
 		readonly CreditCard Card;
 
-		readonly State<string> number = "";
-		readonly State<bool> remember = false;
+		readonly Reactive<string> number = "";
+		readonly Reactive<bool> remember = false;
 
 		Color titleColor = Color.FromArgb("#1d1d1d");
 		Color ccColor = Color.FromArgb("#999999");
@@ -106,7 +90,7 @@ namespace Comet.Samples
 				EntryContainer(Card.Expiration, "MM/YYYY", "\uf783").Cell(row:2, column: 0),
 				EntryContainer(Card.CVV, "CVV", "\uf023").Cell(row:2, column: 2),
 				HStack(
-					Toggle((Binding<bool>)remember),
+					Toggle(remember),
 					Text("  Remember Me")
 				).Cell(row:4,column:0, colSpan: 3),
 				Button("Or Pay with PayPal").RoundedBorder(22, Colors.SlateGrey).Cell(row:6, column:0, colSpan:3).Color(Colors.SlateGrey),
@@ -125,7 +109,7 @@ namespace Comet.Samples
 				.Frame(100, 1);
 		}
 
-		Text CCText(Binding<string> val)
+		Text CCText(string val)
 		{
 			return Text(val)
 				.Frame(height: 24)
@@ -133,21 +117,21 @@ namespace Comet.Samples
 				.Color(ccColor);
 		}
 
-		Text TitleText(Binding<string> val)
+		Text TitleText(string val)
 		{
 			return Text(val)
 				.FontSize(24)
 				.Color(titleColor);
 		}
 
-		HStack EntryContainer(Binding<String> val, string placeholder, string icon = "")
+		HStack EntryContainer(string val, string placeholder, string icon = "")
 		{
 			return HStack(10,
 					Text(icon)
 						.Frame(width:20)
 						.Margin(left:8, top:8)
 						.FontFamily("Font Awesome 5 Free"),
-					TextField(val, new Binding<string>(() => placeholder, null)).Margin(top:9)
+					TextField(val, placeholder).Margin(top:9)
 
 			).RoundedBorder(color: Colors.Grey).FillHorizontal();
 		}

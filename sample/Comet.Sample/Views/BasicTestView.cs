@@ -7,27 +7,19 @@ namespace Comet.Samples
 {
 	public class BasicTestView : Component
 	{
-		class MyBindingObject : BindingObject
+		class MyBindingObject
 		{
-			public bool CanEdit
-			{
-				get => GetProperty<bool>();
-				set => SetProperty(value);
-			}
+			public bool CanEdit { get; set; }
 
-			public string Text
-			{
-				get => GetProperty<string>();
-				set => SetProperty(value);
-			}
+			public string Text { get; set; }
 		}
 
 		[State]
 		readonly MyBindingObject state;
 
-		readonly State<int> clickCount = new State<int>(1);
+		readonly Reactive<int> clickCount = new Reactive<int>(1);
 
-		readonly State<bool> bar = new State<bool>();
+		readonly Reactive<bool> bar = new Reactive<bool>();
 
 		public BasicTestView()
 		{

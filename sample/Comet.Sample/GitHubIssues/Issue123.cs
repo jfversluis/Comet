@@ -7,7 +7,7 @@ namespace Comet.Samples
 {
 	public class Issue123 : Component
 	{
-		private readonly State<int> count = 0;
+		private readonly Reactive<int> count = 0;
 
 				public override View Render() => NavigationView( VStack(
 				Text(() => $"Value: {count.Value}")

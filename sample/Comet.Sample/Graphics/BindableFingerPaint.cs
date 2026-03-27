@@ -1,29 +1,30 @@
 ﻿using System.Collections.Generic;
+using Comet.Reactive;
 namespace Comet.Samples
 {
 	public class BindableFingerPaint : SimpleFingerPaint, IDrawable, IGraphicsView
 	{
-		private Binding<double> _strokeWidth = 2;
-		private Binding<Color> _strokeColor = Colors.Black;
+		private PropertySubscription<double> _strokeWidth = 2;
+		private PropertySubscription<Color> _strokeColor = Colors.Black;
 
 		public BindableFingerPaint(
-			Binding<double> strokeSize = null,
-			Binding<Color> strokeColor = null)
+			PropertySubscription<double> strokeSize = null,
+			PropertySubscription<Color> strokeColor = null)
 		{
 			StrokeWidth = strokeSize;
 			StrokeColor = strokeColor;
 		}
 
-		public Binding<double> StrokeWidth
+		public PropertySubscription<double> StrokeWidth
 		{
 			get => _strokeWidth;
-			private set => this.SetBindingValue(ref _strokeWidth, value);
+			private set => this.SetPropertySubscription(ref _strokeWidth, value);
 		}
 
-		public Binding<Color> StrokeColor
+		public PropertySubscription<Color> StrokeColor
 		{
 			get => _strokeColor;
-			private set => this.SetBindingValue(ref _strokeColor, value);
+			private set => this.SetPropertySubscription(ref _strokeColor, value);
 		}
 
 		public override void ViewPropertyChanged(string property, object value)
@@ -34,7 +35,6 @@ namespace Comet.Samples
 
 		void IDrawable.Draw(ICanvas canvas, RectF dirtyRect)
 		{
-			//var paint = new SolidPaint(Colors.Blue);
 			canvas.StrokeColor = _strokeColor;
 			canvas.StrokeSize = (float)_strokeWidth.CurrentValue;
 
