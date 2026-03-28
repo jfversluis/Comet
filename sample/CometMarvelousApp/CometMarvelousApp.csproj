@@ -21,8 +21,8 @@
 		<MauiImage Include="Resources\Images\*svg" />
 		<MauiImage Include="Resources\Images\*png" />
 		<MauiImage Include="Resources\Images\*jpg" />
-		<MauiSplashScreen Include="Resources\Splash\marvelous_maui_splash.svg" Color="#252621" BaseSize="128,128" />
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" />
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#000000" BaseSize="432,145" />
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#000000" />
 	</ItemGroup>
 
 	<ItemGroup>
