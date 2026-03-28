@@ -937,6 +937,8 @@ namespace Comet
 #elif __MACOS__
 				{typeof(NavigationView), typeof (Handlers.NavigationViewHandler)},
 				{typeof(View), typeof(CometViewHandler)},
+#elif __ANDROID__
+				{typeof(NavigationView), typeof (Handlers.NavigationViewHandler)},
 #else
 				
 				{typeof(NavigationView), typeof (Microsoft.Maui.Handlers.NavigationViewHandler)},

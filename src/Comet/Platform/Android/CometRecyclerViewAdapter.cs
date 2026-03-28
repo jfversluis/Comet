@@ -24,13 +24,8 @@ namespace Comet.Android.Controls
 			{
 				Logger.Debug($"OnBindViewHolder");
 
-				// If the cell has a cometview parent already, remove it from that parent.
-				//if (cell.Parent is CometView cometParent)
-				//	if (cometParent.CurrentView != view)
-				//		cometParent.CurrentView = null;
-
 				var parent = rvh.Parent;
-				var density = CometApp.DisplayScale;
+				var density = MauiContext.Context.Resources.DisplayMetrics.Density;
 			
 				var scaledSize = new Size(parent.Width / density, parent.Height / density);
 				var measuredSize = view.Measure(scaledSize, true);

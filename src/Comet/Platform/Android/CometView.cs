@@ -73,11 +73,43 @@ namespace Comet.Android
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
-			var deviceIndependentWidth = widthMeasureSpec.ToDouble(Context);
-			var deviceIndependentHeight = heightMeasureSpec.ToDouble(Context);
-			var size = CurrentView.Measure(deviceIndependentWidth, deviceIndependentHeight);
-			var nativeWidth = Context.ToPixels(size.Width);
-			var nativeHeight = Context.ToPixels(size.Height);
+			var widthMode = AView.MeasureSpec.GetMode(widthMeasureSpec);
+			var heightMode = AView.MeasureSpec.GetMode(heightMeasureSpec);
+			var widthSize = AView.MeasureSpec.GetSize(widthMeasureSpec);
+			var heightSize = AView.MeasureSpec.GetSize(heightMeasureSpec);
+
+			double nativeWidth = widthSize;
+			double nativeHeight = heightSize;
+
+			if (CurrentView != null)
+			{
+				var deviceIndependentWidth = widthMeasureSpec.ToDouble(Context);
+				var deviceIndependentHeight = heightMeasureSpec.ToDouble(Context);
+				var size = CurrentView.Measure(deviceIndependentWidth, deviceIndependentHeight);
+				nativeWidth = Context.ToPixels(size.Width);
+				nativeHeight = Context.ToPixels(size.Height);
+			}
+
+			// Respect EXACTLY/AT_MOST constraints from parent
+			if (widthMode == global::Android.Views.MeasureSpecMode.Exactly)
+				nativeWidth = widthSize;
+			else if (widthMode == global::Android.Views.MeasureSpecMode.AtMost)
+				nativeWidth = Math.Min(nativeWidth, widthSize);
+
+			if (heightMode == global::Android.Views.MeasureSpecMode.Exactly)
+				nativeHeight = heightSize;
+			else if (heightMode == global::Android.Views.MeasureSpecMode.AtMost)
+				nativeHeight = Math.Min(nativeHeight, heightSize);
+
+			// Measure children with our resolved size
+			for (int i = 0; i < ChildCount; i++)
+			{
+				var child = GetChildAt(i);
+				child?.Measure(
+					AView.MeasureSpec.MakeMeasureSpec((int)nativeWidth, global::Android.Views.MeasureSpecMode.Exactly),
+					AView.MeasureSpec.MakeMeasureSpec((int)nativeHeight, global::Android.Views.MeasureSpecMode.Exactly));
+			}
+
 			SetMeasuredDimension((int)nativeWidth, (int)nativeHeight);
 		}
 
@@ -85,7 +117,7 @@ namespace Comet.Android
 		{
 			if (currentPlatformView == null || inLayout) return;
 
-			var displayScale = CometApp.CurrentWindow.DisplayScale;
+			var displayScale = Context.Resources.DisplayMetrics.Density;
 			var width = (right - left) / displayScale;
 			var height = (bottom - top) / displayScale;
 			if (width > 0 && height > 0)
@@ -99,10 +131,13 @@ namespace Comet.Android
 		protected override void OnSizeChanged(int w, int h, int oldw, int oldh)
 		{
 			base.OnSizeChanged(w, h, oldw, oldh);
-			if (w > 0 && h > 0)
+			var displayScale = Context.Resources.DisplayMetrics.Density;
+			var width = w / displayScale;
+			var height = h / displayScale;
+			if (width > 0 && height > 0)
 			{
 				inLayout = true;
-				var rect = new Rect(0, 0, w, h);
+				var rect = new Rect(0, 0, width, height);
 				CurrentView.Arrange(rect);
 				inLayout = false;
 			}
