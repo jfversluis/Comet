@@ -744,16 +744,23 @@ namespace Comet
 				}
 				EventHandler newHandler = (s, e) =>
 				{
+					// Suppress reactive view rebuilds during text input to prevent focus loss.
+					// The native TextField already shows the typed text; a rebuild would
+					// transfer the handler to a new view instance, causing resignFirstResponder.
+					Reactive.ReactiveScheduler.SuppressNotifications = true;
 					try { callback(entry.Text ?? string.Empty); }
 					catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[Comet] Entry TextChanged callback failed: {ex.Message}"); }
+					finally { Reactive.ReactiveScheduler.SuppressNotifications = false; }
 				};
 				_entryEditingChangedHandlers.AddOrUpdate(entry, newHandler);
 				entry.EditingChanged += newHandler;
 #elif ANDROID
 				entry.AfterTextChanged += (s, e) =>
 				{
+					Reactive.ReactiveScheduler.SuppressNotifications = true;
 					try { callback(entry.Text ?? string.Empty); }
 					catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[Comet] Entry TextChanged callback failed: {ex.Message}"); }
+					finally { Reactive.ReactiveScheduler.SuppressNotifications = false; }
 				};
 #endif
 			});
@@ -778,16 +785,20 @@ namespace Comet
 				}
 				EventHandler newHandler = (s, e) =>
 				{
+					Reactive.ReactiveScheduler.SuppressNotifications = true;
 					try { callback(editor.Text ?? string.Empty); }
 					catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[Comet] Editor TextChanged callback failed: {ex.Message}"); }
+					finally { Reactive.ReactiveScheduler.SuppressNotifications = false; }
 				};
 				_editorChangedHandlers.AddOrUpdate(editor, newHandler);
 				editor.Changed += newHandler;
 #elif ANDROID
 				editor.AfterTextChanged += (s, e) =>
 				{
+					Reactive.ReactiveScheduler.SuppressNotifications = true;
 					try { callback(editor.Text ?? string.Empty); }
 					catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[Comet] Editor TextChanged callback failed: {ex.Message}"); }
+					finally { Reactive.ReactiveScheduler.SuppressNotifications = false; }
 				};
 #endif
 			});
@@ -811,8 +822,10 @@ namespace Comet
 				}
 				EventHandler<UIKit.UISearchBarTextChangedEventArgs> newHandler = (s, e) =>
 				{
+					Reactive.ReactiveScheduler.SuppressNotifications = true;
 					try { callback(e.SearchText ?? string.Empty); }
 					catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[Comet] SearchBar TextChanged callback failed: {ex.Message}"); }
+					finally { Reactive.ReactiveScheduler.SuppressNotifications = false; }
 				};
 				_searchBarTextChangedHandlers.AddOrUpdate(searchBar, newHandler);
 				searchBar.TextChanged += newHandler;
@@ -823,8 +836,10 @@ namespace Comet
 				}
 				EventHandler<global::AndroidX.AppCompat.Widget.SearchView.QueryTextChangeEventArgs> newAndroidHandler = (s, e) =>
 				{
+					Reactive.ReactiveScheduler.SuppressNotifications = true;
 					try { callback(e.NewText ?? string.Empty); }
 					catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[Comet] SearchBar TextChanged callback failed: {ex.Message}"); }
+					finally { Reactive.ReactiveScheduler.SuppressNotifications = false; }
 				};
 				_searchBarTextChangedHandlers.AddOrUpdate(searchBar, newAndroidHandler);
 				searchBar.QueryTextChange += newAndroidHandler;

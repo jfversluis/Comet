@@ -72,11 +72,24 @@ public sealed class PropertySubscription<T> : IReactiveSubscriber, IPropertySubs
 	/// <summary>
 	/// Sets the current value directly and writes back to the source Signal if bidirectional.
 	/// Used by generated interface property implementations (e.g., ISlider.Value setter).
+	/// Suppresses reactive notifications during writeback to prevent view rebuilds that
+	/// would cause focus loss on text inputs and interaction interruption on sliders/toggles.
 	/// </summary>
 	public void Set(T value)
 	{
 		_currentValue = value;
-		WriteBack?.Invoke(value);
+		if (WriteBack != null)
+		{
+			ReactiveScheduler.SuppressNotifications = true;
+			try
+			{
+				WriteBack(value);
+			}
+			finally
+			{
+				ReactiveScheduler.SuppressNotifications = false;
+			}
+		}
 	}
 
 	/// <summary>
