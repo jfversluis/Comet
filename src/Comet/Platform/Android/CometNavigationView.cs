@@ -2,6 +2,8 @@
 using Android.Content;
 using Android.Views;
 using Android.Widget;
+using AndroidX.AppCompat.App;
+using AndroidX.Fragment.App;
 using Microsoft.Maui;
 
 namespace Comet.Android.Controls
@@ -14,6 +16,9 @@ namespace Comet.Android.Controls
 			MauiContext = context;
 		}
 
+		FragmentManager GetSupportFragmentManager() =>
+			(MauiContext.Context as AppCompatActivity)?.SupportFragmentManager;
+
 		public void SetRoot(View view)
 		{
 			if (!isAttached)
@@ -21,16 +26,18 @@ namespace Comet.Android.Controls
 				contentView = view;
 			}
 			else
-				(MauiContext.Context).GetFragmentManager()
-				.BeginTransaction()
-				.Replace(Id, new CometFragment(view, MauiContext))
-				.CommitAllowingStateLoss();
+			{
+				var mgr = GetSupportFragmentManager();
+				mgr?.BeginTransaction()
+					.Replace(Id, new CometFragment(view, MauiContext))
+					.CommitAllowingStateLoss();
+			}
 		}
 		 
 		public void NavigateTo(View view)
 		{
-			(MauiContext.Context).GetFragmentManager()
-				.BeginTransaction()
+			var mgr = GetSupportFragmentManager();
+			mgr?.BeginTransaction()
 				.SetTransition((int)global::Android.App.FragmentTransit.FragmentFade)
 				.AddToBackStack(view.Id)
 				.Replace(Id, new CometFragment(view, MauiContext))
@@ -48,6 +55,6 @@ namespace Comet.Android.Controls
 		}
 
 		public void Pop() =>
-			(MauiContext.Context).GetFragmentManager().PopBackStack();
+			GetSupportFragmentManager()?.PopBackStack();
 	}
 }

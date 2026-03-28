@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using Android.Content;
-using Android.Support.V4.App;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
+using AndroidX.AppCompat.App;
+using AndroidX.Fragment.App;
 using Google.Android.Material.BottomNavigation;
 using Microsoft.Maui;
 
@@ -36,6 +37,9 @@ namespace Comet.Android.Controls
 			AddView(_bottomNavigationView);
 		}
 
+		FragmentManager GetSupportFragmentManager() =>
+			(MauiContext.Context as AppCompatActivity)?.SupportFragmentManager;
+
 		public void CreateTabs(IList<View> views)
 		{
 			_fragments = views.Select(v => new CometFragment(v,MauiContext )).ToList();
@@ -63,8 +67,8 @@ namespace Comet.Android.Controls
 		{
 			base.OnAttachedToWindow();
 			var index = 0;
-			MauiContext.GetFragmentManager()
-				.BeginTransaction()
+			GetSupportFragmentManager()
+				?.BeginTransaction()
 				.Add(Id, _fragments[index], index.ToString())
 				.Show(_fragments[index])
 				.Commit();
@@ -72,7 +76,8 @@ namespace Comet.Android.Controls
 		private void HandleNavigationItemSelected(object sender, Google.Android.Material.Navigation.NavigationBarView.ItemSelectedEventArgs e)
 		{
 			var index = e.Item.ItemId;
-			var manager = MauiContext.GetFragmentManager();
+			var manager = GetSupportFragmentManager();
+			if (manager == null) return;
 			var transaction = manager.BeginTransaction();
 
 			if (manager.FindFragmentByTag(index.ToString()) == null)
