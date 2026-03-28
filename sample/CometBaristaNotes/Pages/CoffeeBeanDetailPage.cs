@@ -106,7 +106,7 @@ return stack;
 foreach (var bag in bags)
 {
 var detail = bag.AverageRating is double average
-? $"{bag.ShotCount} shots • {average:F1}★ avg"
+? $"{bag.ShotCount} shots • {average:F1} avg"
 : $"{bag.ShotCount} shots • no ratings yet";
 stack.Add(FormHelpers.MakeListCard(
 $"Roasted {bag.RoastDate:MMM d}",

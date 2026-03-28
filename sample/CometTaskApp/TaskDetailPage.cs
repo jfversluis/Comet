@@ -50,7 +50,7 @@ return NavigationView(
 ScrollView(
 VStack(16,
 HStack(8,
-Text(task.IsCompleted ? "✅ Completed" : "⏳ Pending")
+Text(task.IsCompleted ? "Completed" : "Pending")
 .FontSize(14)
 .Color(task.IsCompleted ? Colors.Green : Colors.Orange),
 Spacer(),

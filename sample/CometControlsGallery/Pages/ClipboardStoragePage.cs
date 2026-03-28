@@ -31,12 +31,12 @@ namespace CometControlsGallery.Pages
 	{
 		public override View Render() => GalleryPageHelpers.Scaffold("Clipboard & Storage",
 			// Clipboard section
-			GalleryPageHelpers.Section("📋 Clipboard",
+			GalleryPageHelpers.Section("Clipboard",
 				TextField(() => State.ClipboardEntry, () => "Text to copy...")
 					.OnTextChanged(v => SetState(s => s.ClipboardEntry = v)),
 				GalleryPageHelpers.ButtonRow(8,
-					Button("📋 Copy to Clipboard", CopyToClipboard),
-					Button("📄 Paste from Clipboard", PasteFromClipboard)
+					Button("Copy to Clipboard", CopyToClipboard),
+					Button("Paste from Clipboard", PasteFromClipboard)
 				),
 				Text(() => State.ClipboardResult)
 					.FontSize(14)
@@ -44,7 +44,7 @@ namespace CometControlsGallery.Pages
 			),
 
 			// Preferences section
-			GalleryPageHelpers.Section("⚙️ Preferences",
+			GalleryPageHelpers.Section("Preferences",
 				HStack(8,
 					TextField(() => State.PrefsKey, () => "Key")
 						.OnTextChanged(v => SetState(s => s.PrefsKey = v)),
@@ -52,9 +52,9 @@ namespace CometControlsGallery.Pages
 						.OnTextChanged(v => SetState(s => s.PrefsValue = v))
 				),
 				GalleryPageHelpers.ButtonRow(8,
-					Button("💾 Save Preference", SavePreference),
-					Button("📂 Load Preference", LoadPreference),
-					Button("🗑️ Clear All Preferences", ClearPreferences)
+					Button("Save Preference", SavePreference),
+					Button("Load Preference", LoadPreference),
+					Button("Clear All Preferences", ClearPreferences)
 				),
 				Text(() => State.PrefsResult)
 					.FontSize(14)
@@ -62,7 +62,7 @@ namespace CometControlsGallery.Pages
 			),
 
 			// Secure Storage section
-			GalleryPageHelpers.Section("🔐 Secure Storage (Keychain)",
+			GalleryPageHelpers.Section("Secure Storage (Keychain)",
 				HStack(8,
 					TextField(() => State.SecureKey, () => "Key")
 						.OnTextChanged(v => SetState(s => s.SecureKey = v)),
@@ -70,8 +70,8 @@ namespace CometControlsGallery.Pages
 						.OnTextChanged(v => SetState(s => s.SecureValue = v))
 				),
 				GalleryPageHelpers.ButtonRow(8,
-					Button("🔐 Store Secret", StoreSecret),
-					Button("🔓 Retrieve Secret", RetrieveSecret)
+					Button("Store Secret", StoreSecret),
+					Button("Retrieve Secret", RetrieveSecret)
 				),
 				Text(() => State.SecureResult)
 					.FontSize(14)

@@ -29,23 +29,23 @@ namespace CometControlsGallery.Pages
 				.Color(() => State.StatusColor),
 
 			// Browser & Launcher section
-			GalleryPageHelpers.Section("🌐 Browser & Launcher",
+			GalleryPageHelpers.Section("Browser & Launcher",
 				TextField(() => State.Url, () => "URL to open")
 					.OnTextChanged(v => SetState(s => s.Url = v)),
 				GalleryPageHelpers.ButtonRow(8,
-					Button("🌐 Open in Browser", OpenInBrowser),
-					Button("📂 Open File with Default App", LaunchFile)
+					Button("Open in Browser", OpenInBrowser),
+					Button("Open File with Default App", LaunchFile)
 				)
 			),
 
 			// Share section
-			GalleryPageHelpers.Section("📤 Share",
-				Button("📤 Share Text", ShareText)
+			GalleryPageHelpers.Section("Share",
+				Button("Share Text", ShareText)
 			),
 
 			// File Picker section
-			GalleryPageHelpers.Section("📎 File Picker",
-				Button("📎 Pick a File", PickFile),
+			GalleryPageHelpers.Section("File Picker",
+				Button("Pick a File", PickFile),
 				Text(() => State.PickedFileText)
 					.FontSize(14)
 					.Color(() => State.PickedFileColor)

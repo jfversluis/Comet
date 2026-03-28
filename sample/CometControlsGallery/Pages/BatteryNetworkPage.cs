@@ -66,9 +66,9 @@ namespace CometControlsGallery.Pages
 		public override View Render()
 		{
 			return GalleryPageHelpers.Scaffold("Battery & Network",
-				Button("🔄 Refresh", () => Refresh()),
+				Button("Refresh", () => Refresh()),
 
-				GalleryPageHelpers.Section("🔋 Battery",
+				GalleryPageHelpers.Section("Battery",
 					ProgressBar(() => State.ChargeLevel),
 					Text(() => State.BatteryLevelText)
 						.FontSize(14)
@@ -81,7 +81,7 @@ namespace CometControlsGallery.Pages
 						.FontFamily("monospace")
 				),
 
-				GalleryPageHelpers.Section("🌐 Network",
+				GalleryPageHelpers.Section("Network",
 					Text(() => State.NetworkAccessText)
 						.FontSize(14)
 						.FontFamily("monospace"),

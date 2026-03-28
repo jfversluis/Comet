@@ -13,7 +13,7 @@ public class SettingsPage : Component<SettingsPageState>
 public override View Render() =>
 ScrollView(
 VStack(20,
-Text("⚙️ Settings")
+Text("Settings")
 .FontSize(24)
 .FontWeight(FontWeight.Bold)
 .SemanticHeadingLevel(SemanticHeadingLevel.Level1),
@@ -22,8 +22,8 @@ SettingRow(
 "Show Completed Tasks",
 "Include completed tasks in the list",
 _state.ShowCompletedTasks.Value
-? Text("✅ Showing").Color(Colors.Green)
-: Text("❌ Hidden").Color(Colors.Red),
+? Text("Showing").Color(Colors.Green)
+: Text("Hidden").Color(Colors.Red),
 () => _state.ShowCompletedTasks.Value = !_state.ShowCompletedTasks.Value
 ),
 
@@ -31,8 +31,8 @@ SettingRow(
 "Dark Mode",
 "Switch between light and dark theme",
 _state.DarkMode.Value
-? Text("🌙 Dark").Color(Colors.Purple)
-: Text("☀️ Light").Color(Colors.Orange),
+? Text("Dark").Color(Colors.Purple)
+: Text("Light").Color(Colors.Orange),
 () => _state.DarkMode.Value = !_state.DarkMode.Value
 ),
 

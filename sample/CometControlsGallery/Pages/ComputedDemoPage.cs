@@ -30,11 +30,11 @@ namespace CometControlsGallery.Pages
 				var name = firstName.Value;
 				var ageVal = (int)age.Value;
 				if (ageVal < 18)
-					return $"Hey {name}! 🎮";
+					return $"Hey {name}!";
 				else if (ageVal < 65)
-					return $"Hello, {name}. 👋";
+					return $"Hello, {name}.";
 				else
-					return $"Good day, {name}. 🎩";
+					return $"Good day, {name}.";
 			});
 		}
 
@@ -63,10 +63,10 @@ namespace CometControlsGallery.Pages
 						.Color(Colors.MediumSeaGreen)
 				),
 				GalleryPageHelpers.Section("Validation Notes",
-					GalleryPageHelpers.BodyText("✓ Computed<string> re-evaluates when any dependency changes"),
-					GalleryPageHelpers.BodyText("✓ Two Computed values from overlapping dependencies"),
-					GalleryPageHelpers.BodyText("✓ Conditional logic inside Computed (greeting changes by age)"),
-					GalleryPageHelpers.BodyText("✓ No manual subscription — automatic dependency tracking")
+					GalleryPageHelpers.BodyText("Computed<string> re-evaluates when any dependency changes"),
+					GalleryPageHelpers.BodyText("Two Computed values from overlapping dependencies"),
+					GalleryPageHelpers.BodyText("Conditional logic inside Computed (greeting changes by age)"),
+					GalleryPageHelpers.BodyText("No manual subscription — automatic dependency tracking")
 				)
 			);
 	}

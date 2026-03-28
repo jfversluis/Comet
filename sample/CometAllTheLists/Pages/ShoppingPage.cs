@@ -30,7 +30,7 @@ public class ShoppingPage : Component<ShoppingPageState>
 	public override View Render()
 	{
 		return VStack(
-			Text("🛍️ Shopping Products")
+			Text("Shopping Products")
 				.FontSize(24)
 				.FontWeight(FontWeight.Bold)
 				.Padding(16),

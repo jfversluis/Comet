@@ -75,7 +75,7 @@ namespace CometControlsGallery.Pages
 						if (timerRunning.Value)
 							StartTimer();
 					}),
-					Text(() => timerRunning.Value ? "⏱ Timer running..." : "Timer stopped")
+					Text(() => timerRunning.Value ? "Timer running..." : "Timer stopped")
 						.FontSize(14)
 						.Color(timerRunning.Value ? Colors.MediumSeaGreen : Colors.Grey)
 				),
@@ -88,10 +88,10 @@ namespace CometControlsGallery.Pages
 					})
 				),
 				GalleryPageHelpers.Section("Validation Notes",
-					GalleryPageHelpers.BodyText("✓ 100 synchronous writes → single body rebuild"),
-					GalleryPageHelpers.BodyText("✓ Background thread writes dispatch correctly"),
-					GalleryPageHelpers.BodyText("✓ Timer stress test — no UI freeze"),
-					GalleryPageHelpers.BodyText("✓ Body execution count tracks actual rebuilds")
+					GalleryPageHelpers.BodyText("100 synchronous writes → single body rebuild"),
+					GalleryPageHelpers.BodyText("Background thread writes dispatch correctly"),
+					GalleryPageHelpers.BodyText("Timer stress test — no UI freeze"),
+					GalleryPageHelpers.BodyText("Body execution count tracks actual rebuilds")
 				)
 			);
 		}

@@ -11,7 +11,7 @@ public class CollectionViewPage : Component<CollectionViewPageState>
 	public override View Render()
 	{
 		return VStack(
-			Text("📦 Collections")
+			Text("Collections")
 				.FontSize(24)
 				.FontWeight(FontWeight.Bold)
 				.Padding(16),

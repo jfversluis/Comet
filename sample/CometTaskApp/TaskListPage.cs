@@ -21,13 +21,13 @@ _ => Colors.Gray
 
 static string CategoryEmoji(TaskCategory c) => c switch
 {
-TaskCategory.Personal => "🏠",
-TaskCategory.Work => "💼",
-TaskCategory.Shopping => "🛒",
-TaskCategory.Health => "💪",
-TaskCategory.Learning => "📚",
-TaskCategory.Other => "📌",
-_ => "📌"
+TaskCategory.Personal => "Personal",
+TaskCategory.Work => "Work",
+TaskCategory.Shopping => "Shopping",
+TaskCategory.Health => "Health",
+TaskCategory.Learning => "Learning",
+TaskCategory.Other => "Other",
+_ => "Other"
 };
 
 View TaskRow(TaskItem task)
@@ -46,7 +46,7 @@ Text(() => task.Description)
 .Color(Colors.DarkGray)
 ),
 Spacer(),
-Text(task.IsCompleted ? "✅" : "⬜")
+Text(task.IsCompleted ? "[x]" : "[ ]")
 .FontSize(20)
 .OnTap(_ => _state.ToggleComplete(task.Id))
 )
@@ -72,21 +72,21 @@ TextField(_state.SearchText, "Search tasks...")
 ScrollView(Orientation.Horizontal,
 HStack(8,
 FilterPill("All", null),
-FilterPill("🏠 Personal", TaskCategory.Personal),
-FilterPill("💼 Work", TaskCategory.Work),
-FilterPill("🛒 Shopping", TaskCategory.Shopping),
-FilterPill("💪 Health", TaskCategory.Health),
-FilterPill("📚 Learning", TaskCategory.Learning)
+FilterPill("Personal", TaskCategory.Personal),
+FilterPill("Work", TaskCategory.Work),
+FilterPill("Shopping", TaskCategory.Shopping),
+FilterPill("Health", TaskCategory.Health),
+FilterPill("Learning", TaskCategory.Learning)
 )
 .Padding(new Thickness(12, 4))
 ),
 
 HStack(16,
-Text(() => $"📋 {_state.TotalCount} total")
+Text(() => $"{_state.TotalCount} total")
 .FontSize(12).Color(Colors.DarkGray),
-Text(() => $"✅ {_state.CompletedCount} done")
+Text(() => $"{_state.CompletedCount} done")
 .FontSize(12).Color(Colors.Green),
-Text(() => $"⏳ {_state.PendingCount} pending")
+Text(() => $"{_state.PendingCount} pending")
 .FontSize(12).Color(Colors.Orange),
 Spacer()
 )

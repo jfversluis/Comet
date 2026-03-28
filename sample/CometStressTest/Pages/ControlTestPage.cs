@@ -18,7 +18,7 @@ readonly Reactive<DateTime?> selectedDate = DateTime.Today;
 
 public override View Render() => ScrollView(
 VStack(12,
-Text("🎮 Control Stress Test")
+Text("Control Stress Test")
 .FontSize(22),
 
 // TextField

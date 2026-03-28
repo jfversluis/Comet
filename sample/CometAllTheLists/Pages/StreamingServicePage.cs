@@ -29,7 +29,7 @@ public class StreamingServicePage : Component<StreamingServicePageState>
 	public override View Render()
 	{
 		return VStack(spacing: 16,
-			Text("🎬 Streaming Service")
+			Text("Streaming Service")
 				.FontSize(24)
 				.FontWeight(FontWeight.Bold)
 				.Padding(16),

@@ -148,7 +148,7 @@ return FormHelpers.MakeCard(
 HStack(Theme.SpacingS,
 BuildMetric("Shots", totalShots.ToString()),
 BuildMetric("Bags", bagCount.ToString()),
-BuildMetric("Avg", ratedCount > 0 ? $"{averageRating:F1}★" : "—")));
+BuildMetric("Avg", ratedCount > 0 ? $"{averageRating:F1}/5" : "—")));
 }
 
 View BuildMetric(string label, string value)
@@ -188,7 +188,7 @@ return stack;
 foreach (var bag in bags.Take(3))
 {
 var detail = bag.AverageRating is double average
-? $"{bag.ShotCount} shots • {average:F1}★ avg"
+? $"{bag.ShotCount} shots • {average:F1} avg"
 : $"{bag.ShotCount} shots • no ratings yet";
 stack.Add(FormHelpers.MakeListCard(
 bag.BeanName ?? "Unknown bean",

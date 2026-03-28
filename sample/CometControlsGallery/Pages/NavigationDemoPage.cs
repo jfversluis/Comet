@@ -43,7 +43,7 @@ base.OnWillUnmount();
 public override View Render() =>
 GalleryPageHelpers.Scaffold($"Nav Depth {depth}",
 GalleryPageHelpers.Section("Depth indicator", "Each page instance reports its place in the stack with a unique accent color and creation timestamp.",
-GalleryPageHelpers.ColorBlock($"📍 Page at Depth {depth}", GetDepthColor(), Colors.White, 72),
+GalleryPageHelpers.ColorBlock($"Page at Depth {depth}", GetDepthColor(), Colors.White, 72),
 Text($"Page at Depth {depth}")
 .Typography(TypographyTokens.TitleLarge)
 .Color(GetDepthColor()),

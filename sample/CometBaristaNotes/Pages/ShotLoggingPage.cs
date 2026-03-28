@@ -379,7 +379,7 @@ var popup = new UXDivers.Popups.Maui.Controls.ListActionPopup
 			VerticalOptions = LayoutOptions.Center,
 		};
 		checkIcon.SetBinding(MauiLabel.TextProperty, new Microsoft.Maui.Controls.Binding("IsSelected",
-			converter: new BoolToStringConverter("✓", "○")));
+			converter: new BoolToStringConverter("Yes", "No")));
 		checkIcon.SetBinding(MauiLabel.TextColorProperty, new Microsoft.Maui.Controls.Binding("IsSelected",
 			converter: new BoolToColorConverter(Theme.Primary, Theme.TextSecondary)));
 

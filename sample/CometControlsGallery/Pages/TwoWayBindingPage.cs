@@ -52,16 +52,16 @@ namespace CometControlsGallery.Pages
 					HStack(12,
 						Toggle(() => toggleVal.Value)
 							.OnToggled(v => toggleVal.Value = v),
-						Text(() => toggleVal.Value ? "ON ✅" : "OFF ❌")
+						Text(() => toggleVal.Value ? "ON" : "OFF")
 							.FontSize(16)
 					),
 					Button("Toggle programmatically", () => toggleVal.Value = !toggleVal.Value)
 				),
 				GalleryPageHelpers.Section("Validation Notes",
-					GalleryPageHelpers.BodyText("✓ Two TextFields bound to same Reactive<string>"),
-					GalleryPageHelpers.BodyText("✓ Programmatic signal writes update UI controls"),
-					GalleryPageHelpers.BodyText("✓ Slider, Toggle two-way binding verified"),
-					GalleryPageHelpers.BodyText("✓ UI → Signal → UI round-trip")
+					GalleryPageHelpers.BodyText("Two TextFields bound to same Reactive<string>"),
+					GalleryPageHelpers.BodyText("Programmatic signal writes update UI controls"),
+					GalleryPageHelpers.BodyText("Slider, Toggle two-way binding verified"),
+					GalleryPageHelpers.BodyText("UI → Signal → UI round-trip")
 				)
 			);
 	}

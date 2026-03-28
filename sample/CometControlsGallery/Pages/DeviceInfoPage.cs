@@ -21,7 +21,7 @@ namespace CometControlsGallery.Pages
 			var deviceInfo = IPlatformApplication.Current?.Services.GetService<IDeviceInfo>();
 			if (deviceInfo is not null)
 			{
-				sections.Add(GalleryPageHelpers.Section("🖥️ Device Info",
+				sections.Add(GalleryPageHelpers.Section("Device Info",
 					InfoRow("Name", deviceInfo.Name),
 					InfoRow("Model", deviceInfo.Model),
 					InfoRow("Manufacturer", deviceInfo.Manufacturer),
@@ -35,7 +35,7 @@ namespace CometControlsGallery.Pages
 			var appInfo = IPlatformApplication.Current?.Services.GetService<IAppInfo>();
 			if (appInfo is not null)
 			{
-				sections.Add(GalleryPageHelpers.Section("📦 App Info",
+				sections.Add(GalleryPageHelpers.Section("App Info",
 					InfoRow("Package Name", appInfo.PackageName),
 					InfoRow("App Name", appInfo.Name),
 					InfoRow("Version", appInfo.VersionString),
@@ -49,7 +49,7 @@ namespace CometControlsGallery.Pages
 			if (display is not null)
 			{
 				var displayInfo = display.MainDisplayInfo;
-				sections.Add(GalleryPageHelpers.Section("🖥️ Display",
+				sections.Add(GalleryPageHelpers.Section("Display",
 					InfoRow("Resolution", $"{displayInfo.Width} x {displayInfo.Height}"),
 					InfoRow("Density", $"{displayInfo.Density:F1}"),
 					InfoRow("Orientation", displayInfo.Orientation.ToString()),
@@ -60,7 +60,7 @@ namespace CometControlsGallery.Pages
 			var fileSystem = IPlatformApplication.Current?.Services.GetService<IFileSystem>();
 			if (fileSystem is not null)
 			{
-				sections.Add(GalleryPageHelpers.Section("📁 File System",
+				sections.Add(GalleryPageHelpers.Section("File System",
 					InfoRow("Cache Dir", fileSystem.CacheDirectory),
 					InfoRow("App Data Dir", fileSystem.AppDataDirectory)
 				));

@@ -60,10 +60,10 @@ namespace CometControlsGallery.Pages
 					})
 				),
 				GalleryPageHelpers.Section("Validation Notes",
-					GalleryPageHelpers.BodyText("✓ Signal<int> read/write via Reactive<T>"),
-					GalleryPageHelpers.BodyText("✓ Negative values change text color"),
-					GalleryPageHelpers.BodyText("✓ Multiple signals updated in same handler"),
-					GalleryPageHelpers.BodyText("✓ Rapid loop writes coalesce to single UI update")
+					GalleryPageHelpers.BodyText("Signal<int> read/write via Reactive<T>"),
+					GalleryPageHelpers.BodyText("Negative values change text color"),
+					GalleryPageHelpers.BodyText("Multiple signals updated in same handler"),
+					GalleryPageHelpers.BodyText("Rapid loop writes coalesce to single UI update")
 				)
 			);
 	}

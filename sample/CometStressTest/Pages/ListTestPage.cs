@@ -43,7 +43,7 @@ Text($"Subtitle for {item}")
 )
 ).Padding(8);
 },
-Header = Text("📋 List Stress Test (50 Items)")
+Header = Text("List Stress Test (50 Items)")
 .FontSize(20)
 .Padding(12)
 .Background(new SolidPaint(Colors.LightGray)),

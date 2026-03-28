@@ -78,7 +78,7 @@ namespace CometControlsGallery.Pages
 			GalleryPageHelpers.SectionHeader("Border"),
 			Border(
 				HStack(12,
-					Text("🎨").FontSize(32),
+					Text("Art").FontSize(32),
 					VStack(4,
 						Text("Styled Border").FontSize(16).FontWeight(FontWeight.Bold),
 						Text("Borders can have custom stroke colors, thickness, and backgrounds").FontSize(13).Color(Colors.Gray)

@@ -19,7 +19,7 @@ public class MainPage : View
 	[Body]
 	View Body() =>
 		VStack(
-			Text("☄️ Comet on AppKit!")
+			Text("Comet on AppKit!")
 				.FontSize(28)
 				.Color(Colors.DarkBlue),
 			Text(() => $"Count: {count.Value}")

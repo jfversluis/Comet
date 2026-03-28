@@ -36,13 +36,13 @@ namespace CometControlsGallery.Pages
 					ProgressBar(() => Math.Min(1.0, clickCount.Value / 20.0))
 				),
 				GalleryPageHelpers.Section("Button with Image",
-					StarButton("⭐", "Image Left (default)", "left"),
-					StarButton("⭐", "Image Right", "right"),
-					StarButton("⭐", "Image Top", "top"),
-					StarButton("⭐", "Image Bottom", "bottom")
+					StarButton("*", "Image Left (default)", "left"),
+					StarButton("*", "Image Right", "right"),
+					StarButton("*", "Image Top", "top"),
+					StarButton("*", "Image Bottom", "bottom")
 				),
 				GalleryPageHelpers.Section("ImageButton",
-					Image(() => new FontImageSource(null, "🔔", 24, Colors.CornflowerBlue))
+					Image(() => new FontImageSource(null, "Bell", 24, Colors.CornflowerBlue))
 						.Frame(width: 44, height: 44)
 						.HorizontalLayoutAlignment(LayoutAlignment.Center)
 				),

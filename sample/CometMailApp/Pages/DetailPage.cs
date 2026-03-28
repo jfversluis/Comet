@@ -61,16 +61,16 @@ public class DetailPage : View
 
 				// Action buttons
 				HStack(16,
-					Button("⭐ Star", () => MailStore.ToggleStar(_message.Id))
+					Button("Star", () => MailStore.ToggleStar(_message.Id))
 						.FontSize(14)
 						.Background(Colors.Transparent)
 						.Color(Colors.SlateBlue),
-					Button("↩️ Reply", () =>
+					Button("Reply", () =>
 						this.Navigate(new ComposePage(_message)))
 						.FontSize(14)
 						.Background(Colors.Transparent)
 						.Color(Colors.SlateBlue),
-					Button("🗑️ Delete", () =>
+					Button("Delete", () =>
 					{
 						MailStore.DeleteMessage(_message.Id);
 						this.Dismiss();

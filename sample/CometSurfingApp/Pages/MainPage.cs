@@ -48,7 +48,7 @@ namespace CometSurfingApp.Pages
 				rows: new object[] { "*" },
 				columns: new object[] { "Auto", "*", "Auto" })
 			{
-				Text("☰")
+				Text("Menu")
 					.FontSize(22)
 					.Color(Colors.Black)
 					.Margin(new Thickness(24, 6))
@@ -63,7 +63,7 @@ namespace CometSurfingApp.Pages
 					.VerticalTextAlignment(TextAlignment.Center)
 					.Cell(row: 0, column: 1),
 
-				Text("🔍")
+				Text("Search")
 					.FontSize(20)
 					.Margin(new Thickness(24, 6))
 					.VerticalTextAlignment(TextAlignment.Center)
@@ -152,14 +152,14 @@ namespace CometSurfingApp.Pages
 					// Likes + bookmark (vertical, matching reference layout)
 					VStack(spacing: 4,
 						HStack(spacing: 4,
-							Text("♥")
+							Text("Likes")
 								.FontSize(14)
 								.Color(Colors.Black),
 							Text(post.Likes)
 								.FontSize(10)
 								.Color(Colors.Black)
 						),
-						Text("🔖")
+						Text("Save")
 							.FontSize(14)
 					)
 					.Margin(new Thickness(12, 0))
@@ -167,7 +167,7 @@ namespace CometSurfingApp.Pages
 
 					// Play button + title area (bottom)
 					HStack(
-						Text("▶")
+						Text("Play")
 							.FontSize(16)
 							.Color(Colors.Black)
 							.HorizontalTextAlignment(TextAlignment.Center)

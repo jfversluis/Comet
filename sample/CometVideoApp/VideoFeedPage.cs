@@ -32,7 +32,7 @@ public class VideoFeedPage : Comet.View
 		// Subtle centered play icon
 		root.Add(new MauiLabel
 		{
-			Text = "▶",
+			Text = ">",
 			FontSize = 72,
 			TextColor = new Color(255, 255, 255, 60),
 			HorizontalOptions = LayoutOptions.Center,
@@ -74,12 +74,12 @@ public class VideoFeedPage : Comet.View
 		// Position emojis clustered in bottom-center area matching MauiReactor FeedbackFlow
 		var emojis = new (string emoji, int size, double left, double right, double bottom)[]
 		{
-			("❤️", 32, 80, -1, 260),
-			("😀", 28, 180, -1, 200),
-			("👍", 30, -1, 100, 230),
-			("❤️", 26, 130, -1, 150),
-			("😀", 24, -1, 130, 170),
-			("❤️", 34, -1, 70, 130),
+			("heart", 32, 80, -1, 260),
+			("smile", 28, 180, -1, 200),
+			("like", 30, -1, 100, 230),
+			("heart", 26, 130, -1, 150),
+			("smile", 24, -1, 130, 170),
+			("heart", 34, -1, 70, 130),
 		};
 
 		foreach (var (emoji, size, left, right, bottom) in emojis)

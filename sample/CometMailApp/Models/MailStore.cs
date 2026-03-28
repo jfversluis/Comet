@@ -67,9 +67,9 @@ public static class MailStore
 		{
 			Sender = "Emma Wilson",
 			SenderEmail = "emma.w@example.com",
-			Subject = "Conference talk accepted! 🎉",
+			Subject = "Conference talk accepted!",
 			Preview = "Great news — our talk on MVU patterns in .NET MAUI was accepted...",
-			Body = "Great news — our talk on MVU patterns in .NET MAUI was accepted for DotNetConf 2025!\n\nThe session is scheduled for Day 2, Track B, 2:00 PM EST. We have a 45-minute slot plus 15 minutes for Q&A.\n\nNext steps:\n• Finalize the slide deck by Nov 1\n• Record a practice run by Nov 8\n• Submit final materials by Nov 15\n\nI've shared the slide template in our shared drive. Let me know which sections you'd like to take!\n\nExcited about this! 🚀\nEmma",
+			Body = "Great news — our talk on MVU patterns in .NET MAUI was accepted for DotNetConf 2025!\n\nThe session is scheduled for Day 2, Track B, 2:00 PM EST. We have a 45-minute slot plus 15 minutes for Q&A.\n\nNext steps:\n• Finalize the slide deck by Nov 1\n• Record a practice run by Nov 8\n• Submit final materials by Nov 15\n\nI've shared the slide template in our shared drive. Let me know which sections you'd like to take!\n\nExcited about this! \nEmma",
 			ReceivedAt = DateTime.Now.AddDays(-1),
 			IsRead = true,
 			IsStarred = true,

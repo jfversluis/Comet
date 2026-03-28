@@ -31,7 +31,7 @@ namespace CometControlsGallery.Pages
 					Text($"• {text}")
 						.FontSize(14),
 					new Spacer(),
-					Button("✕", () =>
+					Button("X", () =>
 					{
 						if (index < items.Count)
 							items.RemoveAt(index);
@@ -78,10 +78,10 @@ namespace CometControlsGallery.Pages
 						: VStack(4, itemViews)
 				),
 				GalleryPageHelpers.Section("Validation Notes",
-					GalleryPageHelpers.BodyText("✓ SignalList<string> Add/RemoveAt/Clear"),
-					GalleryPageHelpers.BodyText("✓ Body rebuilds on every list mutation"),
-					GalleryPageHelpers.BodyText("✓ Batch add (5 items in tight loop)"),
-					GalleryPageHelpers.BodyText($"✓ Current count: {items.Count}")
+					GalleryPageHelpers.BodyText("SignalList<string> Add/RemoveAt/Clear"),
+					GalleryPageHelpers.BodyText("Body rebuilds on every list mutation"),
+					GalleryPageHelpers.BodyText("Batch add (5 items in tight loop)"),
+					GalleryPageHelpers.BodyText($"Current count: {items.Count}")
 				)
 			);
 		}

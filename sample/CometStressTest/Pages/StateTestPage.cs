@@ -18,7 +18,7 @@ IDispatcherTimer? _timer;
 
 public override View Render() => ScrollView(
 VStack(12,
-Text("🧪 State Management Stress Test")
+Text("State Management Stress Test")
 .FontSize(22),
 
 // Multiple state variables

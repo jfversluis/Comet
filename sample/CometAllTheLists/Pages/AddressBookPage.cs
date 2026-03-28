@@ -42,7 +42,7 @@ public class AddressBookPage : Component<AddressBookPageState>
 			.ToList();
 
 		return VStack(
-			Text("📇 Address Book")
+			Text("Address Book")
 				.FontSize(24)
 				.FontWeight(FontWeight.Bold)
 				.Padding(16),

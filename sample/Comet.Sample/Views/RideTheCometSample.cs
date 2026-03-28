@@ -23,7 +23,7 @@ namespace Comet.Samples.Comparisons
 	public class CometRideState
 	{
 		public int Rides { get; set; }
-		public string CometTrain => "☄️".Repeat(Rides);
+		public string CometTrain => "*".Repeat(Rides);
 	}
 
 	public class RideSample : Component<CometRideState>
@@ -34,7 +34,7 @@ namespace Comet.Samples.Comparisons
 					.Frame(width:300)
 					.LineBreakMode(LineBreakMode.CharacterWrap),
 
-				Button("Ride the Comet! ☄️", () => {
+				Button("Ride the Comet!", () => {
 					SetState(s => s.Rides++);
 				})
 					.Frame(height:44)

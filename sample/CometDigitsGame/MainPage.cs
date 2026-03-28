@@ -151,7 +151,7 @@ class MainPage : Component<GameState>
 	{
 		if (!State.IsWon) return new Spacer().Frame(height: 0);
 
-		return Text("🎉 You got it!")
+		return Text("You got it!")
 			.Color(Theme.GreenColor)
 			.FontSize(28)
 			.FontWeight(FontWeight.Bold)

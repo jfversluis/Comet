@@ -34,7 +34,7 @@ public class Project
 	public int ID { get; set; }
 	public string Name { get; set; } = string.Empty;
 	public string Description { get; set; } = string.Empty;
-	public string Icon { get; set; } = "📁";
+	public string Icon { get; set; } = "Folder";
 	public int CategoryID { get; set; }
 	public Category? Category { get; set; }
 	public List<ProjectTask> Tasks { get; set; } = new();

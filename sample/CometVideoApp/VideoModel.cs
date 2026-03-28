@@ -18,7 +18,7 @@ public class VideoModel
 			Title = "Sunset Timelapse",
 			Creator = "@nature_films",
 			ThumbnailColor = "#E65100",
-			Description = "Golden hour in the mountains 🌄",
+			Description = "Golden hour in the mountains",
 			Likes = 12_400,
 			Comments = 342,
 			Shares = 89
@@ -28,7 +28,7 @@ public class VideoModel
 			Title = "Street Dance Battle",
 			Creator = "@dance_crew",
 			ThumbnailColor = "#4A148C",
-			Description = "When the beat drops 🔥 #dance #freestyle",
+			Description = "When the beat drops #dance #freestyle",
 			Likes = 45_200,
 			Comments = 1_203,
 			Shares = 567
@@ -38,7 +38,7 @@ public class VideoModel
 			Title = "Cooking Pasta",
 			Creator = "@chef_marco",
 			ThumbnailColor = "#1B5E20",
-			Description = "The secret to perfect carbonara 🍝",
+			Description = "The secret to perfect carbonara",
 			Likes = 8_900,
 			Comments = 455,
 			Shares = 234
@@ -48,7 +48,7 @@ public class VideoModel
 			Title = "Cat vs Cucumber",
 			Creator = "@funny_pets",
 			ThumbnailColor = "#0D47A1",
-			Description = "He did NOT see that coming 😂🐱",
+			Description = "He did NOT see that coming",
 			Likes = 234_000,
 			Comments = 5_670,
 			Shares = 12_300
@@ -58,7 +58,7 @@ public class VideoModel
 			Title = "DIY Room Makeover",
 			Creator = "@home_hacks",
 			ThumbnailColor = "#880E4F",
-			Description = "Budget room transformation ✨ #diy #home",
+			Description = "Budget room transformation #diy #home",
 			Likes = 67_800,
 			Comments = 890,
 			Shares = 445
@@ -68,7 +68,7 @@ public class VideoModel
 			Title = "Ocean Waves ASMR",
 			Creator = "@calm_vibes",
 			ThumbnailColor = "#006064",
-			Description = "Fall asleep in 5 minutes 🌊 #asmr #sleep",
+			Description = "Fall asleep in 5 minutes #asmr #sleep",
 			Likes = 19_300,
 			Comments = 210,
 			Shares = 156
@@ -78,7 +78,7 @@ public class VideoModel
 			Title = "Skateboard Tricks",
 			Creator = "@sk8_life",
 			ThumbnailColor = "#BF360C",
-			Description = "Nailed the kickflip after 100 tries 🛹",
+			Description = "Nailed the kickflip after 100 tries",
 			Likes = 56_700,
 			Comments = 2_340,
 			Shares = 890
@@ -88,7 +88,7 @@ public class VideoModel
 			Title = "Coding in 60 Seconds",
 			Creator = "@dev_shorts",
 			ThumbnailColor = "#1A237E",
-			Description = "Build a todo app with .NET MAUI 💻 #coding",
+			Description = "Build a todo app with .NET MAUI #coding",
 			Likes = 3_200,
 			Comments = 178,
 			Shares = 67

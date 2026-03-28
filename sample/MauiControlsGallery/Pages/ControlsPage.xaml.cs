@@ -33,7 +33,7 @@ public partial class ControlsPage : ContentPage
 
 	void OnCheckBoxChanged(object? sender, CheckedChangedEventArgs e)
 	{
-		CheckBoxLabel.Text = e.Value ? "Checked ✓" : "Unchecked";
+		CheckBoxLabel.Text = e.Value ? "Checked" : "Unchecked";
 	}
 
 	void OnStepperValueChanged(object? sender, ValueChangedEventArgs e)

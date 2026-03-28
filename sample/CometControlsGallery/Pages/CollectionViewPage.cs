@@ -210,25 +210,25 @@ namespace CometControlsGallery.Pages
 
 		View GroupedContent() =>
 			VStack(spacing: 0f,
-				BuildGroupedSection("🐾 Mammals", new[] {
+				BuildGroupedSection("Mammals", new[] {
 					("Dog", "Loyal companion"),
 					("Cat", "Independent feline"),
 					("Horse", "Majestic equine"),
 					("Dolphin", "Intelligent marine mammal"),
 					("Elephant", "Gentle giant"),
 				}),
-				BuildGroupedSection("🐦 Birds", new[] {
+				BuildGroupedSection("Birds", new[] {
 					("Eagle", "Bird of prey"),
 					("Parrot", "Colorful talker"),
 					("Penguin", "Flightless swimmer"),
 					("Owl", "Nocturnal hunter"),
 				}),
-				BuildGroupedSection("🦎 Reptiles", new[] {
+				BuildGroupedSection("Reptiles", new[] {
 					("Turtle", "Slow and steady"),
 					("Gecko", "Wall climber"),
 					("Iguana", "Tropical lizard"),
 				}),
-				BuildGroupedSection("🐟 Fish", new[] {
+				BuildGroupedSection("Fish", new[] {
 					("Clownfish", "Reef dweller"),
 					("Salmon", "Upstream swimmer"),
 					("Shark", "Ocean predator"),
@@ -241,17 +241,17 @@ namespace CometControlsGallery.Pages
 		{
 			var items = new List<MixedItem>
 			{
-				new("🎉 Welcome Banner", "Featured content at the top", "banner", Colors.CornflowerBlue),
+				new("Welcome Banner", "Featured content at the top", "banner", Colors.CornflowerBlue),
 				new("Project Alpha", "In development", "card", Colors.MediumSeaGreen),
 				new("Bug fix #123", "Resolved", "compact", Colors.Gray),
 				new("Bug fix #124", "Resolved", "compact", Colors.Gray),
 				new("Bug fix #125", "In progress", "compact", Colors.Orange),
-				new("🚀 Release 2.0", "Coming soon — new features inside", "banner", Colors.MediumOrchid),
+				new("Release 2.0", "Coming soon — new features inside", "banner", Colors.MediumOrchid),
 				new("Project Beta", "Planning phase", "card", Colors.Coral),
 				new("Project Gamma", "Testing", "card", Colors.Teal),
 				new("Task: update docs", "Pending", "compact", Colors.SandyBrown),
 				new("Task: review PR", "Pending", "compact", Colors.SandyBrown),
-				new("🏆 Achievement", "100 commits this month!", "banner", Colors.Goldenrod),
+				new("Achievement", "100 commits this month!", "banner", Colors.Goldenrod),
 				new("Project Delta", "Released", "card", Colors.SlateBlue),
 			};
 
@@ -429,7 +429,7 @@ namespace CometControlsGallery.Pages
 							.FontSize(16)
 							.Padding(new Thickness(12, 8)),
 					EmptyView = VStack(8,
-						Text("📭")
+						Text("(empty)")
 							.FontSize(48)
 							.HorizontalTextAlignment(TextAlignment.Center),
 						Text("No items yet")
@@ -453,7 +453,7 @@ namespace CometControlsGallery.Pages
 					Text(item.Name)
 						.FontSize(16)
 						.Padding(new Thickness(12, 8)),
-				Header = Text("📋 Collection Header — 15 items total")
+				Header = Text("Collection Header — 15 items total")
 					.FontSize(14)
 					.FontWeight(FontWeight.Bold)
 					.Padding(new Thickness(16, 12)),

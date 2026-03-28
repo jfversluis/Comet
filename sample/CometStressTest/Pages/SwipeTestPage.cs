@@ -34,7 +34,7 @@ var root = new Microsoft.Maui.Controls.VerticalStackLayout { Spacing = 0 };
 // Header
 root.Add(new MauiLabel
 {
-Text = $"📧 Swipe Test — {State.RemainingCount} items remaining",
+Text = $"Swipe Test — {State.RemainingCount} items remaining",
 FontSize = 18,
 FontAttributes = Microsoft.Maui.Controls.FontAttributes.Bold,
 Padding = new Thickness(12),

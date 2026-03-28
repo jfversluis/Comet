@@ -19,7 +19,7 @@ var percentage = total > 0 ? (int)(completed * 100.0 / total) : 0;
 
 return ScrollView(
 VStack(20,
-Text("📊 Task Statistics")
+Text("Task Statistics")
 .FontSize(24)
 .FontWeight(FontWeight.Bold)
 .SemanticHeadingLevel(SemanticHeadingLevel.Level1),
@@ -38,9 +38,9 @@ Text($"{percentage}%")
 )
 .Frame(120, 120),
 
-StatCard("Total Tasks", total.ToString(), "📋", Colors.DodgerBlue),
-StatCard("Completed", completed.ToString(), "✅", Colors.Green),
-StatCard("Pending", pending.ToString(), "⏳", Colors.Orange),
+StatCard("Total Tasks", total.ToString(), "#", Colors.DodgerBlue),
+StatCard("Completed", completed.ToString(), "*", Colors.Green),
+StatCard("Pending", pending.ToString(), "~", Colors.Orange),
 
 Text("By Category")
 .FontSize(18)
@@ -92,12 +92,12 @@ categories.Select(cat =>
 var count = tasks.Count(t => t.Category == cat);
 var emoji = cat switch
 {
-TaskCategory.Personal => "🏠",
-TaskCategory.Work => "💼",
-TaskCategory.Shopping => "🛒",
-TaskCategory.Health => "💪",
-TaskCategory.Learning => "📚",
-_ => "📌"
+TaskCategory.Personal => "Personal",
+TaskCategory.Work => "Work",
+TaskCategory.Shopping => "Shopping",
+TaskCategory.Health => "Health",
+TaskCategory.Learning => "Learning",
+_ => "Other"
 };
 return BarRow($"{emoji} {cat}", count, tasks.Count);
 }).ToArray()

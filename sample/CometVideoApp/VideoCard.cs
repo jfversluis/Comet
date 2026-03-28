@@ -21,7 +21,7 @@ public class VideoCard : View
 			.FillHorizontal()
 			.FillVertical(),
 
-		Text("▶")
+		Text(">")
 			.FontSize(72)
 			.Color(new Color(255, 255, 255, 60))
 			.HorizontalTextAlignment(TextAlignment.Center)

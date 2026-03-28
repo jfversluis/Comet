@@ -14,11 +14,11 @@ namespace CometControlsGallery.Pages
 	{
 		static readonly List<SlideItem> Slides = new()
 		{
-			new("Welcome", "Swipe left and right to navigate between slides", Colors.DodgerBlue, "👋"),
-			new("Features", "CarouselView supports paging, templates, and position tracking", Colors.MediumSeaGreen, "⚙️"),
-			new("Templates", "Each slide uses a DataTemplate for custom content", Colors.MediumOrchid, "🎨"),
-			new("Navigation", "Use the Previous/Next buttons or swipe to move", Colors.Coral, "🧭"),
-			new("Complete", "You've reached the last slide!", Colors.SlateBlue, "✅"),
+			new("Welcome", "Swipe left and right to navigate between slides", Colors.DodgerBlue, "Wave"),
+			new("Features", "CarouselView supports paging, templates, and position tracking", Colors.MediumSeaGreen, "Gear"),
+			new("Templates", "Each slide uses a DataTemplate for custom content", Colors.MediumOrchid, "Palette"),
+			new("Navigation", "Use the Previous/Next buttons or swipe to move", Colors.Coral, "Compass"),
+			new("Complete", "You've reached the last slide!", Colors.SlateBlue, "Check"),
 		};
 
 		readonly Reactive<int> position = 0;
@@ -82,7 +82,7 @@ namespace CometControlsGallery.Pages
 							position.Value--;
 					})
 					.FontSize(13),
-					Button("Next ▶", () =>
+					Button("Next", () =>
 					{
 						if (position.Value < Slides.Count - 1)
 							position.Value++;

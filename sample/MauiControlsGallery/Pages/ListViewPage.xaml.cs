@@ -9,14 +9,14 @@ public partial class ListViewPage : ContentPage
 
 		FoodListView.ItemsSource = new[]
 		{
-			new { Name = "Apple", Category = "Fruit", Emoji = "🍎" },
-			new { Name = "Banana", Category = "Fruit", Emoji = "🍌" },
-			new { Name = "Carrot", Category = "Vegetable", Emoji = "🥕" },
-			new { Name = "Broccoli", Category = "Vegetable", Emoji = "🥦" },
-			new { Name = "Salmon", Category = "Protein", Emoji = "🐟" },
-			new { Name = "Chicken", Category = "Protein", Emoji = "🍗" },
-			new { Name = "Rice", Category = "Grain", Emoji = "🍚" },
-			new { Name = "Bread", Category = "Grain", Emoji = "🍞" },
+			new { Name = "Apple", Category = "Fruit", Emoji = "Apple" },
+			new { Name = "Banana", Category = "Fruit", Emoji = "Banana" },
+			new { Name = "Carrot", Category = "Vegetable", Emoji = "Carrot" },
+			new { Name = "Broccoli", Category = "Vegetable", Emoji = "Broccoli" },
+			new { Name = "Salmon", Category = "Protein", Emoji = "Fish" },
+			new { Name = "Chicken", Category = "Protein", Emoji = "Chicken" },
+			new { Name = "Rice", Category = "Grain", Emoji = "Rice" },
+			new { Name = "Bread", Category = "Grain", Emoji = "Bread" },
 		};
 
 		SettingsListView.ItemsSource = new[]

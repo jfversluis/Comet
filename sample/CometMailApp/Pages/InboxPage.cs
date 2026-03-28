@@ -17,7 +17,7 @@ public class InboxPage : View
 					.FontWeight(FontWeight.Bold)
 					.Color(Colors.Black)
 					.FillHorizontal(),
-				Button("✏️", () =>
+				Button("Compose", () =>
 					this.Navigate(new ComposePage()))
 					.Background(Colors.Transparent)
 					.FontSize(20)
@@ -58,7 +58,7 @@ public class InboxPage : View
 				)
 				.FillHorizontal(),
 				msg.IsStarred
-					? Text("⭐").FontSize(16).Frame(width: 28)
+					? Text("*").FontSize(16).Frame(width: 28)
 					: Text("").Frame(width: 28)
 			),
 			Text(msg.Subject)

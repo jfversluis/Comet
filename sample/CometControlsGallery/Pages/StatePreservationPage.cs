@@ -49,10 +49,10 @@ namespace CometControlsGallery.Pages
 					})
 				),
 				GalleryPageHelpers.Section("Validation Notes",
-					GalleryPageHelpers.BodyText("✓ Parent state survives child push/pop"),
-					GalleryPageHelpers.BodyText("✓ createdAt timestamp proves same instance"),
-					GalleryPageHelpers.BodyText("✓ Child page has its own independent state"),
-					GalleryPageHelpers.BodyText("✓ Disposed child stops reacting to its signals")
+					GalleryPageHelpers.BodyText("Parent state survives child push/pop"),
+					GalleryPageHelpers.BodyText("createdAt timestamp proves same instance"),
+					GalleryPageHelpers.BodyText("Child page has its own independent state"),
+					GalleryPageHelpers.BodyText("Disposed child stops reacting to its signals")
 				)
 			);
 	}

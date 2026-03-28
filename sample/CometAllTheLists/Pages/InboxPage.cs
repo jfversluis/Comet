@@ -28,7 +28,7 @@ public class InboxPage : Component<InboxPageState>
 	public override View Render()
 	{
 		return VStack(
-			Text("📧 Inbox")
+			Text("Inbox")
 				.FontSize(24)
 				.FontWeight(FontWeight.Bold)
 				.Padding(16),

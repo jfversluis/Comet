@@ -50,12 +50,12 @@ TextField(State.Description, "Add more details...")
 .OnTextChanged(value => SetState(state => state.Description = value ?? "")),
 
 Text("Priority").FontSize(12).Color(Colors.Gray),
-Picker(State.Priority, "🟢 Low", "🟡 Medium", "🟠 High", "🔴 Critical")
+Picker(State.Priority, "Low", "Medium", "High", "Critical")
 .SemanticDescription("Task priority level")
 .OnSelectedIndexChanged(index => SetState(state => state.Priority = index)),
 
 Text("Category").FontSize(12).Color(Colors.Gray),
-Picker(State.Category, "🏠 Personal", "💼 Work", "🛒 Shopping", "💪 Health", "📚 Learning", "📌 Other")
+Picker(State.Category, "Personal", "Work", "Shopping", "Health", "Learning", "Other")
 .SemanticDescription("Task category")
 .OnSelectedIndexChanged(index => SetState(state => state.Category = index)),
 
