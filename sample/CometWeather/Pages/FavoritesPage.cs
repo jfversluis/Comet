@@ -11,37 +11,40 @@ public class FavoritesPageState { }
 
 public class FavoritesPage : Component<FavoritesPageState>
 {
-    static readonly Color DarkBg    = Color.FromArgb("#081B25");
-    static readonly Color CardBg    = Color.FromArgb("#0D2B3E");
-    static readonly Color TextWhite = Colors.White;
-    static readonly Color TextGray  = Color.FromArgb("#8BA3B4");
-    static readonly Color AccentBlue = Color.FromArgb("#1A6EBD");
+    public FavoritesPage()
+    {
+        WeatherPreferences.SettingsChanged += () => SetState(s => { });
+    }
 
     public override View Render()
     {
-        var root = new MauiGrid { BackgroundColor = DarkBg };
+        var bg = WeatherPreferences.Background;
+        var cardBg = WeatherPreferences.CardBg;
+        var textPrimary = WeatherPreferences.TextPrimary;
+        var textSecondary = WeatherPreferences.TextSecondary;
+        var accent = WeatherPreferences.Accent;
+
+        var root = new MauiGrid { BackgroundColor = bg };
         root.RowDefinitions.Add(new Microsoft.Maui.Controls.RowDefinition { Height = GridLength.Auto });
         root.RowDefinitions.Add(new Microsoft.Maui.Controls.RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
-        // Search header
-        var searchBar = BuildSearchHeader();
+        var searchBar = BuildSearchHeader(cardBg, textSecondary);
         MauiGrid.SetRow(searchBar, 0);
         root.Add(searchBar);
 
-        // Favorites grid
-        var collectionGrid = BuildFavoritesGrid();
+        var collectionGrid = BuildFavoritesGrid(bg, cardBg, textPrimary, textSecondary);
         MauiGrid.SetRow(collectionGrid, 1);
         root.Add(collectionGrid);
 
         return new MauiViewHost(root);
     }
 
-    Microsoft.Maui.Controls.View BuildSearchHeader()
+    Microsoft.Maui.Controls.View BuildSearchHeader(Color cardBg, Color textSecondary)
     {
         var header = new MauiBorder
         {
             StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(16) },
-            BackgroundColor = CardBg,
+            BackgroundColor = cardBg,
             StrokeThickness = 0,
             Margin = new Thickness(20, 60, 20, 10),
             Padding = new Thickness(16, 12),
@@ -59,7 +62,7 @@ public class FavoritesPage : Component<FavoritesPageState>
         row.Add(new MauiLabel
         {
             Text = "Search",
-            TextColor = TextGray,
+            TextColor = textSecondary,
             FontSize = 16,
             VerticalTextAlignment = Microsoft.Maui.TextAlignment.Center,
         });
@@ -68,11 +71,11 @@ public class FavoritesPage : Component<FavoritesPageState>
         return header;
     }
 
-    Microsoft.Maui.Controls.View BuildFavoritesGrid()
+    Microsoft.Maui.Controls.View BuildFavoritesGrid(Color bg, Color cardBg, Color textPrimary, Color textSecondary)
     {
         var scroll = new MauiScrollView
         {
-            BackgroundColor = DarkBg,
+            BackgroundColor = bg,
         };
 
         var outerPadding = new Microsoft.Maui.Controls.VerticalStackLayout
@@ -81,7 +84,6 @@ public class FavoritesPage : Component<FavoritesPageState>
             Spacing = 0,
         };
 
-        // Build 2-column grid manually
         var locations = WeatherData.Locations;
         var rows = (int)Math.Ceiling(locations.Count / 2.0);
 
@@ -89,7 +91,7 @@ public class FavoritesPage : Component<FavoritesPageState>
         {
             ColumnSpacing = 12,
             RowSpacing = 12,
-            BackgroundColor = DarkBg,
+            BackgroundColor = bg,
         };
         grid.ColumnDefinitions.Add(new Microsoft.Maui.Controls.ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         grid.ColumnDefinitions.Add(new Microsoft.Maui.Controls.ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -99,7 +101,7 @@ public class FavoritesPage : Component<FavoritesPageState>
 
         for (int i = 0; i < locations.Count; i++)
         {
-            var card = BuildLocationCard(locations[i]);
+            var card = BuildLocationCard(locations[i], cardBg, textPrimary, textSecondary);
             MauiGrid.SetColumn(card, i % 2);
             MauiGrid.SetRow(card, i / 2);
             grid.Add(card);
@@ -110,12 +112,12 @@ public class FavoritesPage : Component<FavoritesPageState>
         return scroll;
     }
 
-    Microsoft.Maui.Controls.View BuildLocationCard(Location loc)
+    Microsoft.Maui.Controls.View BuildLocationCard(Location loc, Color cardBg, Color textPrimary, Color textSecondary)
     {
         var card = new MauiBorder
         {
             StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(16) },
-            BackgroundColor = CardBg,
+            BackgroundColor = cardBg,
             StrokeThickness = 0,
             Padding = new Thickness(14),
             HeightRequest = 130,
@@ -123,7 +125,6 @@ public class FavoritesPage : Component<FavoritesPageState>
 
         var stack = new Microsoft.Maui.Controls.VerticalStackLayout { Spacing = 4 };
 
-        // Icon + value row
         var topRow = new MauiGrid();
         topRow.ColumnDefinitions.Add(new Microsoft.Maui.Controls.ColumnDefinition { Width = GridLength.Star });
         topRow.ColumnDefinitions.Add(new Microsoft.Maui.Controls.ColumnDefinition { Width = GridLength.Auto });
@@ -139,10 +140,17 @@ public class FavoritesPage : Component<FavoritesPageState>
         MauiGrid.SetColumn(icon, 0);
         topRow.Add(icon);
 
+        // Convert the location temperature value (strip the ° and parse)
+        var displayValue = loc.Value;
+        if (loc.Value.EndsWith("°") && int.TryParse(loc.Value.TrimEnd('°'), out var tempF))
+        {
+            displayValue = WeatherPreferences.FormatTemperatureShort(tempF);
+        }
+
         var valueLabel = new MauiLabel
         {
-            Text = loc.Value,
-            TextColor = TextWhite,
+            Text = displayValue,
+            TextColor = textPrimary,
             FontSize = 22,
             FontAttributes = Microsoft.Maui.Controls.FontAttributes.Bold,
             HorizontalOptions = Microsoft.Maui.Controls.LayoutOptions.End,
@@ -156,7 +164,7 @@ public class FavoritesPage : Component<FavoritesPageState>
         stack.Add(new MauiLabel
         {
             Text = loc.Name,
-            TextColor = TextWhite,
+            TextColor = textPrimary,
             FontSize = 14,
             FontAttributes = Microsoft.Maui.Controls.FontAttributes.Bold,
         });
@@ -164,7 +172,7 @@ public class FavoritesPage : Component<FavoritesPageState>
         stack.Add(new MauiLabel
         {
             Text = loc.WeatherStation,
-            TextColor = TextGray,
+            TextColor = textSecondary,
             FontSize = 11,
         });
 

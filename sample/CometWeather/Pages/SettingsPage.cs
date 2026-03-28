@@ -12,62 +12,64 @@ public class SettingsPageState { }
 
 public class SettingsPage : Component<SettingsPageState>
 {
-    static readonly Color DarkBg     = Color.FromArgb("#081B25");
-    static readonly Color CardBg     = Color.FromArgb("#0D2B3E");
-    static readonly Color TextWhite  = Colors.White;
-    static readonly Color TextGray   = Color.FromArgb("#8BA3B4");
-    static readonly Color AccentBlue = Color.FromArgb("#1A6EBD");
-
-    // Track checkmark images for imperative updates
-    readonly Dictionary<string, MauiImage> _unitsChecks = new();
-    readonly Dictionary<string, MauiImage> _themeChecks = new();
-    string _selectedUnits = "imperial";
-    string _selectedTheme = "default";
+    public SettingsPage()
+    {
+        WeatherPreferences.SettingsChanged += () => SetState(s => { });
+    }
 
     public override View Render()
     {
-        var root = new MauiGrid { BackgroundColor = DarkBg };
+        var bg = WeatherPreferences.Background;
+        var cardBg = WeatherPreferences.CardBg;
+        var textPrimary = WeatherPreferences.TextPrimary;
+        var textSecondary = WeatherPreferences.TextSecondary;
+        var accent = WeatherPreferences.Accent;
+        var divider = WeatherPreferences.DividerColor;
+
+        var root = new MauiGrid { BackgroundColor = bg };
 
         var scroll = new MauiScrollView
         {
-            BackgroundColor = DarkBg,
-            Content = BuildContent()
+            BackgroundColor = bg,
+            Content = BuildContent(bg, cardBg, textPrimary, textSecondary, accent, divider)
         };
 
         root.Add(scroll);
         return new MauiViewHost(root);
     }
 
-    Microsoft.Maui.Controls.VerticalStackLayout BuildContent()
+    Microsoft.Maui.Controls.VerticalStackLayout BuildContent(
+        Color bg, Color cardBg, Color textPrimary, Color textSecondary, Color accent, Color divider)
     {
         var stack = new Microsoft.Maui.Controls.VerticalStackLayout
         {
             Spacing = 0,
             Padding = new Thickness(20, 60, 20, 40),
-            BackgroundColor = DarkBg,
+            BackgroundColor = bg,
         };
 
-        stack.Add(BuildProfileHeader());
+        stack.Add(BuildProfileHeader(cardBg, textPrimary, textSecondary, accent));
         stack.Add(new Microsoft.Maui.Controls.BoxView { HeightRequest = 24, BackgroundColor = Colors.Transparent });
-        stack.Add(BuildSectionLabel("Units"));
+        stack.Add(BuildSectionLabel("Units", textSecondary));
         stack.Add(new Microsoft.Maui.Controls.BoxView { HeightRequest = 8, BackgroundColor = Colors.Transparent });
-        stack.Add(BuildUnitsSection());
+        stack.Add(BuildUnitsSection(cardBg, textPrimary, divider));
         stack.Add(new Microsoft.Maui.Controls.BoxView { HeightRequest = 24, BackgroundColor = Colors.Transparent });
-        stack.Add(BuildSectionLabel("Theme"));
+        stack.Add(BuildSectionLabel("Theme", textSecondary));
         stack.Add(new Microsoft.Maui.Controls.BoxView { HeightRequest = 8, BackgroundColor = Colors.Transparent });
-        stack.Add(BuildThemeSection());
+        stack.Add(BuildThemeSection(cardBg, textPrimary, divider));
         stack.Add(new Microsoft.Maui.Controls.BoxView { HeightRequest = 32, BackgroundColor = Colors.Transparent });
-        stack.Add(BuildSupportLink());
+        stack.Add(BuildSupportLink(accent));
 
         return stack;
     }
 
-    Microsoft.Maui.Controls.View BuildProfileHeader()
+    Microsoft.Maui.Controls.View BuildProfileHeader(
+        Color cardBg, Color textPrimary, Color textSecondary, Color accent)
     {
         var card = new MauiBorder
         {
             StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(16) },
-            BackgroundColor = CardBg,
+            BackgroundColor = cardBg,
             StrokeThickness = 0,
             Padding = new Thickness(16),
         };
@@ -80,14 +82,14 @@ public class SettingsPage : Component<SettingsPageState>
         var avatarBorder = new MauiBorder
         {
             StrokeShape = new Microsoft.Maui.Controls.Shapes.Ellipse(),
-            BackgroundColor = AccentBlue,
+            BackgroundColor = accent,
             StrokeThickness = 0,
             WidthRequest = 56,
             HeightRequest = 56,
             Content = new MauiLabel
             {
                 Text = "JV",
-                TextColor = TextWhite,
+                TextColor = Colors.White,
                 FontSize = 18,
                 FontAttributes = Microsoft.Maui.Controls.FontAttributes.Bold,
                 HorizontalTextAlignment = Microsoft.Maui.TextAlignment.Center,
@@ -103,17 +105,17 @@ public class SettingsPage : Component<SettingsPageState>
             Margin = new Thickness(12, 0),
             VerticalOptions = Microsoft.Maui.Controls.LayoutOptions.Center,
         };
-        nameStack.Add(new MauiLabel { Text = "Gerald Versluis", TextColor = TextWhite, FontSize = 15, FontAttributes = Microsoft.Maui.Controls.FontAttributes.Bold });
-        nameStack.Add(new MauiLabel { Text = "gerald@microsoft.com", TextColor = TextGray, FontSize = 12 });
+        nameStack.Add(new MauiLabel { Text = "Gerald Versluis", TextColor = textPrimary, FontSize = 15, FontAttributes = Microsoft.Maui.Controls.FontAttributes.Bold });
+        nameStack.Add(new MauiLabel { Text = "gerald@microsoft.com", TextColor = textSecondary, FontSize = 12 });
         MauiGrid.SetColumn(nameStack, 1);
         row.Add(nameStack);
 
         var signOutBtn = new MauiButton
         {
             Text = "Sign Out",
-            TextColor = TextWhite,
+            TextColor = textPrimary,
             BackgroundColor = Colors.Transparent,
-            BorderColor = AccentBlue,
+            BorderColor = accent,
             BorderWidth = 1,
             CornerRadius = 8,
             FontSize = 12,
@@ -127,68 +129,59 @@ public class SettingsPage : Component<SettingsPageState>
         return card;
     }
 
-    MauiLabel BuildSectionLabel(string text) =>
-        new MauiLabel { Text = text, TextColor = TextGray, FontSize = 13, FontAttributes = Microsoft.Maui.Controls.FontAttributes.Bold };
+    MauiLabel BuildSectionLabel(string text, Color textSecondary) =>
+        new MauiLabel { Text = text, TextColor = textSecondary, FontSize = 13, FontAttributes = Microsoft.Maui.Controls.FontAttributes.Bold };
 
-    Microsoft.Maui.Controls.View BuildUnitsSection()
+    Microsoft.Maui.Controls.View BuildUnitsSection(Color cardBg, Color textPrimary, Color divider)
     {
-        _unitsChecks.Clear();
+        var selected = WeatherPreferences.CurrentUnit;
         var card = new MauiBorder
         {
             StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(16) },
-            BackgroundColor = CardBg,
+            BackgroundColor = cardBg,
             StrokeThickness = 0,
         };
 
         var stack = new Microsoft.Maui.Controls.VerticalStackLayout();
-        stack.Add(BuildOptionRow("Imperial", "imperial", _selectedUnits, _unitsChecks, SelectUnits));
-        stack.Add(BuildDivider());
-        stack.Add(BuildOptionRow("Metric", "metric", _selectedUnits, _unitsChecks, SelectUnits));
-        stack.Add(BuildDivider());
-        stack.Add(BuildOptionRow("Hybrid", "hybrid", _selectedUnits, _unitsChecks, SelectUnits));
+        stack.Add(BuildOptionRow("Imperial", selected == TemperatureUnit.Imperial, textPrimary,
+            () => WeatherPreferences.SetUnit(TemperatureUnit.Imperial)));
+        stack.Add(BuildDivider(divider));
+        stack.Add(BuildOptionRow("Metric", selected == TemperatureUnit.Metric, textPrimary,
+            () => WeatherPreferences.SetUnit(TemperatureUnit.Metric)));
+        stack.Add(BuildDivider(divider));
+        stack.Add(BuildOptionRow("Hybrid", selected == TemperatureUnit.Hybrid, textPrimary,
+            () => WeatherPreferences.SetUnit(TemperatureUnit.Hybrid)));
 
         card.Content = stack;
         return card;
     }
 
-    Microsoft.Maui.Controls.View BuildThemeSection()
+    Microsoft.Maui.Controls.View BuildThemeSection(Color cardBg, Color textPrimary, Color divider)
     {
-        _themeChecks.Clear();
+        var selected = WeatherPreferences.CurrentTheme;
         var card = new MauiBorder
         {
             StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(16) },
-            BackgroundColor = CardBg,
+            BackgroundColor = cardBg,
             StrokeThickness = 0,
         };
 
         var stack = new Microsoft.Maui.Controls.VerticalStackLayout();
-        stack.Add(BuildOptionRow("Default", "default", _selectedTheme, _themeChecks, SelectTheme));
-        stack.Add(BuildDivider());
-        stack.Add(BuildOptionRow("Dark", "dark", _selectedTheme, _themeChecks, SelectTheme));
-        stack.Add(BuildDivider());
-        stack.Add(BuildOptionRow("Light", "light", _selectedTheme, _themeChecks, SelectTheme));
+        stack.Add(BuildOptionRow("Default", selected == ThemeMode.Default, textPrimary,
+            () => WeatherPreferences.SetTheme(ThemeMode.Default)));
+        stack.Add(BuildDivider(divider));
+        stack.Add(BuildOptionRow("Dark", selected == ThemeMode.Dark, textPrimary,
+            () => WeatherPreferences.SetTheme(ThemeMode.Dark)));
+        stack.Add(BuildDivider(divider));
+        stack.Add(BuildOptionRow("Light", selected == ThemeMode.Light, textPrimary,
+            () => WeatherPreferences.SetTheme(ThemeMode.Light)));
 
         card.Content = stack;
         return card;
-    }
-
-    void SelectUnits(string value)
-    {
-        foreach (var kv in _unitsChecks)
-            kv.Value.IsVisible = kv.Key == value;
-        _selectedUnits = value;
-    }
-
-    void SelectTheme(string value)
-    {
-        foreach (var kv in _themeChecks)
-            kv.Value.IsVisible = kv.Key == value;
-        _selectedTheme = value;
     }
 
     Microsoft.Maui.Controls.View BuildOptionRow(
-        string label, string value, string selected,
-        Dictionary<string, MauiImage> checks, Action<string> onSelect)
+        string label, bool isSelected, Color textPrimary, Action onSelect)
     {
         var row = new MauiGrid
         {
@@ -197,7 +190,7 @@ public class SettingsPage : Component<SettingsPageState>
         row.ColumnDefinitions.Add(new Microsoft.Maui.Controls.ColumnDefinition { Width = GridLength.Star });
         row.ColumnDefinitions.Add(new Microsoft.Maui.Controls.ColumnDefinition { Width = GridLength.Auto });
 
-        var lbl = new MauiLabel { Text = label, TextColor = TextWhite, FontSize = 15 };
+        var lbl = new MauiLabel { Text = label, TextColor = textPrimary, FontSize = 15 };
         MauiGrid.SetColumn(lbl, 0);
         row.Add(lbl);
 
@@ -206,30 +199,29 @@ public class SettingsPage : Component<SettingsPageState>
             Source = "checkmark_icon.png",
             HeightRequest = 18,
             WidthRequest = 18,
-            IsVisible = selected == value,
+            IsVisible = isSelected,
             VerticalOptions = Microsoft.Maui.Controls.LayoutOptions.Center,
             Aspect = Aspect.AspectFit,
         };
-        checks[value] = checkImg;
         MauiGrid.SetColumn(checkImg, 1);
         row.Add(checkImg);
 
         var tapGesture = new Microsoft.Maui.Controls.TapGestureRecognizer();
-        tapGesture.Tapped += (s, e) => onSelect(value);
+        tapGesture.Tapped += (s, e) => onSelect();
         row.GestureRecognizers.Add(tapGesture);
 
         return row;
     }
 
-    Microsoft.Maui.Controls.View BuildDivider() =>
-        new Microsoft.Maui.Controls.BoxView { HeightRequest = 1, BackgroundColor = Color.FromArgb("#1E3A50"), Margin = new Thickness(16, 0) };
+    Microsoft.Maui.Controls.View BuildDivider(Color divider) =>
+        new Microsoft.Maui.Controls.BoxView { HeightRequest = 1, BackgroundColor = divider, Margin = new Thickness(16, 0) };
 
-    Microsoft.Maui.Controls.View BuildSupportLink()
+    Microsoft.Maui.Controls.View BuildSupportLink(Color accent)
     {
         var lbl = new MauiLabel
         {
             Text = "Support",
-            TextColor = AccentBlue,
+            TextColor = accent,
             FontSize = 15,
             HorizontalTextAlignment = Microsoft.Maui.TextAlignment.Center,
         };

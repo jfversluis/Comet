@@ -17,6 +17,7 @@ public class WeatherShell : MauiShell
         tabBar.Items.Add(new Microsoft.Maui.Controls.ShellContent
         {
             Title = "Home",
+            Icon = "tab_home.png",
             ContentTemplate = new DataTemplate(() => MakeCometPage(new HomePage(), "Home")),
             Route = "home"
         });
@@ -24,6 +25,7 @@ public class WeatherShell : MauiShell
         tabBar.Items.Add(new Microsoft.Maui.Controls.ShellContent
         {
             Title = "Favorites",
+            Icon = "tab_favorites.png",
             ContentTemplate = new DataTemplate(() => MakeCometPage(new FavoritesPage(), "Favorites")),
             Route = "favorites"
         });
@@ -31,11 +33,28 @@ public class WeatherShell : MauiShell
         tabBar.Items.Add(new Microsoft.Maui.Controls.ShellContent
         {
             Title = "Settings",
+            Icon = "tab_settings.png",
             ContentTemplate = new DataTemplate(() => MakeCometPage(new SettingsPage(), "Settings")),
             Route = "settings"
         });
 
         Items.Add(tabBar);
+
+        // Apply initial Shell chrome colors
+        ApplyThemeToShell();
+
+        // Re-apply when theme changes
+        WeatherPreferences.SettingsChanged += () => ApplyThemeToShell();
+    }
+
+    void ApplyThemeToShell()
+    {
+        var bg = WeatherPreferences.Background;
+        MauiShell.SetBackgroundColor(this, bg);
+        Shell.SetTabBarBackgroundColor(this, bg);
+        Shell.SetTabBarUnselectedColor(this, WeatherPreferences.TextSecondary);
+        Shell.SetTabBarTitleColor(this, WeatherPreferences.Accent);
+        Shell.SetTabBarForegroundColor(this, WeatherPreferences.Accent);
     }
 
     static MauiPage MakeCometPage(Comet.View cometView, string title)
@@ -43,12 +62,12 @@ public class WeatherShell : MauiShell
         var page = new MauiPage
         {
             Title = title,
-            BackgroundColor = Color.FromArgb("#081B25"),
+            BackgroundColor = WeatherPreferences.Background,
         };
 
         var container = new Microsoft.Maui.Controls.ContentView
         {
-            BackgroundColor = Color.FromArgb("#081B25"),
+            BackgroundColor = WeatherPreferences.Background,
         };
 
         page.Content = container;
@@ -57,6 +76,13 @@ public class WeatherShell : MauiShell
         {
             if (page.Handler?.MauiContext == null) return;
             EmbedCometView(container, cometView, page.Handler.MauiContext);
+        };
+
+        // Update page background when theme changes
+        WeatherPreferences.SettingsChanged += () =>
+        {
+            page.BackgroundColor = WeatherPreferences.Background;
+            container.BackgroundColor = WeatherPreferences.Background;
         };
 
         MauiShell.SetNavBarIsVisible(page, false);

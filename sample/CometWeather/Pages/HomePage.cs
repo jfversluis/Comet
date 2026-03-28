@@ -12,48 +12,54 @@ public class HomePageState { }
 
 public class HomePage : Component<HomePageState>
 {
-    static readonly Color DarkBg     = Color.FromArgb("#081B25");
-    static readonly Color CardBg     = Color.FromArgb("#0D2B3E");
-    static readonly Color AccentBlue = Color.FromArgb("#1A6EBD");
-    static readonly Color TextWhite  = Colors.White;
-    static readonly Color TextGray   = Color.FromArgb("#8BA3B4");
+    public HomePage()
+    {
+        WeatherPreferences.SettingsChanged += () => SetState(s => { });
+    }
 
     public override View Render()
     {
-        var root = new MauiGrid { BackgroundColor = DarkBg };
+        var bg = WeatherPreferences.Background;
+        var cardBg = WeatherPreferences.CardBg;
+        var textPrimary = WeatherPreferences.TextPrimary;
+        var textSecondary = WeatherPreferences.TextSecondary;
+        var accent = WeatherPreferences.Accent;
+
+        var root = new MauiGrid { BackgroundColor = bg };
 
         var scroll = new MauiScrollView
         {
-            BackgroundColor = DarkBg,
-            Content = BuildContent()
+            BackgroundColor = bg,
+            Content = BuildContent(bg, cardBg, textPrimary, textSecondary, accent)
         };
 
         root.Add(scroll);
         return new MauiViewHost(root);
     }
 
-    Microsoft.Maui.Controls.VerticalStackLayout BuildContent()
+    Microsoft.Maui.Controls.VerticalStackLayout BuildContent(
+        Color bg, Color cardBg, Color textPrimary, Color textSecondary, Color accent)
     {
         var stack = new Microsoft.Maui.Controls.VerticalStackLayout
         {
             Spacing = 0,
             Padding = new Thickness(0, 0, 0, 20),
-            BackgroundColor = DarkBg,
+            BackgroundColor = bg,
         };
 
-        stack.Add(BuildCurrentWeather());
-        stack.Add(BuildNext24Hours());
-        stack.Add(BuildDailyForecast());
-        stack.Add(BuildMetrics());
+        stack.Add(BuildCurrentWeather(bg, textPrimary, accent));
+        stack.Add(BuildNext24Hours(bg, cardBg, textPrimary, textSecondary));
+        stack.Add(BuildDailyForecast(bg, cardBg, textPrimary, textSecondary, accent));
+        stack.Add(BuildMetrics(bg, cardBg, textPrimary, textSecondary));
 
         return stack;
     }
 
-    Microsoft.Maui.Controls.View BuildCurrentWeather()
+    Microsoft.Maui.Controls.View BuildCurrentWeather(Color bg, Color textPrimary, Color accent)
     {
         var grid = new MauiGrid
         {
-            BackgroundColor = DarkBg,
+            BackgroundColor = bg,
             Padding = new Thickness(20, 60, 20, 20),
             RowSpacing = 8,
         };
@@ -62,11 +68,10 @@ public class HomePage : Component<HomePageState>
         grid.RowDefinitions.Add(new Microsoft.Maui.Controls.RowDefinition { Height = GridLength.Auto });
         grid.RowDefinitions.Add(new Microsoft.Maui.Controls.RowDefinition { Height = GridLength.Auto });
 
-        // Location label
         var locationLabel = new MauiLabel
         {
             Text = "Redmond, WA",
-            TextColor = TextWhite,
+            TextColor = textPrimary,
             FontSize = 22,
             FontAttributes = Microsoft.Maui.Controls.FontAttributes.Bold,
             HorizontalTextAlignment = Microsoft.Maui.TextAlignment.Center,
@@ -74,7 +79,6 @@ public class HomePage : Component<HomePageState>
         MauiGrid.SetRow(locationLabel, 0);
         grid.Add(locationLabel);
 
-        // Large weather icon
         var weatherIcon = new MauiImage
         {
             Source = "fluent_weather_sunny_high_20_filled.png",
@@ -86,11 +90,10 @@ public class HomePage : Component<HomePageState>
         MauiGrid.SetRow(weatherIcon, 1);
         grid.Add(weatherIcon);
 
-        // Temperature
         var tempLabel = new MauiLabel
         {
-            Text = "70°F",
-            TextColor = TextWhite,
+            Text = WeatherPreferences.FormatTemperature(70),
+            TextColor = textPrimary,
             FontSize = 64,
             FontAttributes = Microsoft.Maui.Controls.FontAttributes.Bold,
             HorizontalTextAlignment = Microsoft.Maui.TextAlignment.Center,
@@ -98,18 +101,17 @@ public class HomePage : Component<HomePageState>
         MauiGrid.SetRow(tempLabel, 2);
         grid.Add(tempLabel);
 
-        // Condition badge
         var conditionBorder = new MauiBorder
         {
             StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(16) },
-            BackgroundColor = AccentBlue,
+            BackgroundColor = accent,
             StrokeThickness = 0,
             Padding = new Thickness(16, 6),
             HorizontalOptions = Microsoft.Maui.Controls.LayoutOptions.Center,
             Content = new MauiLabel
             {
                 Text = "Mostly Sunny",
-                TextColor = TextWhite,
+                TextColor = Colors.White,
                 FontSize = 14,
             }
         };
@@ -119,27 +121,32 @@ public class HomePage : Component<HomePageState>
         return grid;
     }
 
-    Microsoft.Maui.Controls.View BuildNext24Hours()
+    Microsoft.Maui.Controls.View BuildNext24Hours(Color bg, Color cardBg, Color textPrimary, Color textSecondary)
     {
         var outer = new Microsoft.Maui.Controls.VerticalStackLayout
         {
             Spacing = 10,
-            Padding = new Thickness(20, 16),
-            BackgroundColor = DarkBg,
+            Padding = new Thickness(0, 16),
+            BackgroundColor = bg,
         };
 
         outer.Add(new MauiLabel
         {
             Text = "Next 24 Hours",
-            TextColor = TextWhite,
+            TextColor = textPrimary,
             FontSize = 16,
             FontAttributes = Microsoft.Maui.Controls.FontAttributes.Bold,
+            Margin = new Thickness(20, 0, 20, 0),
         });
 
-        var hourlyLayout = new Microsoft.Maui.Controls.HorizontalStackLayout { Spacing = 12 };
+        var hourlyLayout = new Microsoft.Maui.Controls.HorizontalStackLayout
+        {
+            Spacing = 12,
+            Padding = new Thickness(20, 0, 20, 0),
+        };
         foreach (var h in WeatherData.Hours)
         {
-            hourlyLayout.Add(BuildHourlyItem(h));
+            hourlyLayout.Add(BuildHourlyItem(h, cardBg, textPrimary, textSecondary));
         }
 
         outer.Add(new MauiScrollView
@@ -152,12 +159,12 @@ public class HomePage : Component<HomePageState>
         return outer;
     }
 
-    Microsoft.Maui.Controls.View BuildHourlyItem(Forecast h)
+    Microsoft.Maui.Controls.View BuildHourlyItem(Forecast h, Color cardBg, Color textPrimary, Color textSecondary)
     {
         var card = new MauiBorder
         {
             StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(12) },
-            BackgroundColor = CardBg,
+            BackgroundColor = cardBg,
             StrokeThickness = 0,
             Padding = new Thickness(10, 12),
             WidthRequest = 70,
@@ -167,7 +174,7 @@ public class HomePage : Component<HomePageState>
         stack.Add(new MauiLabel
         {
             Text = h.DateTime.ToString("h tt"),
-            TextColor = TextGray,
+            TextColor = textSecondary,
             FontSize = 11,
             HorizontalTextAlignment = Microsoft.Maui.TextAlignment.Center,
         });
@@ -181,8 +188,8 @@ public class HomePage : Component<HomePageState>
         });
         stack.Add(new MauiLabel
         {
-            Text = $"{h.Temperature.Minimum.Value}°",
-            TextColor = TextWhite,
+            Text = WeatherPreferences.FormatTemperatureShort(h.Temperature.Minimum.Value),
+            TextColor = textPrimary,
             FontSize = 13,
             HorizontalTextAlignment = Microsoft.Maui.TextAlignment.Center,
         });
@@ -190,27 +197,33 @@ public class HomePage : Component<HomePageState>
         return card;
     }
 
-    Microsoft.Maui.Controls.View BuildDailyForecast()
+    Microsoft.Maui.Controls.View BuildDailyForecast(
+        Color bg, Color cardBg, Color textPrimary, Color textSecondary, Color accent)
     {
         var outer = new Microsoft.Maui.Controls.VerticalStackLayout
         {
             Spacing = 10,
-            Padding = new Thickness(20, 16),
-            BackgroundColor = DarkBg,
+            Padding = new Thickness(0, 16),
+            BackgroundColor = bg,
         };
 
         outer.Add(new MauiLabel
         {
             Text = "Daily Forecast",
-            TextColor = TextWhite,
+            TextColor = textPrimary,
             FontSize = 16,
             FontAttributes = Microsoft.Maui.Controls.FontAttributes.Bold,
+            Margin = new Thickness(20, 0, 20, 0),
         });
 
-        var dailyLayout = new Microsoft.Maui.Controls.HorizontalStackLayout { Spacing = 12 };
+        var dailyLayout = new Microsoft.Maui.Controls.HorizontalStackLayout
+        {
+            Spacing = 12,
+            Padding = new Thickness(20, 0, 20, 0),
+        };
         foreach (var d in WeatherData.Week)
         {
-            dailyLayout.Add(BuildDailyItem(d));
+            dailyLayout.Add(BuildDailyItem(d, cardBg, textPrimary, textSecondary, accent));
         }
 
         outer.Add(new MauiScrollView
@@ -223,12 +236,13 @@ public class HomePage : Component<HomePageState>
         return outer;
     }
 
-    Microsoft.Maui.Controls.View BuildDailyItem(Forecast d)
+    Microsoft.Maui.Controls.View BuildDailyItem(
+        Forecast d, Color cardBg, Color textPrimary, Color textSecondary, Color accent)
     {
         var card = new MauiBorder
         {
             StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(12) },
-            BackgroundColor = CardBg,
+            BackgroundColor = cardBg,
             StrokeThickness = 0,
             Padding = new Thickness(10, 12),
             WidthRequest = 80,
@@ -239,7 +253,7 @@ public class HomePage : Component<HomePageState>
         stack.Add(new MauiLabel
         {
             Text = d.DateTime.ToString("ddd"),
-            TextColor = TextGray,
+            TextColor = textSecondary,
             FontSize = 11,
             HorizontalTextAlignment = Microsoft.Maui.TextAlignment.Center,
         });
@@ -253,17 +267,16 @@ public class HomePage : Component<HomePageState>
         });
         stack.Add(new MauiLabel
         {
-            Text = $"{d.Temperature.Maximum.Value}°",
-            TextColor = TextWhite,
+            Text = WeatherPreferences.FormatTemperatureShort(d.Temperature.Maximum.Value),
+            TextColor = textPrimary,
             FontSize = 13,
             HorizontalTextAlignment = Microsoft.Maui.TextAlignment.Center,
         });
 
-        // Temperature bar
         var barHeight = Math.Max(4, (d.Temperature.Maximum.Value - d.Temperature.Minimum.Value) * 2);
         stack.Add(new MauiBoxView
         {
-            Color = AccentBlue,
+            Color = accent,
             WidthRequest = 6,
             HeightRequest = barHeight,
             CornerRadius = 3,
@@ -272,8 +285,8 @@ public class HomePage : Component<HomePageState>
 
         stack.Add(new MauiLabel
         {
-            Text = $"{d.Temperature.Minimum.Value}°",
-            TextColor = TextGray,
+            Text = WeatherPreferences.FormatTemperatureShort(d.Temperature.Minimum.Value),
+            TextColor = textSecondary,
             FontSize = 11,
             HorizontalTextAlignment = Microsoft.Maui.TextAlignment.Center,
         });
@@ -282,14 +295,14 @@ public class HomePage : Component<HomePageState>
         return card;
     }
 
-    Microsoft.Maui.Controls.View BuildMetrics()
+    Microsoft.Maui.Controls.View BuildMetrics(Color bg, Color cardBg, Color textPrimary, Color textSecondary)
     {
         var grid = new MauiGrid
         {
             Padding = new Thickness(20, 16),
             ColumnSpacing = 12,
             RowSpacing = 12,
-            BackgroundColor = DarkBg,
+            BackgroundColor = bg,
         };
         grid.ColumnDefinitions.Add(new Microsoft.Maui.Controls.ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         grid.ColumnDefinitions.Add(new Microsoft.Maui.Controls.ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -302,7 +315,7 @@ public class HomePage : Component<HomePageState>
 
         for (int i = 0; i < metrics.Count; i++)
         {
-            var card = BuildMetricCard(metrics[i]);
+            var card = BuildMetricCard(metrics[i], cardBg, textPrimary, textSecondary);
             MauiGrid.SetColumn(card, i % 3);
             MauiGrid.SetRow(card, i / 3);
             grid.Add(card);
@@ -311,12 +324,12 @@ public class HomePage : Component<HomePageState>
         return grid;
     }
 
-    Microsoft.Maui.Controls.View BuildMetricCard(Metric m)
+    Microsoft.Maui.Controls.View BuildMetricCard(Metric m, Color cardBg, Color textPrimary, Color textSecondary)
     {
         var card = new MauiBorder
         {
             StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(16) },
-            BackgroundColor = CardBg,
+            BackgroundColor = cardBg,
             StrokeThickness = 0,
             Padding = new Thickness(12),
             HeightRequest = 120,
@@ -334,20 +347,20 @@ public class HomePage : Component<HomePageState>
         stack.Add(new MauiLabel
         {
             Text = m.Value,
-            TextColor = TextWhite,
+            TextColor = textPrimary,
             FontSize = 20,
             FontAttributes = Microsoft.Maui.Controls.FontAttributes.Bold,
         });
         stack.Add(new MauiLabel
         {
             Text = m.Title,
-            TextColor = TextGray,
+            TextColor = textSecondary,
             FontSize = 11,
         });
         stack.Add(new MauiLabel
         {
             Text = m.WeatherStation,
-            TextColor = TextGray,
+            TextColor = textSecondary,
             FontSize = 10,
         });
 

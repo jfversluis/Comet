@@ -5,7 +5,6 @@ using MauiCollectionView = Microsoft.Maui.Controls.CollectionView;
 using MauiLabel = Microsoft.Maui.Controls.Label;
 using MauiBorder = Microsoft.Maui.Controls.Border;
 using MauiGrid = Microsoft.Maui.Controls.Grid;
-using MauiScrollView = Microsoft.Maui.Controls.ScrollView;
 using MauiVerticalStackLayout = Microsoft.Maui.Controls.VerticalStackLayout;
 using MauiSelectionMode = Microsoft.Maui.Controls.SelectionMode;
 using MauiFontAttributes = Microsoft.Maui.Controls.FontAttributes;
@@ -28,14 +27,10 @@ public class ScrollPage : Component<ScrollPageState>
 
     public override Comet.View Render()
     {
+        // Use Grid with Auto header + * collection to properly constrain CollectionView height
         var root = new MauiGrid { BackgroundColor = Color.FromArgb("#F5F5F5") };
-
-        var content = new MauiVerticalStackLayout
-        {
-            Spacing = 0,
-            Padding = new Thickness(0),
-            BackgroundColor = Color.FromArgb("#F5F5F5"),
-        };
+        root.RowDefinitions.Add(new Microsoft.Maui.Controls.RowDefinition { Height = GridLength.Auto });
+        root.RowDefinitions.Add(new Microsoft.Maui.Controls.RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
         // Header
         var header = new MauiVerticalStackLayout
@@ -69,9 +64,10 @@ public class ScrollPage : Component<ScrollPageState>
         };
 
         header.Add(counterLabel);
-        content.Add(header);
+        MauiGrid.SetRow(header, 0);
+        root.Add(header);
 
-        // CollectionView with RemainingItemsThreshold
+        // CollectionView directly in Grid row (no ScrollView wrapper!)
         var collection = new MauiCollectionView
         {
             ItemsSource = items,
@@ -87,14 +83,8 @@ public class ScrollPage : Component<ScrollPageState>
 
         collection.ItemTemplate = new DataTemplate(() => BuildItemTemplate());
 
-        var scrollView = new MauiScrollView
-        {
-            BackgroundColor = Color.FromArgb("#F5F5F5"),
-            Content = collection,
-        };
-
-        content.Add(scrollView);
-        root.Add(content);
+        MauiGrid.SetRow(collection, 1);
+        root.Add(collection);
 
         InitializeItems();
 
@@ -120,17 +110,22 @@ public class ScrollPage : Component<ScrollPageState>
         {
             await Task.Delay(300);
             int newCount = Math.Min(totalLoaded + 10, 100);
-            for (int i = totalLoaded; i < newCount; i++)
+
+            // Must add items on UI thread for proper layout updates
+            Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() =>
             {
-                items.Add(new ItemModel
+                for (int i = totalLoaded; i < newCount; i++)
                 {
-                    Id = i + 1,
-                    Title = $"Item #{i + 1}",
-                    Description = $"Sample description for item {i + 1}"
-                });
-            }
-            totalLoaded = newCount;
-            counterLabel.Text = $"Loaded: {totalLoaded} items";
+                    items.Add(new ItemModel
+                    {
+                        Id = i + 1,
+                        Title = $"Item #{i + 1}",
+                        Description = $"Sample description for item {i + 1}"
+                    });
+                }
+                totalLoaded = newCount;
+                counterLabel.Text = $"Loaded: {totalLoaded} items";
+            });
         });
     }
 

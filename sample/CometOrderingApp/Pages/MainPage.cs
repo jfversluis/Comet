@@ -13,9 +13,11 @@ class MainPageState
 class CartState
 {
 	public double SizeCost { get; set; } = 12;
-	public double CrustCost { get; set; } = 1.5;
+	public int SelectedCrust { get; set; } = 2; // 0=Hand Tossed, 1=Thin, 2=Cheese Burst
 	public double AddOn1Cost { get; set; }
 	public double AddOn2Cost { get; set; }
+
+	public double CrustCost => SelectedCrust == 2 ? 1.5 : 0;
 }
 
 // ── Main Page ─────────────────────────────────────────────────
@@ -24,6 +26,11 @@ class MainPage : Component<MainPageState>
 {
 	public override View Render()
 	{
+		// Filter products by selected category
+		var filteredItems = ProductItem.Items
+			.Where(p => p.Type == State.SelectedType)
+			.ToArray();
+
 		return new Grid(
 			rows: new object[] { 290, "*" },
 			columns: new object[] { "*" })
@@ -34,7 +41,7 @@ class MainPage : Component<MainPageState>
 
 			ScrollView(
 				VStack(spacing: 0,
-					ProductItem.Items.Select(RenderProductItem).ToArray()
+					filteredItems.Select(RenderProductItem).ToArray()
 				)
 				.Margin(left: 24, top: 20, right: 24, bottom: 20)
 			)
@@ -56,11 +63,12 @@ class MainPage : Component<MainPageState>
 		return Border(
 			new Grid(
 				rows: new object[] { "*" },
-				columns: new object[] { 115, "*" })
+				columns: new object[] { 100, "*" })
 			{
 				Image($"{item.Image}.png")
-					.Frame(width: 140, height: 140)
-					.TranslationX(-20),
+					.Frame(width: 100, height: 100)
+					.Margin(left: 8)
+					.Alignment(Comet.Alignment.Center),
 
 				new Grid(
 					rows: new object[] { 20, "*", 24 },
@@ -327,12 +335,12 @@ class CartPanel : Component<CartState>
 	View RenderCrustGroup()
 	{
 		return RenderCartItemGroup("Select Crust", false,
-			RenderCartItem("Classic Hand tossed", 0, State.CrustCost == -1,
-				() => SetState(s => s.CrustCost = -1)),
-			RenderCartItem("Thin Crust", 0, State.CrustCost == -2,
-				() => SetState(s => s.CrustCost = -2)),
-			RenderCartItem("Cheese Brust", 1.5, State.CrustCost == 1.5,
-				() => SetState(s => s.CrustCost = 1.5))
+			RenderCartItem("Classic Hand tossed", 0, State.SelectedCrust == 0,
+				() => SetState(s => s.SelectedCrust = 0)),
+			RenderCartItem("Thin Crust", 0, State.SelectedCrust == 1,
+				() => SetState(s => s.SelectedCrust = 1)),
+			RenderCartItem("Cheese Brust", 1.5, State.SelectedCrust == 2,
+				() => SetState(s => s.SelectedCrust = 2))
 		);
 	}
 
@@ -455,9 +463,7 @@ class CartPanel : Component<CartState>
 
 	View RenderBottom()
 	{
-		var total = new[] { State.SizeCost, State.CrustCost, State.AddOn1Cost, State.AddOn2Cost }
-			.Where(c => c > 0)
-			.Sum();
+		var total = State.SizeCost + State.CrustCost + State.AddOn1Cost + State.AddOn2Cost;
 
 		return new Grid(
 			rows: new object[] { "*" },
@@ -469,7 +475,7 @@ class CartPanel : Component<CartState>
 				.GridColumnSpan(2)
 				.Alignment(Alignment.Top),
 
-			Button("+ ADD TO CART", () => { })
+			Button("+ ADD TO CART", () => _onClose?.Invoke())
 				.FontSize(14)
 				.FontFamily("MulishSemiBold")
 				.Color(Colors.White)
