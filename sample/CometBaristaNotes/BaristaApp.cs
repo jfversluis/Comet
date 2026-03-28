@@ -25,8 +25,8 @@ public class BaristaApp : CometApp
 	static NavigationView MakeTab(Comet.View page, string title, string sfSymbol)
 	{
 		var nav = NavigationView(page.Title(title));
-		nav.SetEnvironment("NavigationBackgroundColor", (Binding<Color>)Theme.Primary);
-		nav.SetEnvironment("NavigationTextColor", (Binding<Color>)Theme.Surface);
+		nav.SetEnvironment("NavigationBackgroundColor", Theme.Primary);
+		nav.SetEnvironment("NavigationTextColor", Theme.Surface);
 		nav.SetAutomationId($"barista-{title.Replace(" ", string.Empty).ToLowerInvariant()}-tab-root");
 		nav.TabText(title);
 		nav.TabIcon(sfSymbol);

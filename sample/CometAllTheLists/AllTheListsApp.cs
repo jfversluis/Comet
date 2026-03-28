@@ -7,10 +7,10 @@ public class AllTheListsApp : CometApp
 {
 	public AllTheListsApp()
 	{
-		Body = Build;
+		Body = CreateRootView;
 	}
 
-	Comet.View Build()
+	public static Comet.View CreateRootView()
 	{
 		var tabs = TabView();
 		tabs.Add(MakeTab(new ShoppingPage(), "Shopping", "cart.fill"));
@@ -37,7 +37,7 @@ public static class MauiProgram
 		var builder = MauiApp.CreateBuilder();
 
 #if DEBUG
-		builder.UseCometSampleDebugHost<AllTheListsApp>();
+		builder.UseCometSampleDebugHost(AllTheListsApp.CreateRootView);
 #else
 		builder.UseCometApp<AllTheListsApp>();
 #endif
