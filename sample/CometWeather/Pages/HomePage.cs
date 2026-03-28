@@ -142,12 +142,15 @@ public class HomePage : Component<HomePageState>
         var hourlyLayout = new Microsoft.Maui.Controls.HorizontalStackLayout
         {
             Spacing = 12,
-            Padding = new Thickness(20, 0, 20, 0),
         };
+        // Leading spacer for content inset (scroll goes edge-to-edge)
+        hourlyLayout.Add(new MauiBoxView { WidthRequest = 8, HeightRequest = 1, Color = Colors.Transparent });
         foreach (var h in WeatherData.Hours)
         {
             hourlyLayout.Add(BuildHourlyItem(h, cardBg, textPrimary, textSecondary));
         }
+        // Trailing spacer for content inset
+        hourlyLayout.Add(new MauiBoxView { WidthRequest = 8, HeightRequest = 1, Color = Colors.Transparent });
 
         outer.Add(new MauiScrollView
         {
@@ -219,12 +222,15 @@ public class HomePage : Component<HomePageState>
         var dailyLayout = new Microsoft.Maui.Controls.HorizontalStackLayout
         {
             Spacing = 12,
-            Padding = new Thickness(20, 0, 20, 0),
         };
+        // Leading spacer for content inset (scroll goes edge-to-edge)
+        dailyLayout.Add(new MauiBoxView { WidthRequest = 8, HeightRequest = 1, Color = Colors.Transparent });
         foreach (var d in WeatherData.Week)
         {
             dailyLayout.Add(BuildDailyItem(d, cardBg, textPrimary, textSecondary, accent));
         }
+        // Trailing spacer for content inset
+        dailyLayout.Add(new MauiBoxView { WidthRequest = 8, HeightRequest = 1, Color = Colors.Transparent });
 
         outer.Add(new MauiScrollView
         {

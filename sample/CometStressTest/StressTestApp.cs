@@ -17,6 +17,7 @@ public class StressTestShell : MauiShell
 		tabBar.Items.Add(new Microsoft.Maui.Controls.ShellContent
 		{
 			Title = "Lists",
+			Icon = "tab_lists.png",
 			ContentTemplate = new DataTemplate(() => MakeCometPage(new ListTestPage(), "Lists")),
 			Route = "lists"
 		});
@@ -24,6 +25,7 @@ public class StressTestShell : MauiShell
 		tabBar.Items.Add(new Microsoft.Maui.Controls.ShellContent
 		{
 			Title = "Collections",
+			Icon = "tab_collections.png",
 			ContentTemplate = new DataTemplate(() => MakeCometPage(new CollectionTestPage(), "Collections")),
 			Route = "collections"
 		});
@@ -31,6 +33,7 @@ public class StressTestShell : MauiShell
 		tabBar.Items.Add(new Microsoft.Maui.Controls.ShellContent
 		{
 			Title = "Layouts",
+			Icon = "tab_layouts.png",
 			ContentTemplate = new DataTemplate(() => MakeCometPage(new LayoutTestPage(), "Layouts")),
 			Route = "layouts"
 		});
@@ -38,6 +41,7 @@ public class StressTestShell : MauiShell
 		tabBar.Items.Add(new Microsoft.Maui.Controls.ShellContent
 		{
 			Title = "Controls",
+			Icon = "tab_controls.png",
 			ContentTemplate = new DataTemplate(() => MakeCometPage(new ControlTestPage(), "Controls")),
 			Route = "controls"
 		});
@@ -45,6 +49,7 @@ public class StressTestShell : MauiShell
 		tabBar.Items.Add(new Microsoft.Maui.Controls.ShellContent
 		{
 			Title = "State",
+			Icon = "tab_state.png",
 			ContentTemplate = new DataTemplate(() => MakeCometPage(new StateTestPage(), "State")),
 			Route = "state"
 		});
@@ -52,6 +57,7 @@ public class StressTestShell : MauiShell
 		tabBar.Items.Add(new Microsoft.Maui.Controls.ShellContent
 		{
 			Title = "Swipe",
+			Icon = "tab_swipe.png",
 			ContentTemplate = new DataTemplate(() => MakeCometPage(new SwipeTestPage(), "Swipe")),
 			Route = "swipe"
 		});

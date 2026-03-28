@@ -13,19 +13,19 @@ public class AllTheListsApp : CometApp
 	public static Comet.View CreateRootView()
 	{
 		var tabs = TabView();
-		tabs.Add(MakeTab(new ShoppingPage(), "Shopping", "cart.fill"));
-		tabs.Add(MakeTab(new CollectionViewPage(), "Collections", "square.grid.2x2.fill"));
-		tabs.Add(MakeTab(new InboxPage(), "Inbox", "tray.full.fill"));
-		tabs.Add(MakeTab(new StreamingServicePage(), "Streaming", "play.rectangle.fill"));
-		tabs.Add(MakeTab(new AddressBookPage(), "Contacts", "person.2.fill"));
+		tabs.Add(MakeTab(new ShoppingPage(), "Shopping", "tab_shopping.png"));
+		tabs.Add(MakeTab(new CollectionViewPage(), "Collections", "tab_collections.png"));
+		tabs.Add(MakeTab(new InboxPage(), "Inbox", "tab_inbox.png"));
+		tabs.Add(MakeTab(new StreamingServicePage(), "Streaming", "tab_streaming.png"));
+		tabs.Add(MakeTab(new AddressBookPage(), "Contacts", "tab_contacts.png"));
 		return tabs;
 	}
 
-	static NavigationView MakeTab(Comet.View page, string title, string sfSymbol)
+	static NavigationView MakeTab(Comet.View page, string title, string icon)
 	{
 		var navigation = NavigationView(page.Title(title));
 		navigation.TabText(title);
-		navigation.TabIcon(sfSymbol);
+		navigation.TabIcon(icon);
 		return navigation;
 	}
 }

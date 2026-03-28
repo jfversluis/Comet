@@ -11,12 +11,26 @@ public class TaskApp : CometApp
 		Body = CreateRootView;
 	}
 
-	public static View CreateRootView() =>
-		TabView(
-			("Tasks", new TaskListPage()),
-			("Stats", new StatsPage()),
-			("Settings", new SettingsPage())
-		);
+	public static View CreateRootView()
+	{
+		var tabs = TabView();
+		var tasksTab = NavigationView(new TaskListPage().Title("Tasks"));
+		tasksTab.TabText("Tasks");
+		tasksTab.TabIcon("tab_tasks.png");
+		tabs.Add(tasksTab);
+
+		var statsTab = NavigationView(new StatsPage().Title("Stats"));
+		statsTab.TabText("Stats");
+		statsTab.TabIcon("tab_stats.png");
+		tabs.Add(statsTab);
+
+		var settingsTab = NavigationView(new SettingsPage().Title("Settings"));
+		settingsTab.TabText("Settings");
+		settingsTab.TabIcon("tab_settings.png");
+		tabs.Add(settingsTab);
+
+		return tabs;
+	}
 }
 
 public static class MauiProgram
