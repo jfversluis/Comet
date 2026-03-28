@@ -1,10 +1,11 @@
+using Comet.Reactive;
 using CometProjectManager.Models;
 
 namespace CometProjectManager;
 
 /// <summary>
 /// In-memory data store matching the MAUI template's SeedData.json exactly.
-/// All state changes trigger reactive UI updates via State<T>.
+/// All state changes trigger reactive UI updates via Signal<T>.
 /// </summary>
 public class DataStore
 {
@@ -16,7 +17,7 @@ public class DataStore
 	private int _nextTagId = 6;
 
 	// Match the MAUI template seed data categories
-	public readonly State<List<Category>> Categories = new(new List<Category>
+	public readonly Signal<List<Category>> Categories = new(new List<Category>
 	{
 		new() { ID = 1, Title = "work", ColorHex = "#3068df" },
 		new() { ID = 2, Title = "education", ColorHex = "#8800FF" },
@@ -25,7 +26,7 @@ public class DataStore
 	});
 
 	// Match the MAUI template seed data tags
-	public readonly State<List<Tag>> Tags = new(new List<Tag>
+	public readonly Signal<List<Tag>> Tags = new(new List<Tag>
 	{
 		new() { ID = 1, Title = "work", ColorHex = "#3068df" },
 		new() { ID = 2, Title = "personal", ColorHex = "#FF4500" },
@@ -34,8 +35,8 @@ public class DataStore
 		new() { ID = 5, Title = "friends", ColorHex = "#FF69B4" },
 	});
 
-	public readonly State<List<Project>> Projects;
-	public readonly State<List<ProjectTask>> AllTasks;
+	public readonly Signal<List<Project>> Projects;
+	public readonly Signal<List<ProjectTask>> AllTasks;
 
 	public DataStore()
 	{
@@ -56,7 +57,7 @@ public class DataStore
 			new() { ID = 12, Title = "Weekly Phone Calls", IsCompleted = false, ProjectID = 4 },
 		};
 
-		AllTasks = new State<List<ProjectTask>>(tasks);
+		AllTasks = new Signal<List<ProjectTask>>(tasks);
 
 		var projects = new List<Project>
 		{
@@ -77,7 +78,7 @@ public class DataStore
 		foreach (var project in projects)
 			project.Tasks = tasks.Where(t => t.ProjectID == project.ID).ToList();
 
-		Projects = new State<List<Project>>(projects);
+		Projects = new Signal<List<Project>>(projects);
 	}
 
 	public string Today => DateTime.Now.ToString("dddd, MMM d");

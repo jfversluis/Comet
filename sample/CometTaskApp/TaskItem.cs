@@ -18,38 +18,14 @@ public enum TaskCategory
 	Other
 }
 
-public class TaskItem : Comet.BindingObject
+public class TaskItem
 {
 	public string Id { get; set; } = Guid.NewGuid().ToString();
-	public string Title
-	{
-		get => GetProperty<string>() ?? "";
-		set => SetProperty(value);
-	}
-	public string Description
-	{
-		get => GetProperty<string>() ?? "";
-		set => SetProperty(value);
-	}
-	public bool IsCompleted
-	{
-		get => GetProperty<bool>();
-		set => SetProperty(value);
-	}
-	public TaskPriority Priority
-	{
-		get => GetProperty<TaskPriority>();
-		set => SetProperty(value);
-	}
-	public TaskCategory Category
-	{
-		get => GetProperty<TaskCategory>();
-		set => SetProperty(value);
-	}
+	public string Title { get; set; } = "";
+	public string Description { get; set; } = "";
+	public bool IsCompleted { get; set; }
+	public TaskPriority Priority { get; set; }
+	public TaskCategory Category { get; set; }
 	public DateTime CreatedAt { get; set; } = DateTime.Now;
-	public DateTime? DueDate
-	{
-		get => GetProperty<DateTime?>();
-		set => SetProperty(value);
-	}
+	public DateTime? DueDate { get; set; }
 }

@@ -314,11 +314,12 @@ public static class MauiProgram
 		else
 		{
 			// Normal mode: use real MAUI Shell
-			builder.UseMauiApp<ShellMauiApp>();
+			builder
+				.UseMauiApp<ShellMauiApp>()
+				.UseMauiCommunityToolkit();
 		}
 
 		builder.ConfigureSyncfusionToolkit()
-			.UseMauiCommunityToolkit()
 			.UseCometHandlers()
 			.ConfigureFonts(fonts =>
 			{

@@ -4,8 +4,10 @@ public class TrackizerCometApp : CometApp
 {
 	public TrackizerCometApp()
 	{
-		Body = () => new AppRoot();
+		Body = CreateRootView;
 	}
+
+	public static View CreateRootView() => new AppRoot();
 }
 
 public static class MauiProgram
@@ -13,7 +15,12 @@ public static class MauiProgram
 	public static MauiApp CreateMauiApp()
 	{
 		var builder = MauiApp.CreateBuilder();
+
+#if DEBUG
+		builder.UseCometSampleDebugHost(TrackizerCometApp.CreateRootView);
+#else
 		builder.UseCometApp<TrackizerCometApp>();
+#endif
 
 		builder.ConfigureFonts(fonts =>
 		{
@@ -21,6 +28,10 @@ public static class MauiProgram
 		});
 
 		RemoveBordersFromEntry();
+
+#if DEBUG
+		builder.EnableSampleRuntimeDebugging();
+#endif
 
 		return builder.Build();
 	}

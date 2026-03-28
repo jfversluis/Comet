@@ -1,21 +1,22 @@
 using Comet;
+using Comet.Reactive;
 
 namespace CometTaskApp;
 
 /// <summary>
 /// Shared app state accessible across all pages.
-/// Uses State<T> for reactive MVU updates.
+/// Uses Signal<T> for reactive MVU updates.
 /// </summary>
 public class AppState
 {
 	public static AppState Instance { get; } = new();
 
-	public readonly State<List<TaskItem>> Tasks = new(CreateSampleTasks());
+	public readonly Signal<List<TaskItem>> Tasks = new(CreateSampleTasks());
 
-	public readonly State<TaskCategory?> FilterCategory = new(null);
-	public readonly State<bool> ShowCompletedTasks = new(true);
-	public readonly State<string> SearchText = new("");
-	public readonly State<bool> DarkMode = new(false);
+	public readonly Signal<TaskCategory?> FilterCategory = new(null);
+	public readonly Signal<bool> ShowCompletedTasks = new(true);
+	public readonly Signal<string> SearchText = new("");
+	public readonly Signal<bool> DarkMode = new(false);
 
 	public void AddTask(TaskItem task)
 	{

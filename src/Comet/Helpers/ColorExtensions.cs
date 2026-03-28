@@ -1,5 +1,6 @@
 ﻿using System;
 using Comet.Graphics;
+using Comet.Styles;
 using Microsoft.Maui.Graphics;
 
 
@@ -25,6 +26,12 @@ namespace Comet
 			return view;
 		}
 		public static T Color<T>(this T view, Func<Color> color) where T : View => view.Color(color());
+
+		/// <summary>
+		/// Set the foreground color from a design-token that resolves against the active theme.
+		/// </summary>
+		public static T Color<T>(this T view, Token<Color> token) where T : View
+			=> view.Color(ThemeManager.TokenBinding(view, token));
 
 		public static T Color<T>(this T view, Type type, Color color) where T : View
 		{
@@ -70,6 +77,12 @@ namespace Comet
 			return view;
 		}
 		public static T Background<T>(this T view, Func<Color> color, bool cascades = false) where T : View => view.Background(color(), cascades);
+
+		/// <summary>
+		/// Set the background color from a design-token that resolves against the active theme.
+		/// </summary>
+		public static T Background<T>(this T view, Token<Color> token, bool cascades = false) where T : View
+			=> view.Background(ThemeManager.TokenBinding(view, token), cascades);
 
 		/// <summary>
 		/// Set the background color by hex value

@@ -75,6 +75,10 @@ public static class MauiProgram
 			fonts.AddFont("YesevaOne-Regular.ttf", "YesevaOne");
 		});
 
+#if DEBUG
+		builder.EnableSampleRuntimeDebugging();
+#endif
+
 		return builder.Build();
 	}
 }
