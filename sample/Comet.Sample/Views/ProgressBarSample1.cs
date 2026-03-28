@@ -1,4 +1,5 @@
 using System.Threading;
+using Microsoft.Maui.ApplicationModel;
 using static Comet.CometControls;
 using Comet.Reactive;
 
@@ -13,9 +14,9 @@ namespace Comet.Samples
 		{
 			_timer = new Timer(state => {
 				var p = (Signal<double>)state;
-				var current = p.Value;
+				var current = p.Peek();
 				var value = current < 1 ? current + .001f : 0;
-				p.Value = value;
+				MainThread.BeginInvokeOnMainThread(() => p.Value = value);
 			}, percentage, 100, 100);
 		}
 

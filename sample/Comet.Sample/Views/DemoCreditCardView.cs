@@ -120,9 +120,9 @@ namespace Comet.Samples
 		{
 			return HStack(10,
 					Text(icon)
-						.Frame(width:20)
+						.Frame(width:24)
 						.Margin(left:8, top:8)
-						.FontFamily("Font Awesome 5 Free"),
+						.FontFamily("FontAwesome"),
 					TextField(val, placeholder)
 						.OnTextChanged(t => onChanged?.Invoke(t))
 						.Margin(top:9)

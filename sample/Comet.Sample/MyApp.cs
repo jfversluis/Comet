@@ -30,6 +30,7 @@ namespace Comet.Samples
 
 			builder.ConfigureFonts(fonts => {
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+				fonts.AddFont("fa_solid.ttf", "FontAwesome");
 			});
 
 #if DEBUG

@@ -24,14 +24,14 @@ namespace Comet.Samples
 		};
 
 
-				public override View Render() => NavigationView(
-			new ListView<TodoItem>(items){
-				ViewFor = (item)=>HStack(
-						Text(item.Name).Alignment( Alignment.Leading),
-						Spacer(),
-						Toggle(item.Done).Alignment(Alignment.Center)
-					).Margin(6).FillHorizontal()
-			}.Title("Tasky")
-		);
+		public override View Render() =>
+			new ListView<TodoItem>(items)
+			{
+				ViewFor = (item) => HStack(
+					Text(item.Name).Alignment(Alignment.Leading),
+					Spacer(),
+					Toggle(item.Done).Alignment(Alignment.Center)
+				).Margin(6).FillHorizontal()
+			}.Title("Tasky");
 	}
 }

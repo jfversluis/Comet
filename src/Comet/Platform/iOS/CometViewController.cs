@@ -37,6 +37,10 @@ namespace Comet.iOS
 
 		public override void LoadView()
 		{
+			// Prevent content from extending under the navigation bar.
+			// Views that explicitly call .IgnoreSafeArea() can override this.
+			EdgesForExtendedLayout = UIRectEdge.None;
+
 			base.View = _containerView = new CometView(MauiContext);
 			_containerView.CurrentView = _startingCurrentView;
 			Title = _startingCurrentView?.GetTitle() ?? "";

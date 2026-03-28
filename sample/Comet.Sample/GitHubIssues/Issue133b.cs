@@ -20,9 +20,9 @@ namespace Comet.Samples
 			public BorderedEntry(string val, string placeholder, string icon) : base(spacing: 8)
 			{
 				Add(Text(icon)
-					.Frame(width: 20)
+					.Frame(width: 24)
 					.Margin(left: 8)
-					.FontFamily("Font Awesome 5 Free"));
+					.FontFamily("FontAwesome"));
 
 				Add(TextField(val, placeholder));
 

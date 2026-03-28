@@ -28,9 +28,9 @@ namespace Comet.Samples
 
 						public override View Render() => HStack(8,
 					Text(_icon)
-						.Frame(width: 20)
+						.Frame(width: 24)
 						.Margin(left: 8)
-						.FontFamily("Font Awesome 5 Free"),
+						.FontFamily("FontAwesome"),
 
 					TextField(_val, _placeholder)
 				)

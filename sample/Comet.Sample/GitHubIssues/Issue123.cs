@@ -9,17 +9,15 @@ namespace Comet.Samples
 	{
 		private readonly Reactive<int> count = 0;
 
-				public override View Render() => NavigationView( VStack(
-				Text(() => $"Value: {count.Value}")
-					.Color(Colors.Black)
-					.FontSize(32),
-				Button("Increment", () => count.Value ++ )
-					.Frame(width:320, height:44)
-					.Background(Colors.Black)
-					.Color(Colors.White)
-					.Margin(20)
-				
-			)
+		public override View Render() => VStack(
+			Text(() => $"Value: {count.Value}")
+				.Color(Colors.Black)
+				.FontSize(32),
+			Button("Increment", () => count.Value++)
+				.Frame(width: 320, height: 44)
+				.Background(Colors.Black)
+				.Color(Colors.White)
+				.Margin(20)
 		);
 	}
 }
