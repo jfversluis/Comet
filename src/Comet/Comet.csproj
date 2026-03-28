@@ -1,11 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst;net10.0-macos</TargetFrameworks>
-	<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
-	<UseMaui Condition="!$(TargetFramework.Contains('-macos'))">true</UseMaui>
-	<!-- net10.0-macos does not use UseMaui; define MauiVersion explicitly so PackageReference resolves -->
-	<MauiVersion Condition="$(TargetFramework.Contains('-macos')) AND '$(MauiVersion)' == ''">10.0.31</MauiVersion>
+	<TargetFrameworks>net11.0-android;net11.0-ios;net11.0-maccatalyst</TargetFrameworks>
+	<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net11.0-windows10.0.19041.0</TargetFrameworks>
+	<!-- net11.0-macos workload not yet available in .NET 11 preview; re-enable when shipped -->
+	<!-- <TargetFrameworks>$(TargetFrameworks);net11.0-macos</TargetFrameworks> -->
+	<UseMaui>true</UseMaui>
+	<!-- net11.0-macos does not use UseMaui; define MauiVersion explicitly so PackageReference resolves -->
+	<MauiVersion Condition="$(TargetFramework.Contains('-macos')) AND '$(MauiVersion)' == ''">11.0.0-preview.2.26152.10</MauiVersion>
 	<SingleProject>true</SingleProject>
 	<ImplicitUsings>disable</ImplicitUsings>
 
@@ -22,7 +24,7 @@
 	<PackageReference Include="System.Collections.Immutable" Version="9.0.4" />
   </ItemGroup>
 
-  <!-- Platform.Maui.MacOS provides the AppKit handler bridge for net10.0-macos. -->
+  <!-- Platform.Maui.MacOS provides the AppKit handler bridge for net11.0-macos. -->
   <ItemGroup Condition="$(TargetFramework.Contains('-macos'))">
 	<ProjectReference Include="..\..\..\mauiplatforms\src\Platform.Maui.MacOS\Platform.Maui.MacOS.csproj" />
   </ItemGroup>
