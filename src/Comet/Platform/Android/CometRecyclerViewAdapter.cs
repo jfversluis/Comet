@@ -38,6 +38,9 @@ namespace Comet.Android.Controls
 
 				// Add our view to the cell.
 				rvh.CometView.CurrentView = view;
+
+				// Disable click/focus on child views so the item click listener fires
+				DisableChildClicks(rvh.CometView);
 			}
 			else
 			{
@@ -49,6 +52,21 @@ namespace Comet.Android.Controls
 		public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
 		{
 			return new CometRecyclerViewHolder(parent, ListView, MauiContext);
+		}
+
+		static void DisableChildClicks(ViewGroup parent)
+		{
+			for (int i = 0; i < parent.ChildCount; i++)
+			{
+				var child = parent.GetChildAt(i);
+				if (child != null)
+				{
+					child.Clickable = false;
+					child.Focusable = false;
+					if (child is ViewGroup vg)
+						DisableChildClicks(vg);
+				}
+			}
 		}
 	}
 }

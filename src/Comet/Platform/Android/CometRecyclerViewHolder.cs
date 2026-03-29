@@ -5,7 +5,7 @@ using Android.Widget;
 using Microsoft.Maui;
 namespace Comet.Android.Controls
 {
-	public class CometRecyclerViewHolder : RecyclerView.ViewHolder
+	public class CometRecyclerViewHolder : RecyclerView.ViewHolder, global::Android.Views.View.IOnClickListener
 	{
 		private readonly IListView listView;
 		public IMauiContext MauiContext {get;set;}
@@ -20,9 +20,10 @@ namespace Comet.Android.Controls
 			Parent = parent;
 			this.listView = listView;
 
-			CometView.Click += HandleClick;
+			ItemView.Clickable = true;
+			ItemView.SetOnClickListener(this);
 		}
 
-		private void HandleClick(object sender, EventArgs e) => listView?.OnSelected(0, BindingAdapterPosition);
+		public void OnClick(global::Android.Views.View v) => listView?.OnSelected(0, BindingAdapterPosition);
 	}
 }

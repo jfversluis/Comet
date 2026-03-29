@@ -59,8 +59,33 @@ currentPlatformView = platformView;
 currentVirtualView = viewToRender;
 AddView(currentPlatformView, new FrameLayout.LayoutParams(
 LayoutParams.MatchParent, LayoutParams.MatchParent));
-RequestLayout();
+ForceLayout();
 }
+}
+
+void ForceLayout()
+{
+RequestLayout();
+// Post a deferred layout to ensure the view tree is fully measured
+Post(() =>
+{
+if (currentPlatformView != null && Width > 0 && Height > 0)
+{
+MeasureAndArrange();
+currentPlatformView.Layout(0, 0, Width, Height);
+}
+});
+}
+
+void MeasureAndArrange()
+{
+if (currentVirtualView == null || Width <= 0 || Height <= 0)
+return;
+var density = Context?.Resources?.DisplayMetrics?.Density ?? 1;
+var widthDp = Width / density;
+var heightDp = Height / density;
+currentVirtualView.Measure(widthDp, heightDp);
+currentVirtualView.Arrange(new Microsoft.Maui.Graphics.Rect(0, 0, widthDp, heightDp));
 }
 
 public void NavigateTo(View view)
@@ -102,14 +127,7 @@ protected override void OnLayout(bool changed, int left, int top, int right, int
 var width = right - left;
 var height = bottom - top;
 
-if (currentVirtualView != null && width > 0 && height > 0)
-{
-var density = Context?.Resources?.DisplayMetrics?.Density ?? 1;
-var widthDp = width / density;
-var heightDp = height / density;
-currentVirtualView.Measure(widthDp, heightDp);
-currentVirtualView.Arrange(new Microsoft.Maui.Graphics.Rect(0, 0, widthDp, heightDp));
-}
+MeasureAndArrange();
 
 for (int i = 0; i < ChildCount; i++)
 {
