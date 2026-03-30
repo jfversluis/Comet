@@ -1,3 +1,6 @@
+using System;
+using Microsoft.Maui;
+using Microsoft.Maui.Hosting;
 ﻿using Android.App;
 using Android.Runtime;
 
