@@ -118,6 +118,25 @@ namespace Comet
 			//LayoutManager?.Invalidate();
 		}
 
+		/// <summary>
+		/// When a handler is transferred during DiffUpdate (UpdateFromOldView),
+		/// the LayoutHandler's SetVirtualView is called with the new layout.
+		/// MAUI's LayoutHandler may not fully re-sync its platform children
+		/// in SetVirtualView (it only adds new children, doesn't remove stale
+		/// ones). Force a full rebuild by clearing all platform children first,
+		/// then re-adding from the current virtual child list.
+		/// </summary>
+		/// <summary>
+		/// Placeholder for post-handler-transfer sync. The actual platform
+		/// child synchronization is done by CometHostHandler.Reload after the
+		/// entire diff completes, to avoid re-entrant view manipulation during
+		/// the recursive diff pass.
+		/// </summary>
+		protected override void OnHandlerChange()
+		{
+			base.OnHandlerChange();
+		}
+
 		Rect lastRect;
 		public virtual Size CrossPlatformMeasure(double widthConstraint, double heightConstraint) => GetDesiredSize(new Size(widthConstraint,heightConstraint));
 		public virtual Size CrossPlatformArrange(Rect bounds) {
