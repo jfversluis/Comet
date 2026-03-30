@@ -1135,6 +1135,19 @@ namespace Comet
 					? global::Android.Views.ViewStates.Visible
 					: global::Android.Views.ViewStates.Gone;
 				platformView.Clickable = !inputTransparent || hasGestures;
+
+				// Layout containers (ViewGroups) must not steal focus from focusable
+				// children like EditText. Set DescendantFocusability so children get
+				// focus first, and only mark the container focusable if it has gestures.
+				if (platformView is global::Android.Views.ViewGroup viewGroup)
+				{
+					viewGroup.DescendantFocusability = global::Android.Views.DescendantFocusability.AfterDescendants;
+					if (!hasGestures)
+					{
+						viewGroup.Focusable = false;
+						viewGroup.FocusableInTouchMode = false;
+					}
+				}
 			}
 #endif
 		}

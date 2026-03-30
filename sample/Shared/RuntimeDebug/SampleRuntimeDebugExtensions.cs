@@ -94,6 +94,10 @@ sealed class CometSampleDebugHostApplication : Application
 			Content = new CometHost(rootView)
 		};
 
+		// Disable the navigation bar so MAUI's NavigationLayout overlay
+		// doesn't block touches from reaching Comet controls (e.g., TextField).
+		Microsoft.Maui.Controls.NavigationPage.SetHasNavigationBar(page, false);
+
 		return new Window(page);
 	}
 }
