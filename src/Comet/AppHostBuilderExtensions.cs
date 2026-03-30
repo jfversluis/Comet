@@ -939,6 +939,7 @@ namespace Comet
 				{typeof(View), typeof(CometViewHandler)},
 #elif __ANDROID__
 				{typeof(NavigationView), typeof (Handlers.NavigationViewHandler)},
+				{typeof(View), typeof(CometViewHandler)},
 #else
 				
 				{typeof(NavigationView), typeof (Microsoft.Maui.Handlers.NavigationViewHandler)},
@@ -1134,7 +1135,22 @@ namespace Comet
 				platformView.Visibility = isVisible
 					? global::Android.Views.ViewStates.Visible
 					: global::Android.Views.ViewStates.Gone;
-				platformView.Clickable = !inputTransparent || hasGestures;
+				// Only set Clickable on non-ViewGroup views or on ViewGroups that
+				// have explicit Comet gestures. Layout containers (VStack, HStack, etc.)
+				// should NOT be clickable — a clickable ViewGroup consumes touch events
+				// even when the touch lands on a child Button, preventing the child's
+				// click handler from firing.
+				if (platformView is global::Android.Views.ViewGroup)
+				{
+					platformView.Clickable = hasGestures;
+				}
+				else
+				{
+					// For leaf views (Button, EditText, etc.), preserve MAUI's default
+					// clickable state — don't override unless inputTransparent is set.
+					if (inputTransparent)
+						platformView.Clickable = false;
+				}
 
 				// Layout containers (ViewGroups) must not steal focus from focusable
 				// children like EditText. Set DescendantFocusability so children get
@@ -1142,7 +1158,13 @@ namespace Comet
 				if (platformView is global::Android.Views.ViewGroup viewGroup)
 				{
 					viewGroup.DescendantFocusability = global::Android.Views.DescendantFocusability.AfterDescendants;
-					if (!hasGestures)
+
+					// Don't restrict focus on scrollable containers — they need proper
+					// gesture handling for scroll interception to work.
+					bool isScrollable = platformView is global::Android.Widget.ScrollView
+						|| platformView is global::Android.Widget.HorizontalScrollView;
+
+					if (!hasGestures && !isScrollable)
 					{
 						viewGroup.Focusable = false;
 						viewGroup.FocusableInTouchMode = false;

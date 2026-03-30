@@ -90,13 +90,40 @@ sealed class CometSampleDebugHostApplication : Application
 		var rootView = rootViewFactory.Create();
 		var page = new Microsoft.Maui.Controls.ContentPage
 		{
-			Padding = 0,
 			Content = new CometHost(rootView)
 		};
 
 		// Disable the navigation bar so MAUI's NavigationLayout overlay
 		// doesn't block touches from reaching Comet controls (e.g., TextField).
 		Microsoft.Maui.Controls.NavigationPage.SetHasNavigationBar(page, false);
+
+#if IOS || MACCATALYST
+		// Respect safe area insets on iOS/Mac so content isn't hidden behind notch/status bar.
+		Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetUseSafeArea(
+			page, true);
+#elif ANDROID
+		// On Android, content renders edge-to-edge under the status bar.
+		// Apply top padding so controls aren't hidden behind the status bar
+		// (which intercepts touch events in its zone).
+		page.Loaded += (s, e) =>
+		{
+			if (page.Handler?.PlatformView is global::Android.Views.View pv)
+			{
+				var insets = pv.RootWindowInsets;
+				if (insets != null)
+				{
+					var statusBarInsets = insets.GetInsets(global::Android.Views.WindowInsets.Type.StatusBars());
+					var navBarInsets = insets.GetInsets(global::Android.Views.WindowInsets.Type.NavigationBars());
+					var density = pv.Context?.Resources?.DisplayMetrics?.Density ?? 1;
+					page.Padding = new Microsoft.Maui.Thickness(
+						0,
+						statusBarInsets.Top / density,
+						0,
+						navBarInsets.Bottom / density);
+				}
+			}
+		};
+#endif
 
 		return new Window(page);
 	}

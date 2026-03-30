@@ -3,6 +3,7 @@ using Android.Views;
 using Android.Widget;
 using Microsoft.Maui;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.HotReload;
 using Microsoft.Maui.Platform;
 
 namespace Comet.Handlers;
@@ -51,6 +52,17 @@ public partial class CometHostHandler : ViewHandler<CometHost, CometHostHandler.
 		try
 		{
 			var cometView = VirtualView.CometView;
+
+			// Give the container the context it needs to re-render on Reload()
+			PlatformView.MauiContext = MauiContext;
+			PlatformView.SetCometView(cometView);
+
+			// Set the reload handler so Component.SetState → Reload() can
+			// notify the host to re-render the platform view tree.
+			if (cometView is Microsoft.Maui.HotReload.IHotReloadableView ihr)
+			{
+				ihr.ReloadHandler = PlatformView;
+			}
 			
 			// Get the render view (body content) to avoid CometViewHandler handler circularity
 			var renderView = cometView.GetView();
@@ -66,12 +78,20 @@ public partial class CometHostHandler : ViewHandler<CometHost, CometHostHandler.
 		}
 	}
 
-	public class CometHostContainerView : FrameLayout
+	public class CometHostContainerView : FrameLayout, IReloadHandler
 	{
 		global::Android.Views.View _contentView;
 		IView _virtualView;
+		View _cometView;
 
 		public CometHostContainerView(global::Android.Content.Context context) : base(context) { }
+
+		internal IMauiContext MauiContext { get; set; }
+
+		internal void SetCometView(View cometView)
+		{
+			_cometView = cometView;
+		}
 
 		public void SetContent(global::Android.Views.View platformView, IView virtualView)
 		{
@@ -92,6 +112,43 @@ public partial class CometHostHandler : ViewHandler<CometHost, CometHostHandler.
 				RemoveView(_contentView);
 			_contentView = null;
 			_virtualView = null;
+		}
+
+		/// <summary>
+		/// Called when the Comet view's state changes (Component.SetState → Reload).
+		/// After ResetView diffs the virtual tree and transfers handlers, we just
+		/// need to tell the platform to re-measure and re-layout with the updated
+		/// virtual view tree. We also update the virtual view reference so
+		/// measurement uses the current render output.
+		/// </summary>
+		public void Reload()
+		{
+			if (_cometView == null || MauiContext == null) return;
+
+			var renderView = _cometView.GetView();
+			IView viewToRender = (renderView != null && renderView != _cometView) ? renderView : _cometView;
+
+			// The existing platform view tree may still be valid if the diff
+			// only transferred handlers. Check if the render view still has a
+			// handler with a platform view we can reuse.
+			var existingPlatformView = viewToRender.ToPlatform(MauiContext);
+
+			if (existingPlatformView != null && existingPlatformView != _contentView)
+			{
+				// The platform view changed (new view type or new handler)
+				SetContent(existingPlatformView, viewToRender);
+			}
+			else
+			{
+				// Same platform view — just update the virtual reference and re-layout
+				_virtualView = viewToRender;
+				if (_contentView != null)
+				{
+					_contentView.Invalidate();
+					_contentView.RequestLayout();
+				}
+				RequestLayout();
+			}
 		}
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)

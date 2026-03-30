@@ -157,6 +157,15 @@ _contentContainer.Measure(
 AView.MeasureSpec.MakeMeasureSpec(widthSize, MeasureSpecMode.Exactly),
 AView.MeasureSpec.MakeMeasureSpec(contentHeight, MeasureSpecMode.Exactly));
 
+// Explicitly measure the current content view so dynamically added
+// children get proper dimensions (FrameLayout won't re-measure them).
+if (_currentPlatformView != null)
+{
+_currentPlatformView.Measure(
+AView.MeasureSpec.MakeMeasureSpec(widthSize, MeasureSpecMode.Exactly),
+AView.MeasureSpec.MakeMeasureSpec(contentHeight, MeasureSpecMode.Exactly));
+}
+
 SetMeasuredDimension(widthSize, heightSize);
 }
 
@@ -169,6 +178,12 @@ var contentHeight = height - navHeight;
 
 _contentContainer.Layout(0, 0, width, contentHeight);
 _bottomNavigationView.Layout(0, contentHeight, width, height);
+
+// Explicitly layout the current content view within the container bounds
+if (_currentPlatformView != null)
+{
+_currentPlatformView.Layout(0, 0, width, contentHeight);
+}
 
 MeasureAndArrangeContent();
 }
