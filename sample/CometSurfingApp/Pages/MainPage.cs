@@ -175,7 +175,6 @@ namespace CometSurfingApp.Pages
 						.Frame(width: 44, height: 44)
 						.ClipShape(new Ellipse())
 						.Background(Colors.White)
-						.Shadow(Colors.Black, 4, 0, 2)
 						.Margin(new Thickness(12, 0))
 						.Cell(row: 4, column: 0),
 
@@ -185,14 +184,12 @@ namespace CometSurfingApp.Pages
 						.FontWeight(FontWeight.Bold)
 						.Color(Colors.White)
 						.LineBreakMode(LineBreakMode.WordWrap)
-						.Shadow(Colors.Black.WithAlpha(0.5f), 2, 0, 1)
 						.VerticalTextAlignment(TextAlignment.Center)
 						.Cell(row: 4, column: 1),
 				},
 			}
 			.Frame(height: 240)
-			.ClipShape(new AsymmetricRoundedRectangle(12, 120, 12, 12))
-			.Shadow(Colors.Black.WithAlpha(0.15f), 4, 1, 1);
+			.ClipShape(new AsymmetricRoundedRectangle(12, 120, 12, 12));
 		}
 	}
 }
