@@ -1,0 +1,267 @@
+================================================================================
+COMET PLATFORM-SPECIFIC CODE ANALYSIS SUMMARY
+================================================================================
+
+COMPREHENSIVE DOCUMENTATION GENERATED FOR:
+1. iOS (UIKit-based) Platform Implementation
+2. Android (Jetpack) Platform Implementation  
+3. Windows (WinUI) Platform Implementation
+4. Mac Catalyst Support
+
+FULL DOCUMENTATION LOCATION:
+/Users/davidortinau/work/Comet/PLATFORM_SPECIFIC_CODE_DOCUMENTATION.md
+
+================================================================================
+KEY FINDINGS
+================================================================================
+
+## 1. ROOT VIEW ARCHITECTURE
+
+iOS Platform (CometView.cs - 105 lines):
+├─ Base Class: UIView
+├─ Layout System: LayoutSubviews() override
+├─ Key Properties: CurrentView, MauiContext
+└─ Critical Feature: Re-entrant layout prevention via _inLayout flag
+
+Android Platform (CometView.cs - 119 lines):
+├─ Base Class: ViewGroup (AViewGroup)
+├─ Measurement: OnMeasure() with density conversion
+├─ Layout: OnLayout() with DisplayScale calculation
+└─ Critical Feature: ViewGroup.LayoutParams management
+
+Windows Platform (CometView.cs - 106 lines):
+├─ Base Class: Grid (WinUI)
+├─ Measurement: MeasureOverride() with 1000x1000 default
+├─ Layout: ArrangeOverride() with FrameworkElement.Arrange
+└─ Critical Feature: Children collection management
+
+## 2. HANDLER IMPLEMENTATION PATTERN
+
+All handlers follow: <Handler>.cs + <Handler>.<Platform>.cs
+
+Platform-Specific Handler Files (33 total):
+├─ iOS: 11 handlers
+├─ Android: 11 handlers
+└─ Windows: 11 handlers
+
+Key Handlers:
+├─ CometHostHandler (3 implementations, 112-143 lines each)
+├─ CometViewHandler (iOS: 49 lines, Android: 11 lines, Windows: 57 lines)
+├─ NavigationViewHandler (3 implementations)
+├─ TabViewHandler (3 implementations)
+├─ ListViewHandler (3 implementations)
+├─ CollectionViewHandler (3 implementations)
+└─ ... and 6 more control handlers
+
+## 3. CONDITIONAL COMPILATION PATTERNS
+
+File: AppHostBuilderExtensions.cs (1151 lines total)
+
+Conditional Blocks:
+├─ #if WINDOWS (1 block - Line 17)
+├─ #if __IOS__ || MACCATALYST (21 blocks - Lines 27-763+)
+└─ #elif ANDROID (Alternative implementations)
+
+Most Common Patterns:
+├─ Property Mapper conditionals for platform UI updates
+├─ Event handler registration with platform-specific callbacks
+├─ Color/styling application using native APIs
+└─ Layout measurement using platform-specific metrics
+
+Total Conditional Regions: 20+ major sections
+
+## 4. PLATFORM-SPECIFIC FEATURES
+
+iOS-Specific:
+├─ Modal presentation: UIViewController.PresentViewController()
+├─ Modal dismissal: UIViewController.DismissViewController()
+├─ Navigation stack: UINavigationController with PopViewController tracking
+├─ Layout: CALayer properties for shadows, borders, corners
+├─ View controller lifecycle: ViewDidAppear, ViewWillAppear, ViewDidDisappear
+├─ Safe area support via ISafeAreaView interface
+├─ Color management: UIColor / CGColor
+├─ Event handling: ConditionalWeakTable<UIView, EventHandler> caching
+└─ Accessibility: UIStringAttributes for styled text
+
+Android-Specific:
+├─ Modal management: DialogFragment with transaction stack
+├─ Fragment navigation: FragmentManager with BeginTransaction()
+├─ State persistence: Bundle.SaveInstanceState()
+├─ Layout: FrameLayout with DPI density conversion
+├─ Tap gestures: GestureDetector listeners
+├─ TabView: BottomNavigationView with Fragment switching
+├─ Color management: Android.Graphics.Color (int-based)
+├─ Resource theme colors: TypedValue theme attribute resolution
+├─ Event handling: Plain object ConditionalWeakTable (placeholder)
+└─ Density scaling: DisplayMetrics.Density for all measurements
+
+Windows-Specific:
+├─ Layout: Canvas base with WinUI XAML patterns
+├─ Measurement: MeasureOverride with default 1000x1000 size
+├─ Color management: Microsoft.UI.Xaml.Media.SolidColorBrush
+├─ Color conversion: ColorHelper.FromArgb(byte, byte, byte, byte)
+├─ Framework elements: FrameworkElement.Measure/Arrange
+├─ Children management: UIElementCollection
+└─ No title support at Grid level (differs from iOS/Android)
+
+## 5. DIRECTORY STRUCTURE
+
+src/Comet/Platform/
+├── iOS/ (26 files)
+│   ├─ CometView.cs (105 lines)
+│   ├─ CometViewController.cs (122 lines)
+│   ├─ CUINavigationController.cs (37 lines)
+│   ├─ CUITabView.cs
+│   ├─ CUITableView.cs
+│   ├─ CUIScrollView.cs
+│   ├─ CUIRadioButton.cs
+│   ├─ CUIShapeView.cs
+│   ├─ CUIContainerView.cs
+│   ├─ CUITableViewSource.cs
+│   ├─ CUITableViewCell.cs
+│   ├─ CUITapGestures.cs
+│   ├─ iOSExtensions.cs
+│   └─ HandlerExtensions.cs
+│
+├── Android/ (12 files)
+│   ├─ CometView.cs (119 lines)
+│   ├─ CometFragment.cs (92 lines)
+│   ├─ ModalManager.cs (91 lines)
+│   ├─ CometTabView.cs (88 lines)
+│   ├─ CometRecyclerView.cs
+│   ├─ CometRecyclerViewAdapter.cs
+│   ├─ CometRecyclerViewHolder.cs
+│   ├─ CometScrollView.cs
+│   ├─ CometNavigationView.cs
+│   ├─ CustomFrameLayout.cs
+│   ├─ CometTouchGesterListener.cs
+│   └─ HandlerExtensions.cs
+│
+├── Windows/ (3 files)
+│   ├─ CometView.cs (106 lines)
+│   ├─ ListCell.cs (87 lines)
+│   └─ HandlerExtensions.cs
+│
+└── Standard/ (1 file)
+    └─ HandlerExtensions.cs
+
+## 6. SERVICE REGISTRATION PATTERNS
+
+File: AppHostBuilderExtensions.cs
+
+Static Weak Table Event Handlers (iOS/MacCatalyst):
+├─ _pickerEditingDidEndHandlers
+├─ _entryEditingChangedHandlers
+├─ _editorChangedHandlers
+├─ _searchBarTextChangedHandlers
+├─ _sliderValueChangedHandlers
+├─ _switchValueChangedHandlers
+└─ _checkBoxCheckedHandlers
+
+Purpose: Prevent duplicate event handler subscriptions during mapper re-fires
+
+Android Placeholder Tables:
+├─ _pickerTextChangedHandlers
+├─ _entryTextChangedHandlers
+└─ ... (object type as placeholder)
+
+## 7. LAYOUT & MEASUREMENT PATTERNS
+
+iOS:
+├─ LayoutSubviews() called by UIKit automatically
+├─ Invalidates MeasurementValid on rotation
+├─ Frame-based layout with CGRect
+├─ Subview management via RemoveFromSuperview/AddSubview
+└─ Device rotation handling through layout invalidation
+
+Android:
+├─ OnMeasure() converts Android spec to device-independent pixels
+├─ OnLayout() arranges children in ViewGroup
+├─ DisplayScale calculation: density = DisplayMetrics.Density
+├─ View hierarchy management via RemoveView/AddView
+└─ Both OnLayout() and OnSizeChanged() handle size notifications
+
+Windows:
+├─ MeasureOverride() returns size for children
+├─ ArrangeOverride() positions children in available space
+├─ Default size 1000x1000 when unconstrained
+├─ FrameworkElement layout with Rect positioning
+└─ Children.Add/Remove for hierarchy management
+
+## 8. KEY METHOD SIGNATURES
+
+CometView iOS:
+├─ public CometView(IMauiContext mauiContext)
+├─ public CometView(CGRect rect, IMauiContext mauiContext)
+├─ void SetView(IView view, bool forceRefresh = false)
+├─ public override void LayoutSubviews()
+└─ public void Reload()
+
+CometView Android:
+├─ public CometView(IMauiContext mc)
+├─ void SetView(IView view, bool forceRefresh = false)
+├─ protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+├─ protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+└─ protected override void OnSizeChanged(int w, int h, int oldw, int oldh)
+
+CometView Windows:
+├─ public CometView(IMauiContext mauiContext)
+├─ void SetView(IView view, bool forceRefresh = false)
+├─ protected override Microsoft.UI.Xaml.Size MeasureOverride(Microsoft.UI.Xaml.Size availableSize)
+└─ protected override Microsoft.UI.Xaml.Size ArrangeOverride(Microsoft.UI.Xaml.Size finalSize)
+
+## 9. CRITICAL FEATURES IMPLEMENTED
+
+Safe Area Support:
+├─ Extension: IgnoreSafeArea<T>()
+├─ Environment Key: "Layout.IgnoreSafeArea"
+├─ Interface: ISafeAreaView
+└─ iOS implementation in TabViewHandler (commented out)
+
+Platform-Specific Values:
+├─ OnPlatform<T> helper with iOS/Android/Windows/MacCatalyst properties
+├─ Implicit operator T(OnPlatform<T> value)
+├─ Compile-time resolution based on #if directives
+└─ OnIdiom<T> for Phone/Tablet/Desktop variants
+
+Modal Dialogs:
+├─ iOS: UIViewController.PresentViewController with threading
+├─ Android: DialogFragment stack with transaction management
+└─ Windows: Canvas-based layout (no native dialog system)
+
+Navigation:
+├─ iOS: UINavigationController with back button tracking via PopViewController
+├─ Android: Fragment transaction stack with AddToBackStack
+└─ Windows: Frame navigation (standard MAUI)
+
+## 10. DENSITY/SCALE HANDLING
+
+iOS:
+└─ No density adjustment (UIKit uses points, not pixels)
+
+Android:
+├─ DisplayScale stored in CometWindow
+├─ Conversion: deviceIndependentValue = pixels / DisplayMetrics.Density
+├─ Applied to all measurements in OnMeasure/OnLayout
+└─ Used in CometHostHandler.OnLayout for dimension calculation
+
+Windows:
+└─ No density adjustment (WinUI uses DIPs)
+
+================================================================================
+DOCUMENTATION COMPLETE
+================================================================================
+
+The full documentation file includes:
+✓ Complete method signatures with line numbers
+✓ All platform-specific code implementations
+✓ Conditional compilation patterns (20+ sections)
+✓ Event handling patterns per platform
+✓ Modal dialog implementations
+✓ Navigation patterns
+✓ Layout measurement algorithms
+✓ Color conversion methods
+✓ Handler registration patterns
+✓ Safe area and status bar handling
+
+File: PLATFORM_SPECIFIC_CODE_DOCUMENTATION.md (85KB+, comprehensive)

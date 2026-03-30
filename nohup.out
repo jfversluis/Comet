@@ -1,0 +1,264 @@
+INFO         | Android emulator version 35.5.10.0 (build_id 13402964) (CL:N/A)
+INFO         | Graphics backend: gfxstream
+INFO         | Found systemPath /Users/davidortinau/Library/Android/sdk/system-images/android-36/google_apis_playstore_ps16k/arm64-v8a/
+WARNING      | Please update the emulator to one that supports the feature(s): VulkanVirtualQueue
+INFO         | Increasing RAM size to 3072MB
+INFO         | Checking system compatibility:
+INFO         |   Checking: hasSufficientDiskSpace
+INFO         |      Ok: Disk space requirements to run avd: `Pixel_9_Pro` are met
+INFO         |   Checking: hasSufficientHwGpu
+INFO         |      Ok: Hardware GPU requirements to run avd: `Pixel_9_Pro` are passed
+INFO         |   Checking: hasSufficientSystem
+INFO         |      Ok: System requirements to run avd: `Pixel_9_Pro` are met
+INFO         | Warning: QMetaObject::connectSlotsByName: No matching signal for on_btn_xr_environment_living_room_day_clicked() (:0, )
+INFO         | Warning: QMetaObject::connectSlotsByName: No matching signal for on_btn_xr_environment_living_room_night_clicked() (:0, )
+INFO         | Warning: QMetaObject::connectSlotsByName: No matching signal for on_new_posture_requested(int) (:0, )
+INFO         | Warning: QMetaObject::connectSlotsByName: No matching signal for on_dismiss_posture_selection_dialog() (:0, )
+INFO         | Warning: QMetaObject::connectSlotsByName: No matching signal for on_new_resizable_requested(PresetEmulatorSizeType) (:0, )
+INFO         | Warning: QMetaObject::connectSlotsByName: No matching signal for on_dismiss_resizable_dialog() (:0, )
+INFO         | Warning: QMetaObject::connectSlotsByName: No matching signal for on_xr_environment_mode_changed(int) (:0, )
+INFO         | Warning: QMetaObject::connectSlotsByName: No matching signal for on_dismiss_xr_environment_mode_dialog() (:0, )
+INFO         | Warning: QMetaObject::connectSlotsByName: No matching signal for on_xr_input_mode_changed(int) (:0, )
+INFO         | Warning: QMetaObject::connectSlotsByName: No matching signal for on_dismiss_xr_input_mode_dialog() (:0, )
+INFO         | Warning: QMetaObject::connectSlotsByName: No matching signal for on_sleep_timer_done() (:0, )
+INFO         | Warning: QMetaObject::connectSlotsByName: No matching signal for on_unfold_timer_done() (:0, )
+INFO         | Storing crashdata in: /tmp/android-davidortinau/emu-crash-35.5.10.db, detection is enabled for process: 14458
+INFO         | Guest Driver: Auto (ext controls)
+library_mode host gpu mode host
+INFO         | Initializing hardware OpenGLES emulation support
+I0328 15:19:21.242493 e6758c0 opengles.cpp:285] android_startOpenglesRenderer: gpu info
+I0328 15:19:21.242528 e6758c0 opengles.cpp:286] 
+INFO         | HealthMonitor disabled.
+INFO         | Setting ICD filenames for the loader = /Users/davidortinau/Library/Android/sdk/emulator/qemu/darwin-aarch64/lib64/vulkan/MoltenVK_icd.json:/Users/davidortinau/Library/Android/sdk/emulator/lib64/vulkan/MoltenVK_icd.json
+INFO         | Vulkan Validation Layers won't be enabled with MoltenVK
+INFO         | SharedLibrary::open for [/Users/davidortinau/Library/Android/sdk/emulator/qemu/darwin-aarch64/lib64/vulkan/libvulkan.dylib]
+
+INFO         | SharedLibrary::open for [/Users/davidortinau/Library/Android/sdk/emulator/qemu/darwin-aarch64/lib64/vulkan/libvulkan.dylib]: not found in map, open for the first time
+
+INFO         | SharedLibrary::open for [/Users/davidortinau/Library/Android/sdk/emulator/qemu/darwin-aarch64/lib64/vulkan/libvulkan.dylib] (posix): begin
+
+INFO         | SharedLibrary::open for [/Users/davidortinau/Library/Android/sdk/emulator/qemu/darwin-aarch64/lib64/vulkan/libvulkan.dylib] (posix,darwin): call dlopen
+
+INFO         | SharedLibrary::open for [/Users/davidortinau/Library/Android/sdk/emulator/qemu/darwin-aarch64/lib64/vulkan/libvulkan.dylib] (posix,darwin): failed, try again with [/Users/davidortinau/Library/Android/sdk/emulator/qemu/darwin-aarch64/lib64/vulkan/libvulkan.dylib]
+
+INFO         | SharedLibrary::open for [/Users/davidortinau/Library/Android/sdk/emulator/qemu/darwin-aarch64/lib64/vulkan/libvulkan.dylib] failed (posix). dlerror: []
+
+INFO         | SharedLibrary::open for [/Users/davidortinau/Library/Android/sdk/emulator/lib64/vulkan/libvulkan.dylib]
+
+INFO         | SharedLibrary::open for [/Users/davidortinau/Library/Android/sdk/emulator/lib64/vulkan/libvulkan.dylib]: not found in map, open for the first time
+
+INFO         | SharedLibrary::open for [/Users/davidortinau/Library/Android/sdk/emulator/lib64/vulkan/libvulkan.dylib] (posix): begin
+
+INFO         | SharedLibrary::open for [/Users/davidortinau/Library/Android/sdk/emulator/lib64/vulkan/libvulkan.dylib] (posix,darwin): call dlopen
+
+INFO         | Added library: /Users/davidortinau/Library/Android/sdk/emulator/lib64/vulkan/libvulkan.dylib
+INFO         | MoltenVK is supported, enabling Vulkan portability.
+INFO         | Selecting Vulkan device: Apple M4 Max, Version: 1.2.293
+INFO         | SharedLibrary::open for [/System/Library/Frameworks/OpenGL.framework/OpenGL]: not found in map, open for the first time
+
+INFO         | SharedLibrary::open for [/System/Library/Frameworks/OpenGL.framework/OpenGL] (posix): begin
+
+INFO         | SharedLibrary::open for [/System/Library/Frameworks/OpenGL.framework/OpenGL] (posix,darwin): call dlopen
+
+INFO         | SharedLibrary::open for [libshadertranslator.dylib]: not found in map, open for the first time
+
+INFO         | SharedLibrary::open for [libshadertranslator.dylib] (posix): begin
+
+INFO         | SharedLibrary::open for [libshadertranslator.dylib] (posix,darwin): call dlopen
+
+INFO         | Initializing VkEmulation features:
+INFO         |     glInteropSupported: false
+INFO         |     useDeferredCommands: true
+INFO         |     createResourceWithRequirements: true
+INFO         |     useVulkanComposition: false
+INFO         |     useVulkanNativeSwapchain: false
+INFO         |     enable guestRenderDoc: false
+INFO         |     ASTC LDR emulation mode: 2
+INFO         |     enable ETC2 emulation: true
+INFO         |     enable Ycbcr emulation: false
+INFO         |     guestVulkanOnly: false
+INFO         |     useDedicatedAllocations: false
+INFO         | Graphics Adapter Vendor Google (Apple)
+INFO         | Graphics Adapter Android Emulator OpenGL ES Translator (Apple M4 Max)
+INFO         | Graphics API Version OpenGL ES 3.0 (4.1 Metal - 90.5)
+INFO         | Graphics API Extensions GL_OES_EGL_sync GL_OES_EGL_image GL_OES_EGL_image_external GL_OES_depth24 GL_OES_depth32 GL_OES_element_index_uint GL_OES_texture_float GL_OES_texture_float_linear GL_OES_compressed_paletted_texture GL_OES_compressed_ETC1_RGB8_texture GL_OES_depth_texture GL_OES_texture_npot GL_OES_rgb8_rgba8 GL_EXT_color_buffer_float GL_EXT_color_buffer_half_float GL_EXT_texture_format_BGRA8888 GL_APPLE_texture_format_BGRA8888 
+INFO         | Graphics Device Extensions N/A
+INFO         | Sending adb public key [QAAAAMm71y2HsTae6jrTCzha7PW42hEeoCm3dErl0wpuz1iMjc68z/pkJYcccn3rbrKGHPd7Ky1Lmdqgt7DGjmHtH28zSx8atqxgKZGWV81vN6O9iiMKk8xIPLDzy8inGmigyNAglF3SHjCIRkfcvb1O/kwIPVRz6b337pKffVZ4tjT0ThOhltjaAcF916dCBcoSZIco4WOiUOpR2Bj71wyYpaBNQKyU1kY6g3VfgyRt8p9+HT5WvvXGxOiNAJbjg/fvLLkjT48w/MAc3d9ECmwvcHiuGSQD8EYhGs+FqTsThJW+W/ShiDQUCOorOx55tc5+tDRC7HqbGDLpcZyp71uRadyIuP/WxIt2U6ysN1oEnCEBcbSlZ5iMC/wKbzQAHZ1sMYmhvcIvdjdRhhokBZTkTbFwAzpuNFdCCnFi5TmW5ekaxCrQ8NwI6U3m/Wxw8H6HVBMSU80PDPNnJfdV90IRA2XvJ987JrANbHEmudjodGRbQQqXROylSO+QoSwNvW41OrAe/lSBX5AaBovE2ZilzsY8PgR0p4HBS7NbEDCnU38aXHA/PQnleqWNHHnO23gCzF0JAssX9XDwDrI5T3s+9EIuyHH5MspIE6MlptYFVTKI9bXgyxGk/M/mI/oeoTi8/tXgeR1Bqzu5mg080RYYNhagJ8ZvYwfzCMtC2BF+YZmwYsxsYQEAAQA= davidortinau@unknown]
+INFO         | Userspace boot properties:
+INFO         |   androidboot.boot_devices=a003600.virtio_mmio
+INFO         |   androidboot.dalvik.vm.heapsize=576m
+INFO         |   androidboot.debug.hwui.renderer=skiagl
+INFO         |   androidboot.hardware=ranchu
+INFO         |   androidboot.hardware.gltransport=pipe
+INFO         |   androidboot.hardware.vulkan=ranchu
+INFO         |   androidboot.logcat=*:V
+INFO         |   androidboot.opengles.version=196608
+INFO         |   androidboot.qemu=1
+INFO         |   androidboot.qemu.adb.pubkey=QAAAAMm71y2HsTae6jrTCzha7PW42hEeoCm3dErl0wpuz1iMjc68z/pkJYcccn3rbrKGHPd7Ky1Lmdqgt7DGjmHtH28zSx8atqxgKZGWV81vN6O9iiMKk8xIPLDzy8inGmigyNAglF3SHjCIRkfcvb1O/kwIPVRz6b337pKffVZ4tjT0ThOhltjaAcF916dCBcoSZIco4WOiUOpR2Bj71wyYpaBNQKyU1kY6g3VfgyRt8p9+HT5WvvXGxOiNAJbjg/fvLLkjT48w/MAc3d9ECmwvcHiuGSQD8EYhGs+FqTsThJW+W/ShiDQUCOorOx55tc5+tDRC7HqbGDLpcZyp71uRadyIuP/WxIt2U6ysN1oEnCEBcbSlZ5iMC/wKbzQAHZ1sMYmhvcIvdjdRhhokBZTkTbFwAzpuNFdCCnFi5TmW5ekaxCrQ8NwI6U3m/Wxw8H6HVBMSU80PDPNnJfdV90IRA2XvJ987JrANbHEmudjodGRbQQqXROylSO+QoSwNvW41OrAe/lSBX5AaBovE2ZilzsY8PgR0p4HBS7NbEDCnU38aXHA/PQnleqWNHHnO23gCzF0JAssX9XDwDrI5T3s+9EIuyHH5MspIE6MlptYFVTKI9bXgyxGk/M/mI/oeoTi8/tXgeR1Bqzu5mg080RYYNhagJ8ZvYwfzCMtC2BF+YZmwYsxsYQEAAQA= davidortinau@unknown
+INFO         |   androidboot.qemu.avd_name=Pixel_9_Pro
+INFO         |   androidboot.qemu.camera_hq_edge_processing=0
+INFO         |   androidboot.qemu.camera_protocol_ver=1
+INFO         |   androidboot.qemu.cpuvulkan.version=4202496
+INFO         |   androidboot.qemu.gltransport.drawFlushInterval=800
+INFO         |   androidboot.qemu.gltransport.name=pipe
+INFO         |   androidboot.qemu.hwcodec.avcdec=2
+INFO         |   androidboot.qemu.hwcodec.hevcdec=2
+INFO         |   androidboot.qemu.hwcodec.vpxdec=2
+INFO         |   androidboot.qemu.settings.system.screen_off_timeout=2147483647
+INFO         |   androidboot.qemu.virtiowifi=1
+INFO         |   androidboot.qemu.vsync=60
+INFO         |   androidboot.serialno=EMULATOR35X5X10X0
+INFO         |   androidboot.vbmeta.digest=bda2c3bae8ada715a552ed32e69174a7464c710bc1d2bf0f51b208b34293972b
+INFO         |   androidboot.vbmeta.hash_alg=sha256
+INFO         |   androidboot.vbmeta.size=6720
+INFO         |   androidboot.veritymode=enforcing
+INFO         | Monitoring duration of emulator setup.
+WARNING      | The emulator now requires a signed jwt token for gRPC access! Use the -grpc flag if you really want an open unprotected grpc port
+INFO         | Using security allow list from: /Users/davidortinau/Library/Android/sdk/emulator/lib/emulator_access.json
+WARNING      | *** Basic token auth should only be used by android-studio ***
+INFO         | The active JSON Web Key Sets can be found here: /Users/davidortinau/Library/Caches/TemporaryItems/avd/running/14458/jwks/394c2551-5401-499f-940d-7f496626df6d/active.jwk
+INFO         | Scanning /Users/davidortinau/Library/Caches/TemporaryItems/avd/running/14458/jwks/394c2551-5401-499f-940d-7f496626df6d for jwk keys.
+INFO         | Started GRPC server at 127.0.0.1:8554, security: Local, auth: +token
+INFO         | Advertising in: /Users/davidortinau/Library/Caches/TemporaryItems/avd/running/pid_14458.ini
+INFO         | Setting display: 0 configuration to: 1280x2856, dpi: 480x480 
+INFO         | setDisplayActiveConfig 0
+INFO         | Checking system compatibility:
+INFO         |   Checking: hasSufficientDiskSpace
+INFO         |      Ok: Disk space requirements to run avd: `Pixel_9_Pro` are met
+INFO         |   Checking: hasSufficientHwGpu
+INFO         |      Ok: Hardware GPU requirements to run avd: `Pixel_9_Pro` are passed
+INFO         |   Checking: hasSufficientSystem
+INFO         |      Ok: System requirements to run avd: `Pixel_9_Pro` are met
+WARNING      | adb command '/Users/davidortinau/Library/Android/sdk/platform-tools/adb -e shell am start-foreground-service -e meter on com.android.emulator.radio.config/.MeterService ' failed: 'adb: device offline'
+USER_INFO    | Emulator is performing a full startup. This may take upto two minutes, or more.
+INFO         | Activated packet streamer for uwb emulation
+INFO         | Activated packet streamer for bluetooth emulation
+INFO         | Boot completed in 14561 ms
+INFO         | Increasing screen off timeout, logcat buffer size to 2M.
+INFO         | Created VkInstance:0xaf8bcd800 for application: engine:.
+INFO         | Destroyed VkInstance:0xaf8bcd800 for application: engine:.
+INFO         | Warning: QMetaObject::connectSlotsByName: No matching signal for on_rgbcSensorValueWidget_valueChanged() (:0, )
+INFO         | Warning: QMetaObject::connectSlotsByName: No matching signal for on_posture_valueChanged(int) (:0, )
+INFO         | AVD supportsNativeGLES=1, supportsGuestAngle=1
+INFO         | Warning: skipping QEventPoint(id=1 ts=0 pos=0,0 scn=392.756,855.508 gbl=392.756,855.508 Released ellipse=(1x1 âˆ¡ 0) vel=0,0 press=-392.756,-855.508 last=-392.756,-855.508 Î” 392.756,855.508) : no target window (:0, )
+INFO         | Warning: skipping QEventPoint(id=1 ts=0 pos=0,0 scn=427.161,245.657 gbl=427.161,245.657 Released ellipse=(1x1 âˆ¡ 0) vel=0,0 press=-427.161,-245.657 last=-427.161,-245.657 Î” 427.161,245.657) : no target window (:0, )
+INFO         | Warning: skipping QEventPoint(id=1 ts=0 pos=0,0 scn=249.9,163.016 gbl=249.9,163.016 Released ellipse=(1x1 âˆ¡ 0) vel=0,0 press=-249.9,-163.016 last=-249.9,-163.016 Î” 249.9,163.016) : no target window (:0, )
+ERROR        | adb protocol fault (couldn't read status length)
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not resume hÛ×
+coreaudio: Reason: kAudioHardwareBadDeviceError
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+ERROR        | adb protocol fault (couldn't read status length)
+ERROR        | adb protocol fault (couldn't read status length)
+ERROR        | adb protocol fault (couldn't read status length)
+ERROR        | adb protocol fault (couldn't read status length)
+INFO         | Created VkInstance:0xaf8dc0000 for application: engine:.
+INFO         | Destroyed VkInstance:0xaf8dc0000 for application: engine:.
+ERROR        | adb protocol fault (couldn't read status length)
+ERROR        | adb protocol fault (couldn't read status length)
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not resume hÛ×
+coreaudio: Reason: kAudioHardwareBadDeviceError
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not resume hÛ×
+coreaudio: Reason: kAudioHardwareBadDeviceError
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+INFO         | Created VkInstance:0xaf8f60000 for application: engine:.
+INFO         | Destroyed VkInstance:0xaf8f60000 for application: engine:.
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not resume hÛ×
+coreaudio: Reason: kAudioHardwareBadDeviceError
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not resume hÛ×
+coreaudio: Reason: kAudioHardwareBadDeviceError
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not resume hÛ×
+coreaudio: Reason: kAudioHardwareBadDeviceError
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not resume hÛ×
+coreaudio: Reason: kAudioHardwareBadDeviceError
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not resume hÛ×
+coreaudio: Reason: kAudioHardwareBadDeviceError
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not resume hÛ×
+coreaudio: Reason: kAudioHardwareBadDeviceError
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not resume hÛ×
+coreaudio: Reason: kAudioHardwareBadDeviceError
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not resume hÛ×
+coreaudio: Reason: kAudioHardwareBadDeviceError
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not resume hÛ×
+coreaudio: Reason: kAudioHardwareBadDeviceError
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not resume hÛ×
+coreaudio: Reason: kAudioHardwareBadDeviceError
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not resume hÛ×
+coreaudio: Reason: kAudioHardwareBadDeviceError
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not resume hÛ×
+coreaudio: Reason: kAudioHardwareBadDeviceError
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not resume hÛ×
+coreaudio: Reason: kAudioHardwareBadDeviceError
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not resume hÛ×
+coreaudio: Reason: kAudioHardwareBadDeviceError
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
+coreaudio: Could not resume hÛ×
+coreaudio: Reason: kAudioHardwareBadDeviceError
+coreaudio: Could not determine whether Device is playing
+coreaudio: Reason: status code 560947818
