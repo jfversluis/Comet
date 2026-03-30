@@ -262,3 +262,4 @@ coreaudio: Could not resume hÛ×
 coreaudio: Reason: kAudioHardwareBadDeviceError
 coreaudio: Could not determine whether Device is playing
 coreaudio: Reason: status code 560947818
+ERROR        | adb protocol fault (couldn't read status length)

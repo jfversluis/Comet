@@ -100,10 +100,13 @@ LayoutParams.MatchParent, LayoutParams.MatchParent));
 RequestLayout();
 Post(() =>
 {
-if (_currentPlatformView != null && _contentContainer.Width > 0 && _contentContainer.Height > 0)
+// Use measured dimensions as fallback when layout hasn't completed yet
+var containerWidth = _contentContainer.Width > 0 ? _contentContainer.Width : _contentContainer.MeasuredWidth;
+var containerHeight = _contentContainer.Height > 0 ? _contentContainer.Height : _contentContainer.MeasuredHeight;
+if (_currentPlatformView != null && containerWidth > 0 && containerHeight > 0)
 {
 MeasureAndArrangeContent();
-_currentPlatformView.Layout(0, 0, _contentContainer.Width, _contentContainer.Height);
+_currentPlatformView.Layout(0, 0, containerWidth, containerHeight);
 InvalidateViewTree(_currentPlatformView);
 }
 });
@@ -114,8 +117,11 @@ void MeasureAndArrangeContent()
 {
 if (_currentVirtualView == null) return;
 var density = Context?.Resources?.DisplayMetrics?.Density ?? 1;
-var widthDp = _contentContainer.Width / density;
-var heightDp = _contentContainer.Height / density;
+var containerWidth = _contentContainer.Width > 0 ? _contentContainer.Width : _contentContainer.MeasuredWidth;
+var containerHeight = _contentContainer.Height > 0 ? _contentContainer.Height : _contentContainer.MeasuredHeight;
+if (containerWidth <= 0 || containerHeight <= 0) return;
+var widthDp = containerWidth / density;
+var heightDp = containerHeight / density;
 _currentVirtualView.Measure(widthDp, heightDp);
 _currentVirtualView.Arrange(new Rect(0, 0, widthDp, heightDp));
 }
@@ -135,14 +141,18 @@ protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 var widthSize = AView.MeasureSpec.GetSize(widthMeasureSpec);
 var heightSize = AView.MeasureSpec.GetSize(heightMeasureSpec);
 
+// Ensure we have valid dimensions
+if (widthSize <= 0) widthSize = Resources.DisplayMetrics.WidthPixels;
+if (heightSize <= 0) heightSize = Resources.DisplayMetrics.HeightPixels;
+
 // Measure bottom nav first
 _bottomNavigationView.Measure(
 AView.MeasureSpec.MakeMeasureSpec(widthSize, MeasureSpecMode.Exactly),
 AView.MeasureSpec.MakeMeasureSpec(heightSize, MeasureSpecMode.AtMost));
 var navHeight = _bottomNavigationView.MeasuredHeight;
 
-// Content gets remaining height
-var contentHeight = heightSize - navHeight;
+// Content gets remaining height (never zero)
+var contentHeight = Math.Max(1, heightSize - navHeight);
 _contentContainer.Measure(
 AView.MeasureSpec.MakeMeasureSpec(widthSize, MeasureSpecMode.Exactly),
 AView.MeasureSpec.MakeMeasureSpec(contentHeight, MeasureSpecMode.Exactly));

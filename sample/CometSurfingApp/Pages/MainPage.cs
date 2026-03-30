@@ -107,6 +107,8 @@ namespace CometSurfingApp.Pages
 		}
 
 		// ── Individual post card ────────────────────────────────────
+		// Flattened from 7 nesting levels to 4 to prevent Android stack overflow.
+		// All VStack/HStack containers replaced with Grid cell positioning.
 		View BuildPostCard(Post post)
 		{
 			return new ZStack
@@ -122,79 +124,70 @@ namespace CometSurfingApp.Pages
 					.Background(Colors.Black)
 					.Opacity(0.1f),
 
-				// Content overlay
+				// Content overlay -- flat Grid, no nested stacks
 				new Grid(
-					rows: new object[] { "Auto", "Auto", "*" },
+					rows: new object[] { "Auto", "Auto", "Auto", "*", 44 },
 					columns: new object[] { 72, "*" })
 				{
-					// User avatar (top-left)
+					// Row 0: User avatar
 					Image(post.User.Image)
 						.Frame(width: 54, height: 54)
 						.Aspect(Aspect.AspectFill)
 						.ClipShape(new Ellipse())
 						.RoundedBorder(radius: 27, color: post.User.Color, strokeSize: 4)
 						.Margin(new Thickness(12))
-						.Cell(row: 0, column: 0),
+						.Cell(row: 0, column: 0)
+						.GridRowSpan(2),
 
-					// User name + time
-					VStack(
-						Text(post.User.Name.ToUpper())
-							.FontWeight(FontWeight.Bold)
-							.Color(Colors.Black),
-						Text("4 HOURS AGO")
-							.FontSize(10)
-							.Color(Colors.Black)
-							.Opacity(0.75f)
-					)
-					.Margin(new Thickness(0, 18))
-					.Cell(row: 0, column: 1),
+					// Row 0: User name
+					Text(post.User.Name.ToUpper())
+						.FontWeight(FontWeight.Bold)
+						.Color(Colors.Black)
+						.Margin(new Thickness(0, 18, 0, 0))
+						.Cell(row: 0, column: 1),
 
-					// Likes + bookmark (vertical, matching reference layout)
-					VStack(spacing: 4,
-						HStack(spacing: 4,
-							Text("Likes")
-								.FontSize(14)
-								.Color(Colors.Black),
-							Text(post.Likes)
-								.FontSize(10)
-								.Color(Colors.Black)
-						),
-						Text("Save")
-							.FontSize(14)
-					)
-					.Margin(new Thickness(12, 0))
-					.Cell(row: 1, column: 0),
+					// Row 1: Time
+					Text("4 HOURS AGO")
+						.FontSize(10)
+						.Color(Colors.Black)
+						.Opacity(0.75f)
+						.Cell(row: 1, column: 1),
 
-					// Play button + title area (bottom)
-					HStack(
-						Text("Play")
-							.FontSize(16)
-							.Color(Colors.Black)
-							.HorizontalTextAlignment(TextAlignment.Center)
-							.VerticalTextAlignment(TextAlignment.Center)
-							.Frame(width: 44, height: 44)
-							.ClipShape(new Ellipse())
-							.Background(Colors.White)
-							.Shadow(Colors.Black, 4, 0, 2)
-							.Margin(new Thickness(12, 0)),
+					// Row 2: Likes + Save
+					Text($"Likes  {post.Likes}")
+						.FontSize(14)
+						.Color(Colors.Black)
+						.Margin(new Thickness(12, 4))
+						.Cell(row: 2, column: 0)
+						.GridColumnSpan(2),
 
-						VStack(
-							Text(post.Title)
-								.FontSize(18)
-								.FontWeight(FontWeight.Bold)
-								.Color(Colors.White)
-								.LineBreakMode(LineBreakMode.WordWrap)
-								.Shadow(Colors.Black.WithAlpha(0.5f), 2, 0, 1),
-							Text(post.User.From.ToUpper())
-								.FontSize(12)
-								.Color(Colors.LightGray)
-								.Opacity(0.95f)
-						)
-					)
-					.Margin(new Thickness(0, 12))
-					.Cell(row: 2, column: 0)
-					.GridColumnSpan(2)
-					.Alignment(Alignment.Bottom),
+					// Row 3: Spacer
+					new Spacer()
+						.Cell(row: 3, column: 0)
+						.GridColumnSpan(2),
+
+					// Row 4: Play button
+					Text("Play")
+						.FontSize(16)
+						.Color(Colors.Black)
+						.HorizontalTextAlignment(TextAlignment.Center)
+						.VerticalTextAlignment(TextAlignment.Center)
+						.Frame(width: 44, height: 44)
+						.ClipShape(new Ellipse())
+						.Background(Colors.White)
+						.Shadow(Colors.Black, 4, 0, 2)
+						.Margin(new Thickness(12, 0))
+						.Cell(row: 4, column: 0),
+
+					// Row 4: Title
+					Text(post.Title)
+						.FontSize(18)
+						.FontWeight(FontWeight.Bold)
+						.Color(Colors.White)
+						.LineBreakMode(LineBreakMode.WordWrap)
+						.Shadow(Colors.Black.WithAlpha(0.5f), 2, 0, 1)
+						.VerticalTextAlignment(TextAlignment.Center)
+						.Cell(row: 4, column: 1),
 				},
 			}
 			.Frame(height: 240)

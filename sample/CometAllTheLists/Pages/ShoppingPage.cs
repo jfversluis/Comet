@@ -29,17 +29,22 @@ public class ShoppingPage : Component<ShoppingPageState>
 {
 	public override View Render()
 	{
-		return VStack(
+		return new Grid(
+			rows: new object[] { "Auto", "*" },
+			columns: new object[] { "*" })
+		{
 			Text("Shopping Products")
 				.FontSize(24)
 				.FontWeight(FontWeight.Bold)
-				.Padding(16),
+				.Padding(16)
+				.Cell(row: 0, column: 0),
 			new CollectionView<Product>(() => State.Products)
 			{
 				ViewFor = item => RenderProductItem(item),
 				ItemsLayout = ItemsLayout.Vertical(spacing: 8),
 			}.Padding(8)
-		);
+			 .Cell(row: 1, column: 0),
+		};
 	}
 
 	View RenderProductItem(Product item)

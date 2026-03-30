@@ -26,15 +26,27 @@ namespace Comet.Android.Controls
 
 				var parent = rvh.Parent;
 				var density = MauiContext.Context.Resources.DisplayMetrics.Density;
-			
-				var scaledSize = new Size(parent.Width / density, parent.Height / density);
+
+				// Use laid-out dimensions first, fall back to measured dimensions,
+				// then to screen dimensions as a last resort.
+				var parentWidth = parent.Width > 0 ? parent.Width
+					: parent.MeasuredWidth > 0 ? parent.MeasuredWidth
+					: MauiContext.Context.Resources.DisplayMetrics.WidthPixels;
+				var parentHeight = parent.Height > 0 ? parent.Height
+					: parent.MeasuredHeight > 0 ? parent.MeasuredHeight
+					: MauiContext.Context.Resources.DisplayMetrics.HeightPixels;
+
+				var scaledSize = new Size(parentWidth / density, parentHeight / density);
 				var measuredSize = view.Measure(scaledSize, true);
 				view.MeasuredSize = measuredSize;
 				view.MeasurementValid = true;
 
+				var itemHeight = (int)(measuredSize.Height * density);
+				if (itemHeight <= 0) itemHeight = (int)(48 * density); // fallback minimum height
+
 				rvh.CometView.LayoutParameters = new ViewGroup.LayoutParams(
 					ViewGroup.LayoutParams.MatchParent,
-					(int)(measuredSize.Height * density));
+					itemHeight);
 
 				// Add our view to the cell.
 				rvh.CometView.CurrentView = view;

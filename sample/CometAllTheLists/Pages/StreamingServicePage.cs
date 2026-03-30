@@ -45,18 +45,23 @@ public class StreamingServicePage : Component<StreamingServicePageState>
 
 	View RenderCollectionSection(string title, List<string> shows)
 	{
-		return VStack(spacing: 8,
+		return new Grid(
+			rows: new object[] { "Auto", "*" },
+			columns: new object[] { "*" })
+		{
 			Text(title)
 				.FontSize(16)
 				.FontWeight(FontWeight.Bold)
-				.Padding(new Thickness(12, 0)),
+				.Padding(new Thickness(12, 0))
+				.Cell(row: 0, column: 0),
 
 			new CollectionView<string>(() => shows)
 			{
 				ItemsLayout = ItemsLayout.Horizontal(spacing: 12),
 				ViewFor = show => RenderShowCard(show),
 			}.Frame(height: 140)
-		);
+			 .Cell(row: 1, column: 0),
+		};
 	}
 
 	View RenderShowCard(string showName)

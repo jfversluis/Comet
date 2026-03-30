@@ -10,11 +10,15 @@ public class CollectionViewPage : Component<CollectionViewPageState>
 {
 	public override View Render()
 	{
-		return VStack(
+		return new Grid(
+			rows: new object[] { "Auto", "*" },
+			columns: new object[] { "*" })
+		{
 			Text("Collections")
 				.FontSize(24)
 				.FontWeight(FontWeight.Bold)
-				.Padding(16),
+				.Padding(16)
+				.Cell(row: 0, column: 0),
 
 			VStack(spacing: 16,
 				Text("Vertical Collection")
@@ -51,7 +55,8 @@ public class CollectionViewPage : Component<CollectionViewPageState>
 				}.Frame(height: 280)
 			)
 			.Padding(8)
-		);
+			.Cell(row: 1, column: 0),
+		};
 	}
 
 	View RenderVerticalItem(string item)

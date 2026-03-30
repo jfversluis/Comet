@@ -27,16 +27,21 @@ public class InboxPage : Component<InboxPageState>
 {
 	public override View Render()
 	{
-		return VStack(
+		return new Grid(
+			rows: new object[] { "Auto", "Auto", "*" },
+			columns: new object[] { "*" })
+		{
 			Text("Inbox")
 				.FontSize(24)
 				.FontWeight(FontWeight.Bold)
-				.Padding(16),
+				.Padding(16)
+				.Cell(row: 0, column: 0),
 
 			Text(() => $"Selected: {State.SelectedMessage}")
 				.FontSize(12)
 				.Color(Colors.Gray)
-				.Padding(8),
+				.Padding(8)
+				.Cell(row: 1, column: 0),
 
 			new CollectionView<Message>(() => State.Inbox)
 			{
@@ -59,7 +64,8 @@ public class InboxPage : Component<InboxPageState>
 					.Padding(12)
 					.Background(new SolidPaint(Colors.LightGray)),
 			}.Padding(8)
-		);
+			 .Cell(row: 2, column: 0),
+		};
 	}
 
 	View RenderMessageItem(Message msg)

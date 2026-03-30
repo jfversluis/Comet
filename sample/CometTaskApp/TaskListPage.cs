@@ -63,11 +63,15 @@ return row;
 
 public override View Render() =>
 NavigationView(
-VStack(
+new Grid(
+rows: new object[] { "Auto", "Auto", "Auto", "*", "Auto" },
+columns: new object[] { "*" })
+{
 TextField(_state.SearchText, "Search tasks...")
 .Padding(new Thickness(12, 8))
 .SemanticDescription("Search tasks")
-.AutomationId("TaskSearchField"),
+.AutomationId("TaskSearchField")
+.Cell(row: 0, column: 0),
 
 ScrollView(Orientation.Horizontal,
 HStack(8,
@@ -79,7 +83,8 @@ FilterPill("Health", TaskCategory.Health),
 FilterPill("Learning", TaskCategory.Learning)
 )
 .Padding(new Thickness(12, 4))
-),
+)
+.Cell(row: 1, column: 0),
 
 HStack(16,
 Text(() => $"{_state.TotalCount} total")
@@ -90,7 +95,8 @@ Text(() => $"{_state.PendingCount} pending")
 .FontSize(12).Color(Colors.Orange),
 Spacer()
 )
-.Padding(new Thickness(12, 4)),
+.Padding(new Thickness(12, 4))
+.Cell(row: 2, column: 0),
 
 new CollectionView<TaskItem>(() => _state.GetFilteredTasks())
 {
@@ -98,7 +104,8 @@ ViewFor = TaskRow,
 SelectionMode = SelectionMode.None,
 }
 .SemanticDescription("Task list")
-.AutomationId("TaskList"),
+.AutomationId("TaskList")
+.Cell(row: 3, column: 0),
 
 Button("+ Add Task", () =>
 {
@@ -107,7 +114,8 @@ Navigation?.Navigate(new AddTaskPage());
 .Padding(new Thickness(16, 12))
 .SemanticDescription("Add a new task")
 .AutomationId("AddTaskButton")
-)
+.Cell(row: 4, column: 0),
+}
 )
 .Title("My Tasks");
 

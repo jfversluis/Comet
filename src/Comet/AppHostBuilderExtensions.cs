@@ -955,6 +955,22 @@ namespace Comet
 				{typeof(MenuFlyoutSeparator), typeof(Microsoft.Maui.Handlers.MenuFlyoutSeparatorHandler)},
 			}));
 
+			// Register MAUI Controls handlers needed by Comet's CollectionViewHandler
+			// and CarouselViewHandler, which internally create MAUI Controls views and
+			// call ToPlatform() on them.
+			builder.ConfigureMauiHandlers(h =>
+			{
+				h.TryAddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items.CollectionViewHandler>();
+				h.TryAddHandler<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler>();
+				h.TryAddHandler<Microsoft.Maui.Controls.ContentView, Microsoft.Maui.Handlers.ContentViewHandler>();
+				h.TryAddHandler<Microsoft.Maui.Controls.Label, Microsoft.Maui.Handlers.LabelHandler>();
+				h.TryAddHandler<Microsoft.Maui.Controls.VerticalStackLayout, Microsoft.Maui.Handlers.LayoutHandler>();
+				h.TryAddHandler<Microsoft.Maui.Controls.HorizontalStackLayout, Microsoft.Maui.Handlers.LayoutHandler>();
+				h.TryAddHandler<Microsoft.Maui.Controls.Grid, Microsoft.Maui.Handlers.LayoutHandler>();
+				h.TryAddHandler<Microsoft.Maui.Controls.StackLayout, Microsoft.Maui.Handlers.LayoutHandler>();
+				h.TryAddHandler<Microsoft.Maui.Controls.BoxView, Microsoft.Maui.Controls.Handlers.BoxViewHandler>();
+			});
+
 			// MAUI 10 moved MaxLines/LineBreakMode off ILabel to the concrete Label class.
 			// Comet's Text (View, not Label) can't provide them, so UILabel defaults to
 			// numberOfLines=1 and truncation. Fix by customizing the LabelHandler mapper.
