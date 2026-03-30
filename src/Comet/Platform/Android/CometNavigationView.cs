@@ -6,6 +6,7 @@ using Android.Widget;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
+using AndroidX.Activity;
 using AView = Android.Views.View;
 
 namespace Comet.Android.Controls
@@ -73,8 +74,21 @@ if (currentPlatformView != null && Width > 0 && Height > 0)
 {
 MeasureAndArrange();
 currentPlatformView.Layout(0, 0, Width, Height);
+// Force a draw pass - without this, complex views added
+// dynamically during navigation never get their initial draw
+InvalidateViewTree(currentPlatformView);
 }
 });
+}
+
+static void InvalidateViewTree(AView view)
+{
+view.Invalidate();
+if (view is ViewGroup vg)
+{
+for (int i = 0; i < vg.ChildCount; i++)
+InvalidateViewTree(vg.GetChildAt(i));
+}
 }
 
 void MeasureAndArrange()
@@ -93,7 +107,12 @@ public void NavigateTo(View view)
 if (currentView != null)
 viewStack.Push(currentView);
 ShowView(view);
+UpdateBackCallbackState();
 }
+
+public bool CanGoBack => viewStack.Count > 0;
+
+OnBackPressedCallback backCallback;
 
 bool isAttached = false;
 View contentView;
@@ -105,6 +124,44 @@ if (contentView != null)
 {
 SetRoot(contentView);
 contentView = null;
+}
+RegisterBackHandler();
+}
+
+protected override void OnDetachedFromWindow()
+{
+base.OnDetachedFromWindow();
+backCallback?.Remove();
+backCallback = null;
+isAttached = false;
+}
+
+void RegisterBackHandler()
+{
+if (Context is ComponentActivity activity)
+{
+backCallback = new NavigationBackCallback(this);
+activity.OnBackPressedDispatcher.AddCallback(backCallback);
+UpdateBackCallbackState();
+}
+}
+
+void UpdateBackCallbackState()
+{
+if (backCallback != null)
+backCallback.Enabled = CanGoBack;
+}
+
+class NavigationBackCallback : OnBackPressedCallback
+{
+readonly CometNavigationView nav;
+public NavigationBackCallback(CometNavigationView nav) : base(false)
+{
+this.nav = nav;
+}
+public override void HandleOnBackPressed()
+{
+nav.Pop();
 }
 }
 
@@ -142,6 +199,7 @@ if (viewStack.Count > 0)
 {
 var previous = viewStack.Pop();
 ShowView(previous);
+UpdateBackCallbackState();
 }
 }
 }
