@@ -25,11 +25,8 @@ These are the primary docs for developers building with Comet.
 - [Layout System](layout.md) -- VStack, HStack, ZStack, Grid, FlexLayout,
   spacing, padding, margin, alignment, and responsive patterns.
 - [Reactive State Guide](reactive-state-guide.md) -- Practical, code-forward
-  guide to every state management pattern: `State<T>`, `BindingObject`,
-  `Binding<T>`, and automatic dependency tracking.
-- [State Management](state-management.md) -- Definitive deep-dive covering the
-  full reactive pipeline, `INotifyPropertyRead`, environment propagation, and
-  advanced patterns.
+  guide to every state management pattern: `Reactive<T>`, `Signal<T>`,
+  `Component<TState>`, and automatic dependency tracking.
 - [Migration Guide](migration-guide.md) -- How to move from the prior Comet API
   surface to the evolved MVU API without renaming the project.
 - [Testing Guide](testing.md) -- Test infrastructure, reactive state testing,
