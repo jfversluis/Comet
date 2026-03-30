@@ -11,6 +11,6 @@ namespace CometAllTheLists
 		{
 		}
 
-		protected override MauiApp CreateMauiApp() => AllTheListsApp.CreateMauiApp();
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 	}
 }

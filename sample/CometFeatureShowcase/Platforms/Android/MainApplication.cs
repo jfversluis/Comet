@@ -11,6 +11,6 @@ namespace CometFeatureShowcase
 		{
 		}
 
-		protected override MauiApp CreateMauiApp() => FeatureShowcaseShell.CreateMauiApp();
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 	}
 }

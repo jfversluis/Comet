@@ -11,6 +11,6 @@ namespace CometWeather
 		{
 		}
 
-		protected override MauiApp CreateMauiApp() => WeatherShell.CreateMauiApp();
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 	}
 }

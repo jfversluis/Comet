@@ -11,6 +11,6 @@ namespace CometStressTest
 		{
 		}
 
-		protected override MauiApp CreateMauiApp() => StressTestShell.CreateMauiApp();
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 	}
 }

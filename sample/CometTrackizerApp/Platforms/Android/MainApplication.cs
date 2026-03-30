@@ -11,6 +11,6 @@ namespace CometTrackizerApp
 		{
 		}
 
-		protected override MauiApp CreateMauiApp() => TrackizerCometApp.CreateMauiApp();
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 	}
 }

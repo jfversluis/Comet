@@ -11,6 +11,6 @@ namespace CometMarvelousApp
 		{
 		}
 
-		protected override MauiApp CreateMauiApp() => MarvelousShell.CreateMauiApp();
+		protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
 	}
 }
