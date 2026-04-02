@@ -148,10 +148,20 @@ public partial class CometHostHandler : ViewHandler<CometHost, CometHostHandler.
 				// Recursively sync platform children to match virtual tree
 				SyncViewTreePlatformChildren(viewToRender);
 
-				// Invalidate all measurements so the next layout pass recalculates
+				// Invalidate all measurements so the LayoutManager recalculates
 				InvalidateViewTreeMeasurements(viewToRender);
 
-				// Request a full layout pass from the platform
+				// Immediately re-measure and re-arrange the virtual view tree
+				// so the LayoutManager assigns correct Frame positions BEFORE
+				// the platform layout pass runs. Without this, children retain
+				// stale positions from the previous render.
+				var density = Context?.Resources?.DisplayMetrics?.Density ?? 1;
+				var w = Width > 0 ? Width / density : Resources.DisplayMetrics.WidthPixels / density;
+				var h = Height > 0 ? Height / density : Resources.DisplayMetrics.HeightPixels / density;
+				viewToRender.Measure(w, h);
+				viewToRender.Arrange(new Microsoft.Maui.Graphics.Rect(0, 0, w, h));
+
+				// Now request the platform layout pass to apply the new positions
 				_contentView?.RequestLayout();
 				RequestLayout();
 			}
@@ -171,44 +181,19 @@ public partial class CometHostHandler : ViewHandler<CometHost, CometHostHandler.
 		static void SyncViewTreePlatformChildren(IView view)
 		{
 			if (view is not Comet.ContainerView container) return;
-			if (view.Handler?.PlatformView is not global::Android.Views.ViewGroup platformGroup) return;
+			if (view.Handler is not ILayoutHandler layoutHandler) return;
 
 			var virtualChildren = ((IContainerView)container).GetChildren();
 
-			// Collect expected platform children
-			var expectedPlatformChildren = new List<global::Android.Views.View>();
+			// Use MAUI's ILayoutHandler API (not raw ViewGroup manipulation)
+			// so the handler's internal child list stays in sync with the
+			// platform ViewGroup. This ensures the layout pass applies
+			// correct positions to the correct platform children.
+			layoutHandler.Clear();
 			foreach (var child in virtualChildren)
 			{
-				if (child?.ViewHandler?.PlatformView is global::Android.Views.View childPV)
-					expectedPlatformChildren.Add(childPV);
-			}
-
-			// Check if sync is needed
-			bool needsSync = platformGroup.ChildCount != expectedPlatformChildren.Count;
-			if (!needsSync)
-			{
-				for (int i = 0; i < expectedPlatformChildren.Count; i++)
-				{
-					if (platformGroup.GetChildAt(i) != expectedPlatformChildren[i])
-					{
-						needsSync = true;
-						break;
-					}
-				}
-			}
-
-			if (needsSync)
-			{
-				platformGroup.RemoveAllViews();
-				foreach (var childPV in expectedPlatformChildren)
-				{
-					if (childPV.Parent is global::Android.Views.ViewGroup oldParent && oldParent != platformGroup)
-						oldParent.RemoveView(childPV);
-					if (childPV.Parent == null)
-						platformGroup.AddView(childPV);
-				}
-				platformGroup.RequestLayout();
-				platformGroup.Invalidate();
+				if (child != null)
+					layoutHandler.Add(child);
 			}
 
 			// Recurse into children
